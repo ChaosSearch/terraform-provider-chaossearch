@@ -2,9 +2,9 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/chaos/chaossearch" {
-  version     = "0.1.0"
-  constraints = "0.1.0"
+  version     = "0.1.53"
+  constraints = "~> 0.1.19"
   hashes = [
-    "h1:cPL5UeE+KItC2aj3dSW86+C7iFd2eYZ/nnHhNaNLn2g=",
+    "h1:wy1233pcZK5N2TLtlcol/qmafeyfIDl9i6eryy0CLJU=",
   ]
 }

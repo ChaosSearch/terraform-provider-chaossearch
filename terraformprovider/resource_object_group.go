@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	log "github.com/sirupsen/logrus"
 )
 
 func resourceObjectGroup() *schema.Resource {
@@ -138,7 +139,7 @@ func resourceObjectGroup() *schema.Resource {
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
-
+	log.Debug("------------------------------------------------------------------------------------------------------------------------")
 	// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
 	// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
 	// We represent "null" as an int pointer to nil in the code.
@@ -180,6 +181,8 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		ColumnRenames:     data.Get("column_renames").(map[string]interface{}),
 		ColumnSelection:   columnSelection,
 	}
+	log.Info("createObjectGroupRequest name----->", createObjectGroupRequest.Name)
+	log.Info("createObjectGroupRequest SourceBucket----->", createObjectGroupRequest.SourceBucket)
 
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {
 		return diag.FromErr(err)
@@ -197,7 +200,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	req := &client.ReadObjectGroupRequest{
 		ID: data.Id(),
 	}
-
+	log.Warn("req---->", req)
 	resp, err := c.ReadObjectGroup(ctx, req)
 	if err != nil {
 		return diag.Errorf("Failed to read object group: %s", err)

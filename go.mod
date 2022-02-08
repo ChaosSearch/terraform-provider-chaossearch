@@ -4,7 +4,10 @@ go 1.17
 
 require github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
 
-require github.com/jmespath/go-jmespath v0.4.0 // indirect
+require (
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
+)
 
 require (
 	github.com/agext/levenshtein v1.2.2 // indirect

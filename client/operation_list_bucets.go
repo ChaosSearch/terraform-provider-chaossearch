@@ -22,7 +22,7 @@ func (client *Client) ListBuckets(ctx context.Context) (*ListBucketsResponse, er
 
 	var resp ListBucketsResponse
 	if err := client.unmarshalXMLBody(httpResp.Body, &resp); err != nil {
-		return nil, fmt.Errorf("Failed to unmarshal XML response body: %s", err)
+		return nil, fmt.Errorf("failed to unmarshal XML response body: %s", err)
 	}
 
 	return &resp, nil

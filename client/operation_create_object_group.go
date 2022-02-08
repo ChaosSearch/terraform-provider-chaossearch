@@ -19,12 +19,12 @@ func (client *Client) CreateObjectGroup(ctx context.Context, req *CreateObjectGr
 
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
-		return fmt.Errorf("Failed to create request: %s", err)
+		return fmt.Errorf("failed to create request: %s", err)
 	}
 
 	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
 	if err != nil {
-		return fmt.Errorf("Failed to %s to %s: %s", method, url, err)
+		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
 	defer httpResp.Body.Close()
 
@@ -83,7 +83,7 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 	if req.FilterJSON != "" {
 		filter := make(map[string]interface{})
 		if err := json.Unmarshal([]byte(req.FilterJSON), &filter); err != nil {
-			return nil, fmt.Errorf("Failed to unmarshal JSON string: %s %s", req.FilterJSON, err)
+			return nil, fmt.Errorf("failed to unmarshal JSON string: %s %s", req.FilterJSON, err)
 		}
 		body["filter"] = filter
 	}
