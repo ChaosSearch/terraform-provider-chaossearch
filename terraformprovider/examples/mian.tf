@@ -1,12 +1,11 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 0.1.19"
+      version = "~> 0.1.21"
       source = "chaos/chaossearch"
     }
   }
 }
-
 provider "chaossearch" {
     url               = "https://ap-south-1-aeternum.chaossearch.io"
     access_key_id     = "LCE8T6HRFGJI3ZKBGMGD"
@@ -34,36 +33,37 @@ transforms=[]
 sources=["test-object-group"]
 }
 
-# resource "chaossearch_object_group" "my-object-group" {
-#   name = "my-object-group-dinesh-1"
-#   source_bucket = "<s3 bucket name>"
-#   live_events_sqs_arn ="arn:aws:sqs:sqs_sqs"
 
-#   filter_json = jsonencode({
-#     AND = [
-#       {
-#         field = "key"
-#         regex = ".*"
-#       }
-#     ]
-#   })
+ resource "chaossearch_object_group" "my-object-group" {
+   name = "my-object-group-nibras-3"
+   source_bucket = "chaos-test-data-aps1"
+   live_events_sqs_arn ="arn:aws:sqs:sqs_sqs"
 
-#   compression = "gzip"
-#   format = "JSON"
+   filter_json = jsonencode({
+     AND = [
+       {
+         field = "key"
+         regex = ".*"
+       }
+     ]
+   })
 
-#   partition_by = "<regex>"
-#   array_flatten_depth = -1
+   compression = "gzip"
+   format = "JSON"
 
-#   keep_original = true
+   partition_by = ""
+   array_flatten_depth = -1
 
-#   column_selection {
-#     type = "whitelist"
-#     includes = [
-#       "host",
-#       "source",
-#     ]
-#   }
-# }
+   keep_original = true
+
+   column_selection {
+     type = "whitelist"
+     includes = [
+       "host",
+       "source",
+     ]
+   }
+ }
 
 # resource "chaossearch_indexing_state" "my-object-group" {
 #   object_group_name = chaossearch_object_group.my-object-group.name
