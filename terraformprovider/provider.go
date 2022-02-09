@@ -15,9 +15,10 @@ type ProviderMeta struct {
 	token  string
 }
 
-type AuthResponse struct{
+type AuthResponse struct {
 	Token string
 }
+
 // Provider -
 func Provider() *schema.Provider {
 
@@ -43,6 +44,30 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CHAOSSEARCH_REGION", "ap-south-1"),
 			},
+			"login": {
+				Type: schema.TypeSet,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"user_name": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+						"password": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						}, "parent_user_id": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: true,
+						},
+					},
+				},
+				Optional:    true,
+				ForceNew:    true,
+				Description: "List of fields in logs to include or exclude from parsing. If nothing is specified, all fields will be parsed",
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			// "chaossearch_object_group":   resourceObjectGroup(),
@@ -61,6 +86,25 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	accessKeyID := d.Get("access_key_id").(string)
 	secretAccessKey := d.Get("secret_access_key").(string)
 	region := d.Get("region").(string)
+
+	var username_ string
+	var password_ string
+	var parentUserId_ string
+
+	if d.Get("login").(*schema.Set).Len() > 0 {
+		columnSelectionInterfaces := d.Get("login").(*schema.Set).List()[0]
+		columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
+		username_ = columnSelectionInterface["user_name"].(string)
+		password_ = columnSelectionInterface["password"].(string)
+		parentUserId_ = columnSelectionInterface["parent_user_id"].(string)
+
+	}
+
+	login_ := client.Login{
+		Username:     username_,
+		Password:     password_,
+		ParentUserId: parentUserId_,
+	}
 
 	if url == "" {
 		return nil, diag.Errorf("Expected 'url' to be defined in provider configuration, but it was not")
@@ -81,24 +125,9 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	config.SecretAccessKey = secretAccessKey
 	config.Region = region
 
-	csClient := client.NewClient(config)
+	csClient := client.NewClient(config, &login_)
 
-	// logFile, err := os.Create("terraform-provider-chaossearch.log")
-	// if err != nil {
-	// 	return nil, diag.FromErr(err)
-	// }
-
-	// log.SetOutput(logFile)
-	// log.SetFlags(log.LstdFlags | log.Lshortfile)
-	// // Close logFile when context is closed
-	// go func() {
-	// 	<-context.Background().Done()
-	// 	log.Println("END")
-	// 	logFile.Sync()
-	// 	logFile.Close()
-	// }()
-
-	authResponseString, err := Auth()
+	authResponseString, err := csClient.Auth(ctx)
 
 	log.Debug("authResponseString-->", authResponseString)
 
@@ -106,8 +135,8 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		return nil, diag.Errorf("Token generation fail..")
 
 	} else {
-		tokenData:= AuthResponse{}
-		json.Unmarshal([]byte(authResponseString),&tokenData)
+		tokenData := AuthResponse{}
+		json.Unmarshal([]byte(authResponseString), &tokenData)
 
 		providerMeta := &ProviderMeta{
 			Client: csClient,
@@ -116,7 +145,5 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		return providerMeta, nil
 
 	}
-	//
 
-	//return providerMeta, nil
 }

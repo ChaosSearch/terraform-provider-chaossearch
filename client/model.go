@@ -77,23 +77,23 @@ type IndexingState struct {
 }
 
 type CreateViewRequest struct {
-	AuthToken	string
-	Name              string
+	AuthToken         string
+	
 	Bucket            string
 	FilterJSON        string
 	TimeFieldName     string
 	Pattern           string
 	CaseInsensitive   bool
 	ArrayFlattenDepth *int
-	IndexRetention int
+	IndexRetention    int
 	// IndexRetention    map[string]interface{}
-	Cacheable         bool
-	Overwrite         bool
+	Cacheable bool
+	Overwrite bool
 	// Sources           map[string]string
-	Sources           []interface{}
+	Sources    []interface{}
 	Transforms []interface{}
 }
 
-type RequestHeaders struct{
+type RequestHeaders struct {
 	Headers map[string]interface{}
 }

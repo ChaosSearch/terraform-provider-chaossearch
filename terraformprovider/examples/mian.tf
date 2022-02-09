@@ -12,20 +12,26 @@ provider "chaossearch" {
     access_key_id     = "LCE8T6HRFGJI3ZKBGMGD"
     secret_access_key = "r5MEYkYntYvXqRSBMK6SFLQfPw7hHRQ0v5cqlkIk"
     region            = "ap-south-1"
+    login  {
+      user_name = "service_user@chaossearch.com"
+      password = "thisIsAnEx@mple1!"
+      parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
+    }
 
 }
 
 
 resource "chaossearch_view" "chaossearch-create-view" {
-  name="dinesh-tf-pro-test-9909"
-  bucket="my-bucket-123"
+  bucket="dinesh-tf-001"
   index_pattern=".*"
  filter_json=""
  //array_flatten_depth =-1 
   case_insensitive=false
-index_retention=-1
-transforms=[""]
-sources=[]
+index_retention {
+  value="test1"
+}
+transforms=[]
+sources=["test-object-group"]
 }
 
 # resource "chaossearch_object_group" "my-object-group" {

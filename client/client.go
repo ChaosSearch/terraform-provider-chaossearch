@@ -21,9 +21,10 @@ type Client struct {
 	config     *Configuration
 	httpClient *http.Client
 	userAgent  string
+	Login *Login
 }
 
-func NewClient(config *Configuration) *Client {
+func NewClient(config *Configuration,login *Login) *Client {
 	binaryName := os.Getenv("BINARY")
 	hostName := os.Getenv("HOSTNAME")
 	version := os.Getenv("VERSION")
@@ -34,6 +35,7 @@ func NewClient(config *Configuration) *Client {
 		config:     config,
 		httpClient: http.DefaultClient,
 		userAgent:  userAgent,
+		Login:login,
 	}
 }
 

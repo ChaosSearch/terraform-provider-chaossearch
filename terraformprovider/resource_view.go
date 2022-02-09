@@ -22,12 +22,6 @@ func resourceView() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
-				Optional: true,
-			},
 			"pattern": {
 				Type:     schema.TypeString,
 				Required: false,
@@ -63,7 +57,6 @@ func resourceView() *schema.Resource {
 				ForceNew:    false,
 				// Type:     schema.TypeSet,
 				// Required: false,
-				// Optional: true,
 				// Elem: &schema.Resource{
 				// 	Schema: map[string]*schema.Schema{
 				// 		"value": {
@@ -112,7 +105,7 @@ func resourceView() *schema.Resource {
 func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
 	tokenValue := meta.(*ProviderMeta).token
-	log.Warn("token value------------>>>>",tokenValue)
+	log.Warn("token value------------>>>>", tokenValue)
 	// arrayFlattenTF := data.Get("array_flatten_depth").(int)
 	// log.Info("arrayFlattenTF-->",arrayFlattenTF)
 	var arrayFlattenCS *int
@@ -132,34 +125,33 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	// 	columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
 
 	// 	indexRetention = map[string]interface{}{
-	// 		"type": columnSelectionInterface["type"].(string),
+	// 		"value": columnSelectionInterface["value"].(string),
 	// 	}
 	// }
-
+	// log.Debug("indexretention", indexRetention)
 	sources_, ok := data.GetOk("sources")
 	if !ok {
 		log.Error(" sources not available")
 	}
-	log.Debug("sources_-->",sources_)
-	var sourcesStrings  []interface{}
+	log.Debug("sources_-->", sources_)
+	var sourcesStrings []interface{}
 
-	if sources_ != nil{
+	if sources_ != nil {
 		sourcesStrings = sources_.([]interface{})
-		log.Debug("sourcesStrings-->",sourcesStrings)
+		log.Debug("sourcesStrings-->", sourcesStrings)
 	}
 
-	log.Debug("sourcesStrings-->",sourcesStrings)
+	log.Debug("sourcesStrings-->", sourcesStrings)
 
 	transforms_, ok := data.GetOk("transforms")
 	if !ok {
 		log.Error(" transforms not available")
 	}
-	var transforms  []interface{}
+	var transforms []interface{}
 
-	if transforms_ !=nil{
+	if transforms_ != nil {
 		transforms = transforms_.([]interface{})
 	}
-	
 
 	// patterns_, ok := data.GetOk("pattern")
 	// if !ok {
@@ -168,7 +160,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	// patterns := patterns_.([]interface{})
 	createViewRequest := &client.CreateViewRequest{
 		AuthToken: tokenValue,
-		Name:       data.Get("name").(string),
+
 		Bucket:     data.Get("bucket").(string),
 		Sources:    sourcesStrings,
 		FilterJSON: data.Get("filter_json").(string),
@@ -183,8 +175,6 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		Pattern:           data.Get("index_pattern").(string),
 	}
 
-	// client.RequestHeaders
-	log.Info("createViewRequest.Name--->", createViewRequest.Name)
 	log.Info("createViewRequest.Bucket--->", createViewRequest.Bucket)
 	// log.Info("createViewRequest.TimeFieldName--->", createViewRequest.TimeFieldName)
 	// log.Info("createViewRequest.Pattern--->", createViewRequest.Pattern)
@@ -195,7 +185,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	if err := c.CreateView(ctx, createViewRequest); err != nil {
 		return diag.FromErr(err)
 	}
-	
+
 	data.SetId(data.Get("name").(string))
 
 	return resourceObjectGroupRead(ctx, data, meta)
