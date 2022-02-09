@@ -13,6 +13,7 @@ import (
 )
 
 func resourceObjectGroup() *schema.Resource {
+	log.Info("---------------resourceObjectGroup called")
 	return &schema.Resource{
 		CreateContext: resourceObjectGroupCreate,
 		ReadContext:   resourceObjectGroupRead,
