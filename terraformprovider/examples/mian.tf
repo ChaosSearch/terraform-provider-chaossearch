@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 0.1.2"
+      version = "~> 0.1.3"
       source = "chaos/chaossearch"
     }
   }
@@ -20,48 +20,48 @@ provider "chaossearch" {
 }
 
 
-resource "chaossearch_view" "chaossearch-create-view" {
-  bucket="dinesh-tf-004"
-  index_pattern=".*"
-  filter_json=""
-  //array_flatten_depth =-1 
-  case_insensitive=false
-  index_retention =-1
-  transforms=[]
-  sources=["test-object-group"]
-}
+# resource "chaossearch_view" "chaossearch-create-view" {
+#   bucket="dinesh-tf-004"
+#   index_pattern=".*"
+#   filter_json=""
+#   //array_flatten_depth =-1 
+#   case_insensitive=false
+#   index_retention =-1
+#   transforms=[]
+#   sources=["test-object-group"]
+# }
 
 
-#  resource "chaossearch_object_group" "my-object-group" {
-#    name = "dines-object-group-003"
-#    source_bucket = "chaos-test-data-aps1"
-#    live_events_sqs_arn ="arn:aws:sqs:sqs_sqs"
+ resource "chaossearch_object_group" "my-object-group" {
+   name = "nibras-create-group-01"
+   source_bucket = "chaos-test-data-aps1"
+   live_events_sqs_arn ="arn:aws:sqs:sqs_sqs"
 
-#    filter_json = jsonencode({
-#      AND = [
-#        {
-#          field = "key"
-#          regex = ".*"
-#        }
-#      ]
-#    })
+   filter_json = jsonencode({
+     AND = [
+       {
+         field = "key"
+         regex = ".*"
+       }
+     ]
+   })
 
-#    compression = "gzip"
-#    format = "JSON"
+   compression = "gzip"
+   format = "JSON"
 
-#    partition_by = ""
-#    array_flatten_depth = -1
+   partition_by = ""
+   array_flatten_depth = -1
 
-#    keep_original = true
+   keep_original = true
 
-#    column_selection {
-#      type = "whitelist"
-#      includes = [
-#        "host",
-#        "source",
-#      ]
-#    }
-#  }
+   column_selection {
+     type = "whitelist"
+     includes = [
+       "host",
+       "source",
+     ]
+   }
+ }
 
 # resource "chaossearch_indexing_state" "my-object-group" {
 #   object_group_name = chaossearch_object_group.my-object-group.name
