@@ -29,7 +29,7 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 	httpReq.Header.Add("Content-Type", "text/plain")
 
 	// var sessionToken = req.AuthToken
-	// httpReq.Header.Add("x-amz-security-token", req.AuthToken)
+	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
 
 	log.Warn("httpReq-->", httpReq)
 	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
