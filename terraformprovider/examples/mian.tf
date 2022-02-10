@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 0.1.2"
-      source = "chaos/chaossearch"
+      version = "~> 0.1.3"
+      source = "chaossearch/chaossearch"
     }
   }
 }
@@ -21,7 +21,7 @@ provider "chaossearch" {
 
 
 resource "chaossearch_view" "chaossearch-create-view" {
-  bucket="dinesh-tf-004"
+  bucket="dinesh-tf-006"
   index_pattern=".*"
   filter_json=""
   //array_flatten_depth =-1 

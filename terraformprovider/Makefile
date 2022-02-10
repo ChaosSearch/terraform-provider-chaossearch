@@ -1,9 +1,9 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
 HOSTNAME=registry.terraform.io
-NAMESPACE=chaos
+NAMESPACE=chaossearch
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
-VERSION=0.1.60
+VERSION=0.1.63
 # OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 OS_ARCH=$(shell go env GOOS)_arm64
 

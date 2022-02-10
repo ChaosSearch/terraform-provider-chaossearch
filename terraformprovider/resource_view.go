@@ -176,17 +176,15 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	}
 
 	log.Info("createViewRequest.Bucket--->", createViewRequest.Bucket)
-	// log.Info("createViewRequest.TimeFieldName--->", createViewRequest.TimeFieldName)
-	// log.Info("createViewRequest.Pattern--->", createViewRequest.Pattern)
+	
 	log.Info("createViewRequest.IndexRetention--->", createViewRequest.IndexRetention)
 	log.Info("createViewRequest.Cacheable--->", createViewRequest.Cacheable)
-	// log.Info("createViewRequest.Overwrite--->", createViewRequest.Overwrite)
 
 	if err := c.CreateView(ctx, createViewRequest); err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(data.Get("name").(string))
+	data.SetId(data.Get("bucket").(string))
 
 	return resourceObjectGroupRead(ctx, data, meta)
 

@@ -21,7 +21,7 @@ func (client *Client) Auth(ctx context.Context) (token string, err error) {
 	log.Warn("url--", url)
 
 	log.Warn("username--", login_.Username)
-	log.Warn("password--", login_.Password)
+	// log.Warn("password--", login_.Password)
 	log.Warn("parentuserid--", login_.ParentUserId)
 
 	bodyAsBytes, err := marshalLoginRequest(login_)
