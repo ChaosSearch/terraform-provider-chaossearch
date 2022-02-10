@@ -21,14 +21,14 @@ provider "chaossearch" {
 
 
 resource "chaossearch_view" "chaossearch-create-view" {
-  bucket="dinesh-tf-006"
+  bucket="dinesh-tf-008"
   index_pattern=".*"
   filter_json=""
   //array_flatten_depth =-1 
   case_insensitive=false
   index_retention =-1
   transforms=[]
-  sources=["test-object-group"]
+  sources=[]
 }
 
 
