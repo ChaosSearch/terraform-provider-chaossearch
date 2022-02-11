@@ -191,7 +191,8 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 
 	data.SetId(data.Get("name").(string))
 
-	return resourceObjectGroupRead(ctx, data, meta)
+	// return resourceObjectGroupRead(ctx, data, meta)
+	return nil
 }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

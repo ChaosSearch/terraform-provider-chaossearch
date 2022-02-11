@@ -176,7 +176,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	}
 
 	log.Info("createViewRequest.Bucket--->", createViewRequest.Bucket)
-	
+
 	log.Info("createViewRequest.IndexRetention--->", createViewRequest.IndexRetention)
 	log.Info("createViewRequest.Cacheable--->", createViewRequest.Cacheable)
 
@@ -186,8 +186,8 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 	data.SetId(data.Get("bucket").(string))
 
-	return resourceObjectGroupRead(ctx, data, meta)
-
+	// return resourceObjectGroupRead(ctx, data, meta)
+	return nil
 }
 
 func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
