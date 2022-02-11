@@ -28,7 +28,7 @@ resource "chaossearch_view" "chaossearch-create-view" {
   case_insensitive=false
   index_retention =-1
   transforms=[]
-  sources=["test-object-group"]
+  sources=[]
 }
 
 
