@@ -3,17 +3,14 @@ package main
 import (
 	"context"
 	"cs-tf-provider/client"
-	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	log "github.com/sirupsen/logrus"
 )
 
 func resourceObjectGroup() *schema.Resource {
-	log.Info("---------------resourceObjectGroup called")
 	return &schema.Resource{
 		CreateContext: resourceObjectGroupCreate,
 		ReadContext:   resourceObjectGroupRead,
@@ -23,112 +20,107 @@ func resourceObjectGroup() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"bucket": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"source_bucket": {
+			"source": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
 			"format": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"JSON", "LOG"}, false),
-			},
-			"filter_json": {
-				Type:         schema.TypeString,
-				Default:      `[{"field":"key","regex":".*"}]`,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringIsJSON,
-			},
-			"compression": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "",
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"", "gzip", "zlib", "snappy"}, true),
-			},
-			"live_events_sqs_arn": {
-				Type:         schema.TypeString,
-				Default:      "",
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^arn:aws:sqs:.*`), `must be an SQS ARN: "arn:aws:sqs:..."`),
-			},
-			"partition_by": {
-				Type:     schema.TypeString,
-				Default:  "",
-				Optional: true,
-				ForceNew: true,
-			},
-			"pattern": {
-				Type:     schema.TypeString,
-				Default:  ".*",
-				Optional: true,
-				ForceNew: true,
-			},
-			"index_retention": {
-				Type:        schema.TypeInt,
-				Default:     14,
-				Description: "Number of days to keep the data before deleting it",
-				Optional:    true,
-				ForceNew:    false,
-			},
-			"array_flatten_depth": {
-				Type:         schema.TypeInt,
-				Default:      0,
-				Description:  "Array flattening level. 0 - disabled, -1 - unlimited, >1 - the respective flattening level",
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.IntAtLeast(-1),
-			},
-			"column_renames": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Default:     make(map[string]string),
-				ForceNew:    true,
-				Description: "A map specifying names of columns to rename (keys) and what to rename them to (values)",
-			},
-			"keep_original": {
-				Type:        schema.TypeBool,
-				Default:     false,
-				Description: "Works in connection with the `column_selection`, dictates whether to keep the fields filtered out by the column_selection in a separate field",
+				Type:        schema.TypeSet,
 				Optional:    true,
 				ForceNew:    true,
-			},
-			"column_selection": {
-				Type: schema.TypeSet,
+				Description: "",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"type": {
+						"_type": {
 							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+						"column_delimiter": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+						"header_row": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							ForceNew: true,
+						},
+						"row_delimiter": {
+							Type:     schema.TypeString,
+							Optional: true,
+							ForceNew: true,
+						},
+					},
+				},
+			},
+			"index_retention": {
+				Type:        schema.TypeSet,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"for_partition": {
+							Type:     schema.TypeList,
+							Elem: &schema.Schema{
+							  Type: schema.TypeString,
+							},
+							Optional: true,
+						  },
+						"overall": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							ForceNew: true,
+						},
+					},
+				},
+			},
+			"interval": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"column": {
+							Type:     schema.TypeInt,
 							Required: true,
 							ForceNew: true,
 						},
-						"includes": {
-							Type: schema.TypeSet,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
+						"mode": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							ForceNew: true,
+						},
+					},
+				},
+			},
+			"options": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ignore_irregular": {
+							Type:     schema.TypeBool,
 							Required: true,
 							ForceNew: true,
 						},
 					},
 				},
-				Optional:    true,
-				ForceNew:    true,
-				Description: "List of fields in logs to include or exclude from parsing. If nothing is specified, all fields will be parsed",
 			},
-
-			// Workaround. Otherwise Terraform fails with "All fields are ForceNew or Computed w/out Optional, Update is superfluous"
+			"realtime": {
+				Type:        schema.TypeBool,
+				Required:    true,
+				ForceNew:    true,
+				Description: "",
+			},
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -136,73 +128,74 @@ func resourceObjectGroup() *schema.Resource {
 			},
 		},
 	}
+	
 }
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
-	log.Debug("------------------------------------------------------------------------------------------------------------------------")
-	// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
-	// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
-	// We represent "null" as an int pointer to nil in the code.
-	arrayFlattenTF := data.Get("array_flatten_depth").(int)
-	var arrayFlattenCS *int
-	if arrayFlattenTF == -1 {
-		// -1 in terraform represents "null" in the ChaosSearch API call
-		arrayFlattenCS = nil
-	} else {
-		// any other value is passed as is
-		arrayFlattenCS = &arrayFlattenTF
+
+	formatColumnSelectionInterface := data.Get("format").(*schema.Set).List()[0].(map[string]interface{})
+	intervalColumnSelectionInterface := data.Get("interval").(*schema.Set).List()[0].(map[string]interface{})
+	indexRetentionColumnSelectionInterface := data.Get("index_retention").(*schema.Set).List()[0].(map[string]interface{})
+	optionsColumnSelectionInterface := data.Get("options").(*schema.Set).List()[0].(map[string]interface{})
+
+	format := client.Format{
+		Type:            formatColumnSelectionInterface["_type"].(string),
+		ColumnDelimiter: formatColumnSelectionInterface["column_delimiter"].(string),
+		RowDelimiter:    formatColumnSelectionInterface["row_delimiter"].(string),
+		HeaderRow:       formatColumnSelectionInterface["header_row"].(bool),
 	}
-	var columnSelection map[string]interface{}
 
-	if data.Get("column_selection").(*schema.Set).Len() > 0 {
-		columnSelectionInterfaces := data.Get("column_selection").(*schema.Set).List()[0]
-		columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
+	interval := client.Interval{
+		Mode:   intervalColumnSelectionInterface["mode"].(int),
+		Column: intervalColumnSelectionInterface["column"].(int),
+	}
 
-		includesListOfInterfaces := columnSelectionInterface["includes"].(*schema.Set).List()
+	indexRetention := client.IndexRetention{
+		ForPartition: indexRetentionColumnSelectionInterface["for_partition"].([]interface {}),
+		Overall:      indexRetentionColumnSelectionInterface["overall"].(int),
+	}
 
-		columnSelection = map[string]interface{}{
-			"type":     columnSelectionInterface["type"].(string),
-			"includes": includesListOfInterfaces,
-		}
+	options := client.Options{
+		IgnoreIrregular: optionsColumnSelectionInterface["ignore_irregular"].(bool),
 	}
 
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
-		Name:              data.Get("name").(string),
-		SourceBucket:      data.Get("source_bucket").(string),
-		FilterJSON:        data.Get("filter_json").(string),
-		Format:            data.Get("format").(string),
-		Compression:       data.Get("compression").(string),
-		LiveEventsSqsArn:  data.Get("live_events_sqs_arn").(string),
-		PartitionBy:       data.Get("partition_by").(string),
-		Pattern:           data.Get("pattern").(string),
-		IndexRetention:    data.Get("index_retention").(int),
-		KeepOriginal:      data.Get("keep_original").(bool),
-		ArrayFlattenDepth: arrayFlattenCS,
-		ColumnRenames:     data.Get("column_renames").(map[string]interface{}),
-		ColumnSelection:   columnSelection,
+		Bucket:         data.Get("bucket").(string),
+		Source:         data.Get("source").(string),
+		Format:         &format,
+		Interval:       &interval,
+		IndexRetention: &indexRetention,
+		// //Filter:         data.Get("filter").(*[]client.Filter),
+		Options:  &options,
+		Realtime: data.Get("realtime").(bool),
 	}
-	log.Info("createObjectGroupRequest name----->", createObjectGroupRequest.Name)
-	log.Info("createObjectGroupRequest SourceBucket----->", createObjectGroupRequest.SourceBucket)
 
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {
 		return diag.FromErr(err)
 	}
-
-	data.SetId(data.Get("name").(string))
-
-	return resourceObjectGroupRead(ctx, data, meta)
+	return nil
 }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	log.Info("called READ")
+
+	log.Info("11111111111111111111")
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).Client
+
+	log.Info("22222222222222")
 
 	req := &client.ReadObjectGroupRequest{
 		ID: data.Id(),
 	}
+
+	log.Info("33333333333333")
+
 	log.Warn("req---->", req)
 	resp, err := c.ReadObjectGroup(ctx, req)
+	log.Info("4444444444444")
+
 	if err != nil {
 		return diag.Errorf("Failed to read object group: %s", err)
 	}

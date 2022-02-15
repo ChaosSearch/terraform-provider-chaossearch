@@ -186,9 +186,10 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	data.SetId(data.Get("name").(string))
+	data.SetId(data.Get("bucket").(string))
 
-	return resourceObjectGroupRead(ctx, data, meta)
+	//return resourceObjectGroupRead(ctx, data, meta)
+	return nil
 
 }
 
