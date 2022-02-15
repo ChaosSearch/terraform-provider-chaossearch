@@ -1,21 +1,22 @@
+
 terraform {
   required_providers {
     chaossearch = {
       version = "~> 0.1.2"
-      source = "chaossearch/chaossearch"
+      source  = "chaossearch/chaossearch"
     }
   }
 }
 provider "chaossearch" {
-    url               = "https://ap-south-1-aeternum.chaossearch.io"
-    access_key_id     = "LCE8T6HRFGJI3ZKBGMGD"
-    secret_access_key = "r5MEYkYntYvXqRSBMK6SFLQfPw7hHRQ0v5cqlkIk"
-    region            = "ap-south-1"
-    login  {
-      user_name = "service_user@chaossearch.com"
-      password = "thisIsAnEx@mple1!"
-      parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
-    }
+  url               = "https://ap-south-1-aeternum.chaossearch.io"
+  access_key_id     = "LCE8T6HRFGJI3ZKBGMGD"
+  secret_access_key = "r5MEYkYntYvXqRSBMK6SFLQfPw7hHRQ0v5cqlkIk"
+  region            = "ap-south-1"
+  login {
+    user_name      = "service_user@chaossearch.com"
+    password       = "thisIsAnEx@mple1!"
+    parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
+  }
 
 }
 
@@ -29,24 +30,49 @@ resource "chaossearch_view" "chaossearch-create-view" {
   # index_retention =-1
   # transforms=[]
   # sources=[]
-   bucket= "test-view-name-new90-90"
-    sources= []
-    index_pattern= ".*"
-    overwrite= true
-    case_insensitive= true
-    index_retention= -1
-    time_field_name= "@timestamp"
-    transforms= []
-    filter {
-            predicate{
-                    field= "cs_partition_key_0"
-                    query= "bluebike"
-                    state {
-                        _type= "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
-                    }
-                    _type= "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
-                }
+  # bucket= "test-view-name-new90-vscode"
+  # sources= []
+  # index_pattern= ".*"
+  # overwrite= true
+  # case_insensitive= true
+  # index_retention= -1
+  # time_field_name= "@timestamp"
+  # transforms= []
+  # filter {
+  #         predicate{
+  #                 field= "cs_partition_key_0"
+  #                 query= "bluebike"
+  #                 state {
+  #                     _type= "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+  #                 }
+  #                 _type= "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+  #             }
+  #     }
+
+  bucket = "chathurah-view-new-90-vs"
+
+  case_insensitive = false
+
+  index_pattern   = ".*"
+  index_retention = -1
+  overwrite       = true
+  sources         = []
+  time_field_name = "@timestamp"
+  transforms      = []
+  filter {
+    predicate {
+      _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
+      pred {
+        _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+        field = "cs_partition_key_0"
+        query = "*bluebike*"
+        state {
+          _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
         }
+      }
+    }
+
+  }
 }
 
 

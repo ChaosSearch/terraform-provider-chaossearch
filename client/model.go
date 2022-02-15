@@ -1,5 +1,10 @@
 package client
 
+import (
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
 type Bucket struct {
 	Name         string `xml:"Name"`
 	CreationDate string `xml:"CreationDate"`
@@ -99,16 +104,21 @@ type RequestHeaders struct {
 }
 
 type Filter struct {
-	Predicate *Predicate
+	Predicate *Predicate `json:"predicate"`
+}
+
+type Pred struct {
+	Field string `json:"field"`
+	Query string `json:"query"`
+	State State `json:"state"`
+	Type_ string `json:"_type"`
 }
 
 type Predicate struct {
-	Field string
-	Query string
-	State *State
-	Type_ string
+	Pred  Pred `json:"pred"`
+	Type_ string `json:"_type"`
 }
 
 type State struct {
-	Type_ string
+	Type_ string `json:"_type"`
 }
