@@ -1,136 +1,133 @@
-2022-02-15T19:25:25.010+0530 [INFO]  Terraform version: 1.1.4
-2022-02-15T19:25:25.010+0530 [INFO]  Go runtime version: go1.17.2
-2022-02-15T19:25:25.010+0530 [INFO]  CLI args: []string{"terraform", "init", "--upgrade"}
-2022-02-15T19:25:25.010+0530 [DEBUG] Attempting to open CLI config file: /Users/nibrassameeh/.terraformrc
-2022-02-15T19:25:25.010+0530 [INFO]  Loading CLI configuration from /Users/nibrassameeh/.terraformrc
-2022-02-15T19:25:25.011+0530 [DEBUG] checking for credentials in "/Users/nibrassameeh/.terraform.d/plugins"
-2022-02-15T19:25:25.011+0530 [DEBUG] ignoring non-existing provider search directory terraform.d/plugins
-2022-02-15T19:25:25.011+0530 [DEBUG] will search for provider plugins in /Users/nibrassameeh/.terraform.d/plugins
-2022-02-15T19:25:25.014+0530 [DEBUG] ignoring non-existing provider search directory /Users/nibrassameeh/Library/Application Support/io.terraform/plugins
-2022-02-15T19:25:25.014+0530 [DEBUG] ignoring non-existing provider search directory /Library/Application Support/io.terraform/plugins
-2022-02-15T19:25:25.014+0530 [INFO]  Checkpoint disabled. Not running.
-2022-02-15T19:25:25.015+0530 [INFO]  CLI command args: []string{"init", "--upgrade"}
-2022-02-15T19:25:25.018+0530 [DEBUG] New state was assigned lineage "8cef5c64-68ff-a2f7-a0c6-cf76e8a4f27b"
-2022-02-15T19:25:25.018+0530 [DEBUG] checking for provisioner in "."
-2022-02-15T19:25:25.019+0530 [DEBUG] checking for provisioner in "/opt/homebrew/bin"
-2022-02-15T19:25:25.019+0530 [DEBUG] checking for provisioner in "/Users/nibrassameeh/.terraform.d/plugins"
-2022-02-15T19:25:25.020+0530 [WARN]  failed to read metadata about /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.53/darwin_arm64: stat /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.53/darwin_arm64: no such file or directory
-2022-02-15T19:25:25.020+0530 [WARN]  failed to read metadata about /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.56/darwin_arm64: stat /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.56/darwin_arm64: no such file or directory
-2022-02-15T19:25:25.020+0530 [WARN]  failed to read metadata about /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.60/darwin_arm64: stat /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.60/darwin_arm64: no such file or directory
-2022-02-15T19:25:25.021+0530 [WARN]  failed to read metadata about /Users/nibrassameeh/.terraform.d/plugin-cache/terraform-example.com/exampleprovider/example/1.0.0/darwin_arm64: stat /Users/nibrassameeh/.terraform.d/plugin-cache/terraform-example.com/exampleprovider/example/1.0.0/darwin_arm64: no such file or directory
-2022-02-15T19:25:25.065+0530 [INFO]  Terraform version: 1.1.4
-2022-02-15T19:25:25.065+0530 [INFO]  Go runtime version: go1.17.2
-2022-02-15T19:25:25.065+0530 [INFO]  CLI args: []string{"terraform", "apply", "-auto-approve"}
-2022-02-15T19:25:25.065+0530 [DEBUG] Attempting to open CLI config file: /Users/nibrassameeh/.terraformrc
-2022-02-15T19:25:25.065+0530 [INFO]  Loading CLI configuration from /Users/nibrassameeh/.terraformrc
-2022-02-15T19:25:25.065+0530 [DEBUG] checking for credentials in "/Users/nibrassameeh/.terraform.d/plugins"
-2022-02-15T19:25:25.065+0530 [DEBUG] ignoring non-existing provider search directory terraform.d/plugins
-2022-02-15T19:25:25.065+0530 [DEBUG] will search for provider plugins in /Users/nibrassameeh/.terraform.d/plugins
-2022-02-15T19:25:25.066+0530 [DEBUG] ignoring non-existing provider search directory /Users/nibrassameeh/Library/Application Support/io.terraform/plugins
-2022-02-15T19:25:25.066+0530 [DEBUG] ignoring non-existing provider search directory /Library/Application Support/io.terraform/plugins
-2022-02-15T19:25:25.066+0530 [INFO]  Checkpoint disabled. Not running.
-2022-02-15T19:25:25.066+0530 [INFO]  CLI command args: []string{"apply", "-auto-approve"}
-2022-02-15T19:25:25.067+0530 [DEBUG] New state was assigned lineage "a630b496-7a57-7677-4697-0b6348dacac0"
-2022-02-15T19:25:25.081+0530 [DEBUG] checking for provisioner in "."
-2022-02-15T19:25:25.082+0530 [DEBUG] checking for provisioner in "/opt/homebrew/bin"
-2022-02-15T19:25:25.082+0530 [DEBUG] checking for provisioner in "/Users/nibrassameeh/.terraform.d/plugins"
-2022-02-15T19:25:25.082+0530 [INFO]  backend/local: starting Apply operation
-2022-02-15T19:25:25.084+0530 [DEBUG] created provider logger: level=debug
-2022-02-15T19:25:25.084+0530 [INFO]  provider: configuring client automatic mTLS
-2022-02-15T19:25:25.092+0530 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch args=[.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch]
-2022-02-15T19:25:25.094+0530 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=85453
-2022-02-15T19:25:25.094+0530 [DEBUG] provider: waiting for RPC address: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch
-time="15-02-2022 19:25:25" level=info msg="called resourceObjectGroup"
-2022-02-15T19:25:25.807+0530 [INFO]  provider.terraform-provider-chaossearch: configuring server automatic mTLS: timestamp=2022-02-15T19:25:25.807+0530
-2022-02-15T19:25:25.818+0530 [DEBUG] provider.terraform-provider-chaossearch: plugin address: address=/var/folders/n_/1j0pt10j7c53q91p6hqyh5vr0000gn/T/plugin2445893536 network=unix timestamp=2022-02-15T19:25:25.818+0530
-2022-02-15T19:25:25.818+0530 [DEBUG] provider: using plugin: version=5
-2022-02-15T19:25:25.835+0530 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = transport is closing"
-2022-02-15T19:25:25.835+0530 [DEBUG] provider: plugin process exited: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=85453
-2022-02-15T19:25:25.835+0530 [DEBUG] provider: plugin exited
-2022-02-15T19:25:25.836+0530 [DEBUG] Building and walking validate graph
-2022-02-15T19:25:25.836+0530 [DEBUG] ProviderTransformer: "chaossearch_object_group.my-object-group" (*terraform.NodeValidatableResource) needs provider["registry.terraform.io/chaossearch/chaossearch"]
-2022-02-15T19:25:25.836+0530 [DEBUG] ReferenceTransformer: "chaossearch_object_group.my-object-group" references: []
-2022-02-15T19:25:25.836+0530 [DEBUG] ReferenceTransformer: "provider[\"registry.terraform.io/chaossearch/chaossearch\"]" references: []
-2022-02-15T19:25:25.836+0530 [DEBUG] Starting graph walk: walkValidate
-2022-02-15T19:25:25.837+0530 [DEBUG] created provider logger: level=debug
-2022-02-15T19:25:25.837+0530 [INFO]  provider: configuring client automatic mTLS
-2022-02-15T19:25:25.845+0530 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch args=[.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch]
-2022-02-15T19:25:25.847+0530 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=85455
-2022-02-15T19:25:25.847+0530 [DEBUG] provider: waiting for RPC address: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch
-time="15-02-2022 19:25:25" level=info msg="called resourceObjectGroup"
-2022-02-15T19:25:25.856+0530 [INFO]  provider.terraform-provider-chaossearch: configuring server automatic mTLS: timestamp=2022-02-15T19:25:25.856+0530
-2022-02-15T19:25:25.863+0530 [DEBUG] provider: using plugin: version=5
-2022-02-15T19:25:25.863+0530 [DEBUG] provider.terraform-provider-chaossearch: plugin address: address=/var/folders/n_/1j0pt10j7c53q91p6hqyh5vr0000gn/T/plugin3216408109 network=unix timestamp=2022-02-15T19:25:25.863+0530
-2022-02-15T19:25:25.876+0530 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = transport is closing"
-2022-02-15T19:25:25.877+0530 [DEBUG] provider: plugin process exited: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=85455
-2022-02-15T19:25:25.877+0530 [DEBUG] provider: plugin exited
-2022-02-15T19:25:25.877+0530 [INFO]  backend/local: apply calling Plan
-2022-02-15T19:25:25.877+0530 [DEBUG] Building and walking plan graph for NormalMode
-2022-02-15T19:25:25.877+0530 [DEBUG] ProviderTransformer: "chaossearch_object_group.my-object-group (expand)" (*terraform.nodeExpandPlannableResource) needs provider["registry.terraform.io/chaossearch/chaossearch"]
-2022-02-15T19:25:25.877+0530 [DEBUG] ReferenceTransformer: "provider[\"registry.terraform.io/chaossearch/chaossearch\"]" references: []
-2022-02-15T19:25:25.877+0530 [DEBUG] ReferenceTransformer: "chaossearch_object_group.my-object-group (expand)" references: []
-2022-02-15T19:25:25.877+0530 [DEBUG] Starting graph walk: walkPlan
-2022-02-15T19:25:25.877+0530 [DEBUG] created provider logger: level=debug
-2022-02-15T19:25:25.878+0530 [INFO]  provider: configuring client automatic mTLS
-2022-02-15T19:25:25.884+0530 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch args=[.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch]
-2022-02-15T19:25:25.886+0530 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=85456
-2022-02-15T19:25:25.886+0530 [DEBUG] provider: waiting for RPC address: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch
-time="15-02-2022 19:25:25" level=info msg="called resourceObjectGroup"
-2022-02-15T19:25:25.895+0530 [INFO]  provider.terraform-provider-chaossearch: configuring server automatic mTLS: timestamp=2022-02-15T19:25:25.894+0530
-2022-02-15T19:25:25.901+0530 [DEBUG] provider: using plugin: version=5
-2022-02-15T19:25:25.901+0530 [DEBUG] provider.terraform-provider-chaossearch: plugin address: address=/var/folders/n_/1j0pt10j7c53q91p6hqyh5vr0000gn/T/plugin2718729387 network=unix timestamp=2022-02-15T19:25:25.901+0530
-time="15-02-2022 19:25:25" level=warning msg="url--https://ap-south-1-aeternum.chaossearch.io/user/login"
-time="15-02-2022 19:25:25" level=warning msg=username--service_user@chaossearch.com
-time="15-02-2022 19:25:25" level=warning msg="password--thisIsAnEx@mple1!"
-time="15-02-2022 19:25:25" level=warning msg=parentuserid--be4aeb53-21d5-4902-862c-9c9a17ad6675
-time="15-02-2022 19:25:25" level=warning msg=req.Sources----service_user@chaossearch.com
-time="15-02-2022 19:25:25" level=warning msg="body---->>map[ParentUid:be4aeb53-21d5-4902-862c-9c9a17ad6675 Password:thisIsAnEx@mple1! Username:service_user@chaossearch.com]"
-time="15-02-2022 19:25:25" level=warning msg=marshalling--3
-time="15-02-2022 19:25:25" level=debug msg=" adding headers..."
-time="15-02-2022 19:25:27" level=debug msg="authResponseString-->{\"Token\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJTZWNyZXRBY2Nlc3NLZXkiOiJ5aWt4S3ZYQWE4b0NJK0VqUnYydjhBUXMxRU8rWWVUaTNoMXRhUXAwIiwiZXBvY2giOjE2NDQxMTUwNzM4NzEsImV4dGVybmFsX2lkIjoiYmU0YWViNTMtMjFkNS00OTAyLTg2MmMtOWM5YTE3YWQ2Njc1IiwiQ1NSb2xlIjoidXNlciIsIlJlcXVlc3RVc2VyIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImF3c19hY2NvdW50X2lkIjoiNzY3Mzk2NjcxNzMyIiwiVXNlcm5hbWUiOiJzZXJ2aWNlX3VzZXJAY2hhb3NzZWFyY2guY29tIiwiQWNjZXNzS2V5SWQiOiJQTUNMV1dQSFFDV0dIU1VLWTZCSyIsIlNlcnZpY2VUeXBlIjoiUHJlbWl1bSIsIm5hbWUiOiJzZXJ2aWNlX3VzZXIiLCJQcmltYXJ5VXNlciI6ImFldGVybnVtQGNoYW9zc2VhcmNoLmNvbSIsIndvcmtlci1xdW90YV9hcC1zb3V0aC0xIjoyNDAsIkxvZ2luVHlwZSI6ImFsaWFzIiwiZXhwIjoxNjQ1MDE5NzI3LCJpYXQiOjE2NDQ5MzMzMjcsImVtYWlsIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImp0aSI6ImM1YWE4ZWM3LThiNzItNDMyNi04NzE2LTFmNDNiMjIxYzMxZiJ9.2KEtKfSsLWuN0ffLximDktsVam-6a03_94LWe7aecjA\"}"
-2022-02-15T19:25:27.674+0530 [WARN]  unexpected data: registry.terraform.io/chaossearch/chaossearch:stdout={"Token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJTZWNyZXRBY2Nlc3NLZXkiOiJ5aWt4S3ZYQWE4b0NJK0VqUnYydjhBUXMxRU8rWWVUaTNoMXRhUXAwIiwiZXBvY2giOjE2NDQxMTUwNzM4NzEsImV4dGVybmFsX2lkIjoiYmU0YWViNTMtMjFkNS00OTAyLTg2MmMtOWM5YTE3YWQ2Njc1IiwiQ1NSb2xlIjoidXNlciIsIlJlcXVlc3RVc2VyIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImF3c19hY2NvdW50X2lkIjoiNzY3Mzk2NjcxNzMyIiwiVXNlcm5hbWUiOiJzZXJ2aWNlX3VzZXJAY2hhb3NzZWFyY2guY29tIiwiQWNjZXNzS2V5SWQiOiJQTUNMV1dQSFFDV0dIU1VLWTZCSyIsIlNlcnZpY2VUeXBlIjoiUHJlbWl1bSIsIm5hbWUiOiJzZXJ2aWNlX3VzZXIiLCJQcmltYXJ5VXNlciI6ImFldGVybnVtQGNoYW9zc2VhcmNoLmNvbSIsIndvcmtlci1xdW90YV9hcC1zb3V0aC0xIjoyNDAsIkxvZ2luVHlwZSI6ImFsaWFzIiwiZXhwIjoxNjQ1MDE5NzI3LCJpYXQiOjE2NDQ5MzMzMjcsImVtYWlsIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImp0aSI6ImM1YWE4ZWM3LThiNzItNDMyNi04NzE2LTFmNDNiMjIxYzMxZiJ9.2KEtKfSsLWuN0ffLximDktsVam-6a03_94LWe7aecjA"}
-2022-02-15T19:25:27.676+0530 [DEBUG] Resource instance state not found for node "chaossearch_object_group.my-object-group", instance chaossearch_object_group.my-object-group
-2022-02-15T19:25:27.676+0530 [DEBUG] ReferenceTransformer: "chaossearch_object_group.my-object-group" references: []
-2022-02-15T19:25:27.676+0530 [DEBUG] refresh: chaossearch_object_group.my-object-group: no state, so not refreshing
-2022-02-15T19:25:27.683+0530 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = transport is closing"
-2022-02-15T19:25:27.685+0530 [DEBUG] provider: plugin process exited: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=85456
-2022-02-15T19:25:27.685+0530 [DEBUG] provider: plugin exited
-2022-02-15T19:25:27.686+0530 [INFO]  backend/local: apply calling Apply
-2022-02-15T19:25:27.686+0530 [DEBUG] Building and walking apply graph for NormalMode plan
-2022-02-15T19:25:27.686+0530 [DEBUG] Resource state not found for node "chaossearch_object_group.my-object-group", instance chaossearch_object_group.my-object-group
-2022-02-15T19:25:27.687+0530 [DEBUG] ProviderTransformer: "chaossearch_object_group.my-object-group (expand)" (*terraform.nodeExpandApplyableResource) needs provider["registry.terraform.io/chaossearch/chaossearch"]
-2022-02-15T19:25:27.687+0530 [DEBUG] ProviderTransformer: "chaossearch_object_group.my-object-group" (*terraform.NodeApplyableResourceInstance) needs provider["registry.terraform.io/chaossearch/chaossearch"]
-2022-02-15T19:25:27.687+0530 [DEBUG] ReferenceTransformer: "provider[\"registry.terraform.io/chaossearch/chaossearch\"]" references: []
-2022-02-15T19:25:27.687+0530 [DEBUG] ReferenceTransformer: "chaossearch_object_group.my-object-group (expand)" references: []
-2022-02-15T19:25:27.687+0530 [DEBUG] ReferenceTransformer: "chaossearch_object_group.my-object-group" references: []
-2022-02-15T19:25:27.687+0530 [DEBUG] Starting graph walk: walkApply
-2022-02-15T19:25:27.688+0530 [DEBUG] created provider logger: level=debug
-2022-02-15T19:25:27.688+0530 [INFO]  provider: configuring client automatic mTLS
-2022-02-15T19:25:27.699+0530 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch args=[.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch]
-2022-02-15T19:25:27.701+0530 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=85459
-2022-02-15T19:25:27.702+0530 [DEBUG] provider: waiting for RPC address: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch
-time="15-02-2022 19:25:27" level=info msg="called resourceObjectGroup"
-2022-02-15T19:25:27.714+0530 [INFO]  provider.terraform-provider-chaossearch: configuring server automatic mTLS: timestamp=2022-02-15T19:25:27.714+0530
-2022-02-15T19:25:27.723+0530 [DEBUG] provider: using plugin: version=5
-2022-02-15T19:25:27.723+0530 [DEBUG] provider.terraform-provider-chaossearch: plugin address: address=/var/folders/n_/1j0pt10j7c53q91p6hqyh5vr0000gn/T/plugin438067581 network=unix timestamp=2022-02-15T19:25:27.723+0530
-time="15-02-2022 19:25:27" level=warning msg="url--https://ap-south-1-aeternum.chaossearch.io/user/login"
-time="15-02-2022 19:25:27" level=warning msg=username--service_user@chaossearch.com
-time="15-02-2022 19:25:27" level=warning msg="password--thisIsAnEx@mple1!"
-time="15-02-2022 19:25:27" level=warning msg=parentuserid--be4aeb53-21d5-4902-862c-9c9a17ad6675
-time="15-02-2022 19:25:27" level=warning msg=req.Sources----service_user@chaossearch.com
-time="15-02-2022 19:25:27" level=warning msg="body---->>map[ParentUid:be4aeb53-21d5-4902-862c-9c9a17ad6675 Password:thisIsAnEx@mple1! Username:service_user@chaossearch.com]"
-time="15-02-2022 19:25:27" level=warning msg=marshalling--3
-time="15-02-2022 19:25:27" level=debug msg=" adding headers..."
-time="15-02-2022 19:25:29" level=debug msg="authResponseString-->{\"Token\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJTZWNyZXRBY2Nlc3NLZXkiOiJIYjNxMEYvYWh2UkRBbnVNZDRyWnZCZ1N2MHJVdmQ5M2lIdFBBZGdNIiwiZXBvY2giOjE2NDQxMTUwNzM4NzEsImV4dGVybmFsX2lkIjoiYmU0YWViNTMtMjFkNS00OTAyLTg2MmMtOWM5YTE3YWQ2Njc1IiwiQ1NSb2xlIjoidXNlciIsIlJlcXVlc3RVc2VyIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImF3c19hY2NvdW50X2lkIjoiNzY3Mzk2NjcxNzMyIiwiVXNlcm5hbWUiOiJzZXJ2aWNlX3VzZXJAY2hhb3NzZWFyY2guY29tIiwiQWNjZXNzS2V5SWQiOiIyWDlKWUNQUlFXWjNZVkhRNkk4OSIsIlNlcnZpY2VUeXBlIjoiUHJlbWl1bSIsIm5hbWUiOiJzZXJ2aWNlX3VzZXIiLCJQcmltYXJ5VXNlciI6ImFldGVybnVtQGNoYW9zc2VhcmNoLmNvbSIsIndvcmtlci1xdW90YV9hcC1zb3V0aC0xIjoyNDAsIkxvZ2luVHlwZSI6ImFsaWFzIiwiZXhwIjoxNjQ1MDE5NzI5LCJpYXQiOjE2NDQ5MzMzMjksImVtYWlsIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImp0aSI6Ijg0NTgwY2JiLTcyNWEtNGJiZi05OTBmLWU5M2UyMzhlNTYwMCJ9.wLQkIo13S6_tyDsakxgmiN-gbJFzujhFDikr0nfF_0I\"}"
-2022-02-15T19:25:29.063+0530 [WARN]  unexpected data: registry.terraform.io/chaossearch/chaossearch:stdout={"Token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJTZWNyZXRBY2Nlc3NLZXkiOiJIYjNxMEYvYWh2UkRBbnVNZDRyWnZCZ1N2MHJVdmQ5M2lIdFBBZGdNIiwiZXBvY2giOjE2NDQxMTUwNzM4NzEsImV4dGVybmFsX2lkIjoiYmU0YWViNTMtMjFkNS00OTAyLTg2MmMtOWM5YTE3YWQ2Njc1IiwiQ1NSb2xlIjoidXNlciIsIlJlcXVlc3RVc2VyIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImF3c19hY2NvdW50X2lkIjoiNzY3Mzk2NjcxNzMyIiwiVXNlcm5hbWUiOiJzZXJ2aWNlX3VzZXJAY2hhb3NzZWFyY2guY29tIiwiQWNjZXNzS2V5SWQiOiIyWDlKWUNQUlFXWjNZVkhRNkk4OSIsIlNlcnZpY2VUeXBlIjoiUHJlbWl1bSIsIm5hbWUiOiJzZXJ2aWNlX3VzZXIiLCJQcmltYXJ5VXNlciI6ImFldGVybnVtQGNoYW9zc2VhcmNoLmNvbSIsIndvcmtlci1xdW90YV9hcC1zb3V0aC0xIjoyNDAsIkxvZ2luVHlwZSI6ImFsaWFzIiwiZXhwIjoxNjQ1MDE5NzI5LCJpYXQiOjE2NDQ5MzMzMjksImVtYWlsIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImp0aSI6Ijg0NTgwY2JiLTcyNWEtNGJiZi05OTBmLWU5M2UyMzhlNTYwMCJ9.wLQkIo13S6_tyDsakxgmiN-gbJFzujhFDikr0nfF_0I"}
-2022-02-15T19:25:29.072+0530 [INFO]  Starting apply for chaossearch_object_group.my-object-group
-2022-02-15T19:25:29.073+0530 [DEBUG] chaossearch_object_group.my-object-group: applying the planned Create change
-time="15-02-2022 19:25:29" level=info msg="called resourceObjectGroupCreate"
-time="15-02-2022 19:25:29" level=info msg="marshal obj1 = &{0x104b34620 map[2586591466:map[field:key prefix:bluebike]] {1 {0 0}}}"
-time="15-02-2022 19:25:29" level=info msg="req body = map[bucket:nibras-create-object-vs-code-10 filter:[0x140006473e0 0x140006474a0] format:map[_type:CSV columnDelimiter:, headerRow:true rowDelimiter:\n] indexRetention:map[forPartition:[] overall:-1] interval:map[column:0 mode:0] options:map[ignoreIrregular:true] realtime:false source:chaos-test-data-aps1]"
-time="15-02-2022 19:25:29" level=info msg=1111111111111111111
-time="15-02-2022 19:25:29" level=info msg=222222222222222
-2022-02-15T19:25:29.096+0530 [ERROR] vertex "chaossearch_object_group.my-object-group" error: json: unsupported type: schema.SchemaSetFunc
-2022-02-15T19:25:29.118+0530 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = transport is closing"
-2022-02-15T19:25:29.120+0530 [DEBUG] provider: plugin process exited: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=85459
-2022-02-15T19:25:29.120+0530 [DEBUG] provider: plugin exited
+2022-02-15T22:50:15.092+0530 [INFO]  Terraform version: 1.1.4
+2022-02-15T22:50:15.092+0530 [INFO]  Go runtime version: go1.17.2
+2022-02-15T22:50:15.093+0530 [INFO]  CLI args: []string{"terraform", "init", "--upgrade"}
+2022-02-15T22:50:15.093+0530 [DEBUG] Attempting to open CLI config file: /Users/nibrassameeh/.terraformrc
+2022-02-15T22:50:15.093+0530 [INFO]  Loading CLI configuration from /Users/nibrassameeh/.terraformrc
+2022-02-15T22:50:15.094+0530 [DEBUG] checking for credentials in "/Users/nibrassameeh/.terraform.d/plugins"
+2022-02-15T22:50:15.094+0530 [DEBUG] ignoring non-existing provider search directory terraform.d/plugins
+2022-02-15T22:50:15.094+0530 [DEBUG] will search for provider plugins in /Users/nibrassameeh/.terraform.d/plugins
+2022-02-15T22:50:15.097+0530 [DEBUG] ignoring non-existing provider search directory /Users/nibrassameeh/Library/Application Support/io.terraform/plugins
+2022-02-15T22:50:15.097+0530 [DEBUG] ignoring non-existing provider search directory /Library/Application Support/io.terraform/plugins
+2022-02-15T22:50:15.098+0530 [INFO]  Checkpoint disabled. Not running.
+2022-02-15T22:50:15.098+0530 [INFO]  CLI command args: []string{"init", "--upgrade"}
+2022-02-15T22:50:15.102+0530 [DEBUG] New state was assigned lineage "b5d6ad95-2f66-007b-4b5a-942625d54d6e"
+2022-02-15T22:50:15.102+0530 [DEBUG] checking for provisioner in "."
+2022-02-15T22:50:15.103+0530 [DEBUG] checking for provisioner in "/opt/homebrew/bin"
+2022-02-15T22:50:15.103+0530 [DEBUG] checking for provisioner in "/Users/nibrassameeh/.terraform.d/plugins"
+2022-02-15T22:50:15.104+0530 [WARN]  failed to read metadata about /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.53/darwin_arm64: stat /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.53/darwin_arm64: no such file or directory
+2022-02-15T22:50:15.105+0530 [WARN]  failed to read metadata about /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.56/darwin_arm64: stat /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.56/darwin_arm64: no such file or directory
+2022-02-15T22:50:15.105+0530 [WARN]  failed to read metadata about /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.60/darwin_arm64: stat /Users/nibrassameeh/.terraform.d/plugin-cache/registry.terraform.io/chaos/chaossearch/0.1.60/darwin_arm64: no such file or directory
+2022-02-15T22:50:15.106+0530 [WARN]  failed to read metadata about /Users/nibrassameeh/.terraform.d/plugin-cache/terraform-example.com/exampleprovider/example/1.0.0/darwin_arm64: stat /Users/nibrassameeh/.terraform.d/plugin-cache/terraform-example.com/exampleprovider/example/1.0.0/darwin_arm64: no such file or directory
+2022-02-15T22:50:15.150+0530 [INFO]  Terraform version: 1.1.4
+2022-02-15T22:50:15.150+0530 [INFO]  Go runtime version: go1.17.2
+2022-02-15T22:50:15.150+0530 [INFO]  CLI args: []string{"terraform", "apply", "-auto-approve"}
+2022-02-15T22:50:15.150+0530 [DEBUG] Attempting to open CLI config file: /Users/nibrassameeh/.terraformrc
+2022-02-15T22:50:15.150+0530 [INFO]  Loading CLI configuration from /Users/nibrassameeh/.terraformrc
+2022-02-15T22:50:15.150+0530 [DEBUG] checking for credentials in "/Users/nibrassameeh/.terraform.d/plugins"
+2022-02-15T22:50:15.150+0530 [DEBUG] ignoring non-existing provider search directory terraform.d/plugins
+2022-02-15T22:50:15.150+0530 [DEBUG] will search for provider plugins in /Users/nibrassameeh/.terraform.d/plugins
+2022-02-15T22:50:15.151+0530 [DEBUG] ignoring non-existing provider search directory /Users/nibrassameeh/Library/Application Support/io.terraform/plugins
+2022-02-15T22:50:15.151+0530 [DEBUG] ignoring non-existing provider search directory /Library/Application Support/io.terraform/plugins
+2022-02-15T22:50:15.151+0530 [INFO]  Checkpoint disabled. Not running.
+2022-02-15T22:50:15.151+0530 [INFO]  CLI command args: []string{"apply", "-auto-approve"}
+2022-02-15T22:50:15.152+0530 [DEBUG] New state was assigned lineage "6424a7df-60f9-b0d5-64db-c303d4ad389e"
+2022-02-15T22:50:15.165+0530 [DEBUG] checking for provisioner in "."
+2022-02-15T22:50:15.165+0530 [DEBUG] checking for provisioner in "/opt/homebrew/bin"
+2022-02-15T22:50:15.165+0530 [DEBUG] checking for provisioner in "/Users/nibrassameeh/.terraform.d/plugins"
+2022-02-15T22:50:15.166+0530 [INFO]  backend/local: starting Apply operation
+2022-02-15T22:50:15.167+0530 [DEBUG] created provider logger: level=debug
+2022-02-15T22:50:15.167+0530 [INFO]  provider: configuring client automatic mTLS
+2022-02-15T22:50:15.176+0530 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch args=[.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch]
+2022-02-15T22:50:15.178+0530 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=92304
+2022-02-15T22:50:15.178+0530 [DEBUG] provider: waiting for RPC address: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch
+time="15-02-2022 22:50:15" level=info msg="called resourceObjectGroup"
+2022-02-15T22:50:15.904+0530 [INFO]  provider.terraform-provider-chaossearch: configuring server automatic mTLS: timestamp=2022-02-15T22:50:15.904+0530
+2022-02-15T22:50:15.914+0530 [DEBUG] provider.terraform-provider-chaossearch: plugin address: address=/var/folders/n_/1j0pt10j7c53q91p6hqyh5vr0000gn/T/plugin116933910 network=unix timestamp=2022-02-15T22:50:15.914+0530
+2022-02-15T22:50:15.914+0530 [DEBUG] provider: using plugin: version=5
+2022-02-15T22:50:15.931+0530 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = transport is closing"
+2022-02-15T22:50:15.931+0530 [DEBUG] provider: plugin process exited: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=92304
+2022-02-15T22:50:15.931+0530 [DEBUG] provider: plugin exited
+2022-02-15T22:50:15.932+0530 [DEBUG] Building and walking validate graph
+2022-02-15T22:50:15.932+0530 [DEBUG] ProviderTransformer: "chaossearch_object_group.my-object-group" (*terraform.NodeValidatableResource) needs provider["registry.terraform.io/chaossearch/chaossearch"]
+2022-02-15T22:50:15.932+0530 [DEBUG] ReferenceTransformer: "chaossearch_object_group.my-object-group" references: []
+2022-02-15T22:50:15.932+0530 [DEBUG] ReferenceTransformer: "provider[\"registry.terraform.io/chaossearch/chaossearch\"]" references: []
+2022-02-15T22:50:15.932+0530 [DEBUG] Starting graph walk: walkValidate
+2022-02-15T22:50:15.933+0530 [DEBUG] created provider logger: level=debug
+2022-02-15T22:50:15.933+0530 [INFO]  provider: configuring client automatic mTLS
+2022-02-15T22:50:15.940+0530 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch args=[.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch]
+2022-02-15T22:50:15.942+0530 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=92308
+2022-02-15T22:50:15.942+0530 [DEBUG] provider: waiting for RPC address: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch
+time="15-02-2022 22:50:15" level=info msg="called resourceObjectGroup"
+2022-02-15T22:50:15.951+0530 [INFO]  provider.terraform-provider-chaossearch: configuring server automatic mTLS: timestamp=2022-02-15T22:50:15.951+0530
+2022-02-15T22:50:15.958+0530 [DEBUG] provider: using plugin: version=5
+2022-02-15T22:50:15.958+0530 [DEBUG] provider.terraform-provider-chaossearch: plugin address: address=/var/folders/n_/1j0pt10j7c53q91p6hqyh5vr0000gn/T/plugin2750182062 network=unix timestamp=2022-02-15T22:50:15.958+0530
+2022-02-15T22:50:15.971+0530 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = transport is closing"
+2022-02-15T22:50:15.971+0530 [DEBUG] provider: plugin process exited: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=92308
+2022-02-15T22:50:15.971+0530 [DEBUG] provider: plugin exited
+2022-02-15T22:50:15.971+0530 [INFO]  backend/local: apply calling Plan
+2022-02-15T22:50:15.971+0530 [DEBUG] Building and walking plan graph for NormalMode
+2022-02-15T22:50:15.972+0530 [DEBUG] ProviderTransformer: "chaossearch_object_group.my-object-group (expand)" (*terraform.nodeExpandPlannableResource) needs provider["registry.terraform.io/chaossearch/chaossearch"]
+2022-02-15T22:50:15.972+0530 [DEBUG] ReferenceTransformer: "chaossearch_object_group.my-object-group (expand)" references: []
+2022-02-15T22:50:15.972+0530 [DEBUG] ReferenceTransformer: "provider[\"registry.terraform.io/chaossearch/chaossearch\"]" references: []
+2022-02-15T22:50:15.972+0530 [DEBUG] Starting graph walk: walkPlan
+2022-02-15T22:50:15.972+0530 [DEBUG] created provider logger: level=debug
+2022-02-15T22:50:15.972+0530 [INFO]  provider: configuring client automatic mTLS
+2022-02-15T22:50:15.979+0530 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch args=[.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch]
+2022-02-15T22:50:15.980+0530 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=92309
+2022-02-15T22:50:15.981+0530 [DEBUG] provider: waiting for RPC address: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch
+time="15-02-2022 22:50:15" level=info msg="called resourceObjectGroup"
+2022-02-15T22:50:15.989+0530 [INFO]  provider.terraform-provider-chaossearch: configuring server automatic mTLS: timestamp=2022-02-15T22:50:15.989+0530
+2022-02-15T22:50:15.996+0530 [DEBUG] provider: using plugin: version=5
+2022-02-15T22:50:15.996+0530 [DEBUG] provider.terraform-provider-chaossearch: plugin address: address=/var/folders/n_/1j0pt10j7c53q91p6hqyh5vr0000gn/T/plugin963508039 network=unix timestamp=2022-02-15T22:50:15.996+0530
+time="15-02-2022 22:50:16" level=warning msg="url--https://ap-south-1-aeternum.chaossearch.io/user/login"
+time="15-02-2022 22:50:16" level=warning msg=username--service_user@chaossearch.com
+time="15-02-2022 22:50:16" level=warning msg="password--thisIsAnEx@mple1!"
+time="15-02-2022 22:50:16" level=warning msg=parentuserid--be4aeb53-21d5-4902-862c-9c9a17ad6675
+time="15-02-2022 22:50:16" level=warning msg=req.Sources----service_user@chaossearch.com
+time="15-02-2022 22:50:16" level=warning msg="body---->>map[ParentUid:be4aeb53-21d5-4902-862c-9c9a17ad6675 Password:thisIsAnEx@mple1! Username:service_user@chaossearch.com]"
+time="15-02-2022 22:50:16" level=warning msg=marshalling--3
+time="15-02-2022 22:50:16" level=debug msg=" adding headers..."
+time="15-02-2022 22:50:18" level=debug msg="authResponseString-->{\"Token\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJTZWNyZXRBY2Nlc3NLZXkiOiI3QU1FamFtZzVURW5HMitDTWIwUjJWRldqMzRwUkE2VHlBR2FWVWNPIiwiZXBvY2giOjE2NDQxMTUwNzM4NzEsImV4dGVybmFsX2lkIjoiYmU0YWViNTMtMjFkNS00OTAyLTg2MmMtOWM5YTE3YWQ2Njc1IiwiQ1NSb2xlIjoidXNlciIsIlJlcXVlc3RVc2VyIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImF3c19hY2NvdW50X2lkIjoiNzY3Mzk2NjcxNzMyIiwiVXNlcm5hbWUiOiJzZXJ2aWNlX3VzZXJAY2hhb3NzZWFyY2guY29tIiwiQWNjZXNzS2V5SWQiOiJUQjZWSjNHRllIU0dMTUpFWktJRSIsIlNlcnZpY2VUeXBlIjoiUHJlbWl1bSIsIm5hbWUiOiJzZXJ2aWNlX3VzZXIiLCJQcmltYXJ5VXNlciI6ImFldGVybnVtQGNoYW9zc2VhcmNoLmNvbSIsIndvcmtlci1xdW90YV9hcC1zb3V0aC0xIjoyNDAsIkxvZ2luVHlwZSI6ImFsaWFzIiwiZXhwIjoxNjQ1MDMyMDE4LCJpYXQiOjE2NDQ5NDU2MTgsImVtYWlsIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImp0aSI6IjJhZWZkYTczLTI4Y2ItNDVlNy04N2JlLWRiNjI1MzY2ZjBjMiJ9.w7cbBr-kwPeZPVQrUm9YbrzfBRN5FHg4_d8TT71f8qA\"}"
+2022-02-15T22:50:18.766+0530 [WARN]  unexpected data: registry.terraform.io/chaossearch/chaossearch:stdout={"Token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJTZWNyZXRBY2Nlc3NLZXkiOiI3QU1FamFtZzVURW5HMitDTWIwUjJWRldqMzRwUkE2VHlBR2FWVWNPIiwiZXBvY2giOjE2NDQxMTUwNzM4NzEsImV4dGVybmFsX2lkIjoiYmU0YWViNTMtMjFkNS00OTAyLTg2MmMtOWM5YTE3YWQ2Njc1IiwiQ1NSb2xlIjoidXNlciIsIlJlcXVlc3RVc2VyIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImF3c19hY2NvdW50X2lkIjoiNzY3Mzk2NjcxNzMyIiwiVXNlcm5hbWUiOiJzZXJ2aWNlX3VzZXJAY2hhb3NzZWFyY2guY29tIiwiQWNjZXNzS2V5SWQiOiJUQjZWSjNHRllIU0dMTUpFWktJRSIsIlNlcnZpY2VUeXBlIjoiUHJlbWl1bSIsIm5hbWUiOiJzZXJ2aWNlX3VzZXIiLCJQcmltYXJ5VXNlciI6ImFldGVybnVtQGNoYW9zc2VhcmNoLmNvbSIsIndvcmtlci1xdW90YV9hcC1zb3V0aC0xIjoyNDAsIkxvZ2luVHlwZSI6ImFsaWFzIiwiZXhwIjoxNjQ1MDMyMDE4LCJpYXQiOjE2NDQ5NDU2MTgsImVtYWlsIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImp0aSI6IjJhZWZkYTczLTI4Y2ItNDVlNy04N2JlLWRiNjI1MzY2ZjBjMiJ9.w7cbBr-kwPeZPVQrUm9YbrzfBRN5FHg4_d8TT71f8qA"}
+2022-02-15T22:50:18.767+0530 [DEBUG] Resource instance state not found for node "chaossearch_object_group.my-object-group", instance chaossearch_object_group.my-object-group
+2022-02-15T22:50:18.768+0530 [DEBUG] ReferenceTransformer: "chaossearch_object_group.my-object-group" references: []
+2022-02-15T22:50:18.768+0530 [DEBUG] refresh: chaossearch_object_group.my-object-group: no state, so not refreshing
+2022-02-15T22:50:18.778+0530 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = transport is closing"
+2022-02-15T22:50:18.780+0530 [DEBUG] provider: plugin process exited: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=92309
+2022-02-15T22:50:18.780+0530 [DEBUG] provider: plugin exited
+2022-02-15T22:50:18.782+0530 [INFO]  backend/local: apply calling Apply
+2022-02-15T22:50:18.782+0530 [DEBUG] Building and walking apply graph for NormalMode plan
+2022-02-15T22:50:18.782+0530 [DEBUG] Resource state not found for node "chaossearch_object_group.my-object-group", instance chaossearch_object_group.my-object-group
+2022-02-15T22:50:18.783+0530 [DEBUG] ProviderTransformer: "chaossearch_object_group.my-object-group" (*terraform.NodeApplyableResourceInstance) needs provider["registry.terraform.io/chaossearch/chaossearch"]
+2022-02-15T22:50:18.783+0530 [DEBUG] ProviderTransformer: "chaossearch_object_group.my-object-group (expand)" (*terraform.nodeExpandApplyableResource) needs provider["registry.terraform.io/chaossearch/chaossearch"]
+2022-02-15T22:50:18.783+0530 [DEBUG] ReferenceTransformer: "provider[\"registry.terraform.io/chaossearch/chaossearch\"]" references: []
+2022-02-15T22:50:18.783+0530 [DEBUG] ReferenceTransformer: "chaossearch_object_group.my-object-group (expand)" references: []
+2022-02-15T22:50:18.783+0530 [DEBUG] ReferenceTransformer: "chaossearch_object_group.my-object-group" references: []
+2022-02-15T22:50:18.783+0530 [DEBUG] Starting graph walk: walkApply
+2022-02-15T22:50:18.784+0530 [DEBUG] created provider logger: level=debug
+2022-02-15T22:50:18.784+0530 [INFO]  provider: configuring client automatic mTLS
+2022-02-15T22:50:18.796+0530 [DEBUG] provider: starting plugin: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch args=[.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch]
+2022-02-15T22:50:18.798+0530 [DEBUG] provider: plugin started: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=92311
+2022-02-15T22:50:18.798+0530 [DEBUG] provider: waiting for RPC address: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch
+time="15-02-2022 22:50:18" level=info msg="called resourceObjectGroup"
+2022-02-15T22:50:18.809+0530 [INFO]  provider.terraform-provider-chaossearch: configuring server automatic mTLS: timestamp=2022-02-15T22:50:18.809+0530
+2022-02-15T22:50:18.818+0530 [DEBUG] provider: using plugin: version=5
+2022-02-15T22:50:18.818+0530 [DEBUG] provider.terraform-provider-chaossearch: plugin address: address=/var/folders/n_/1j0pt10j7c53q91p6hqyh5vr0000gn/T/plugin3716827364 network=unix timestamp=2022-02-15T22:50:18.818+0530
+time="15-02-2022 22:50:18" level=warning msg="url--https://ap-south-1-aeternum.chaossearch.io/user/login"
+time="15-02-2022 22:50:18" level=warning msg=username--service_user@chaossearch.com
+time="15-02-2022 22:50:18" level=warning msg="password--thisIsAnEx@mple1!"
+time="15-02-2022 22:50:18" level=warning msg=parentuserid--be4aeb53-21d5-4902-862c-9c9a17ad6675
+time="15-02-2022 22:50:18" level=warning msg=req.Sources----service_user@chaossearch.com
+time="15-02-2022 22:50:18" level=warning msg="body---->>map[ParentUid:be4aeb53-21d5-4902-862c-9c9a17ad6675 Password:thisIsAnEx@mple1! Username:service_user@chaossearch.com]"
+time="15-02-2022 22:50:18" level=warning msg=marshalling--3
+time="15-02-2022 22:50:18" level=debug msg=" adding headers..."
+time="15-02-2022 22:50:19" level=debug msg="authResponseString-->{\"Token\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJTZWNyZXRBY2Nlc3NLZXkiOiJGUXFPNE5RRjFlakFkV09BaVdRZEI2Y3BhNW5pcnhkcWtlbWRpcGVvIiwiZXBvY2giOjE2NDQxMTUwNzM4NzEsImV4dGVybmFsX2lkIjoiYmU0YWViNTMtMjFkNS00OTAyLTg2MmMtOWM5YTE3YWQ2Njc1IiwiQ1NSb2xlIjoidXNlciIsIlJlcXVlc3RVc2VyIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImF3c19hY2NvdW50X2lkIjoiNzY3Mzk2NjcxNzMyIiwiVXNlcm5hbWUiOiJzZXJ2aWNlX3VzZXJAY2hhb3NzZWFyY2guY29tIiwiQWNjZXNzS2V5SWQiOiJYSFVDM05SUk1VQUE1TDJUU01JTCIsIlNlcnZpY2VUeXBlIjoiUHJlbWl1bSIsIm5hbWUiOiJzZXJ2aWNlX3VzZXIiLCJQcmltYXJ5VXNlciI6ImFldGVybnVtQGNoYW9zc2VhcmNoLmNvbSIsIndvcmtlci1xdW90YV9hcC1zb3V0aC0xIjoyNDAsIkxvZ2luVHlwZSI6ImFsaWFzIiwiZXhwIjoxNjQ1MDMyMDE5LCJpYXQiOjE2NDQ5NDU2MTksImVtYWlsIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImp0aSI6ImE2MWFkMjczLWQwZDgtNDZiNC1hODk3LWM4ZGRhMjNkMzEzNSJ9.rXa7L7_q20GHTHxJ-OqQWabQhWKLHcLg87_9KFrx8uc\"}"
+2022-02-15T22:50:19.696+0530 [WARN]  unexpected data: registry.terraform.io/chaossearch/chaossearch:stdout={"Token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJTZWNyZXRBY2Nlc3NLZXkiOiJGUXFPNE5RRjFlakFkV09BaVdRZEI2Y3BhNW5pcnhkcWtlbWRpcGVvIiwiZXBvY2giOjE2NDQxMTUwNzM4NzEsImV4dGVybmFsX2lkIjoiYmU0YWViNTMtMjFkNS00OTAyLTg2MmMtOWM5YTE3YWQ2Njc1IiwiQ1NSb2xlIjoidXNlciIsIlJlcXVlc3RVc2VyIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImF3c19hY2NvdW50X2lkIjoiNzY3Mzk2NjcxNzMyIiwiVXNlcm5hbWUiOiJzZXJ2aWNlX3VzZXJAY2hhb3NzZWFyY2guY29tIiwiQWNjZXNzS2V5SWQiOiJYSFVDM05SUk1VQUE1TDJUU01JTCIsIlNlcnZpY2VUeXBlIjoiUHJlbWl1bSIsIm5hbWUiOiJzZXJ2aWNlX3VzZXIiLCJQcmltYXJ5VXNlciI6ImFldGVybnVtQGNoYW9zc2VhcmNoLmNvbSIsIndvcmtlci1xdW90YV9hcC1zb3V0aC0xIjoyNDAsIkxvZ2luVHlwZSI6ImFsaWFzIiwiZXhwIjoxNjQ1MDMyMDE5LCJpYXQiOjE2NDQ5NDU2MTksImVtYWlsIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImp0aSI6ImE2MWFkMjczLWQwZDgtNDZiNC1hODk3LWM4ZGRhMjNkMzEzNSJ9.rXa7L7_q20GHTHxJ-OqQWabQhWKLHcLg87_9KFrx8uc"}
+2022-02-15T22:50:19.703+0530 [INFO]  Starting apply for chaossearch_object_group.my-object-group
+2022-02-15T22:50:19.703+0530 [DEBUG] chaossearch_object_group.my-object-group: applying the planned Create change
+time="15-02-2022 22:50:19" level=warning msg="Sending request:\nMethod: %s\nURL: %s\nBody: %sPOSThttps://ap-south-1-aeternum.chaossearch.io/Bucket/createObjectGroup [123 34 98 117 99 107 101 116 34 58 34 110 105 98 114 97 115 45 111 103 45 48 49 48 51 34 44 34 102 105 108 116 101 114 34 58 91 123 34 102 105 101 108 100 34 58 34 107 101 121 34 44 34 112 114 101 102 105 120 34 58 34 98 108 117 101 98 105 107 101 34 125 44 123 34 102 105 101 108 100 34 58 34 107 101 121 34 44 34 114 101 103 101 120 34 58 34 46 42 34 125 93 44 34 102 111 114 109 97 116 34 58 123 34 95 116 121 112 101 34 58 34 67 83 86 34 44 34 99 111 108 117 109 110 68 101 108 105 109 105 116 101 114 34 58 34 44 34 44 34 104 101 97 100 101 114 82 111 119 34 58 116 114 117 101 44 34 114 111 119 68 101 108 105 109 105 116 101 114 34 58 34 92 110 34 125 44 34 105 110 100 101 120 82 101 116 101 110 116 105 111 110 34 58 123 34 102 111 114 80 97 114 116 105 116 105 111 110 34 58 91 93 44 34 111 118 101 114 97 108 108 34 58 45 49 125 44 34 105 110 116 101 114 118 97 108 34 58 123 34 99 111 108 117 109 110 34 58 48 44 34 109 111 100 101 34 58 48 125 44 34 111 112 116 105 111 110 115 34 58 123 34 105 103 110 111 114 101 73 114 114 101 103 117 108 97 114 34 58 116 114 117 101 125 44 34 114 101 97 108 116 105 109 101 34 58 102 97 108 115 101 44 34 115 111 117 114 99 101 34 58 34 99 104 97 111 115 45 116 101 115 116 45 100 97 116 97 45 97 112 115 49 34 125]"
+time="15-02-2022 22:50:19" level=warning msg="req--------->&{POST https://ap-south-1-aeternum.chaossearch.io/Bucket/createObjectGroup HTTP/1.1 1 1 map[Authorization:[AWS4-HMAC-SHA256 Credential=LCE8T6HRFGJI3ZKBGMGD/20220215/ap-south-1/s3/aws4_request, SignedHeaders=host;x-amz-content-sha256;x-amz-date, Signature=75ac9a924c34eb90b73d36961af02f059c2a87403e0c0b1360bd2874e4c52f5d] X-Amz-Content-Sha256:[c758ca88313e9e2328b9b9998aecf7c39ff36ba3cf2b9f3c77b7202c7c966eb2] X-Amz-Date:[20220215T172019Z]] {0x14000221aa0} 0x1011f9cf0 354 [] false ap-south-1-aeternum.chaossearch.io map[] map[] <nil> map[]   <nil> <nil> <nil> 0x14000227380}"
+time="15-02-2022 22:50:20" level=warning msg="Got response:\nStatus code: %d200"
+2022-02-15T22:50:20.633+0530 [DEBUG] provider.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = transport is closing"
+2022-02-15T22:50:20.634+0530 [DEBUG] provider: plugin process exited: path=.terraform/providers/registry.terraform.io/chaossearch/chaossearch/0.1.60/darwin_arm64/terraform-provider-chaossearch pid=92311
+2022-02-15T22:50:20.634+0530 [DEBUG] provider: plugin exited

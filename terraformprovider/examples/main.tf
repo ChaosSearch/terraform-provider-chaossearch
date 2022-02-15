@@ -34,7 +34,7 @@ provider "chaossearch" {
 
 resource "chaossearch_object_group" "my-object-group" {
 
-  bucket = "dinesh-og-0102"
+  bucket = "nibras-og-0103"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"

@@ -3,8 +3,8 @@
 
 provider "registry.terraform.io/chaossearch/chaossearch" {
   version     = "0.1.60"
-  constraints = "~> 0.1.7"
+  constraints = "~> 0.1.19"
   hashes = [
-    "h1:Xy0kqdi7ajVT8CHSWAAZTbWOnW9FR17106chvNRcUQo=",
+    "h1:fcCGWq42PTMoPiBA+plYDVOjZR8Bb2QPWFpS6cm+kDg=",
   ]
 }
