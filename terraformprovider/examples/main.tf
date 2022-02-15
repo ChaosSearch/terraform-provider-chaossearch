@@ -21,7 +21,7 @@ provider "chaossearch" {
 
 
 resource "chaossearch_view" "chaossearch-create-view" {
-  bucket="dinesh-view-013"
+  bucket="dinesh-view-019"
   index_pattern=".*"
   filter_json=""
   //array_flatten_depth =-1 
@@ -29,14 +29,15 @@ resource "chaossearch_view" "chaossearch-create-view" {
   index_retention =-1
   transforms=[]
   sources=[]
-  depends_on = [
+
+    depends_on = [
     chaossearch_object_group.my-object-group,
   ]
 }
 
 
  resource "chaossearch_object_group" "my-object-group" {
-   name = "dinesh-og-013"
+   name = "dinesh-og-019"
    source_bucket = "chaos-test-data-aps1"
    live_events_sqs_arn ="arn:aws:sqs:sqs_sqs"
 
@@ -65,6 +66,15 @@ resource "chaossearch_view" "chaossearch-create-view" {
      ]
    }
  }
+
+# resource "chaossearch_user_group" "user-group-1" {
+#   id="acsd1234"
+#   name="dineshk"
+#   depends_on = [
+#     chaossearch_object_group.my-object-group,
+#     chaossearch_view.chaossearch-create-view,
+#   ]
+# }
 
 # resource "chaossearch_indexing_state" "my-object-group" {
 #   object_group_name = chaossearch_object_group.my-object-group.name

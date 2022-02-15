@@ -14,6 +14,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -53,6 +54,7 @@ func (client *Client) signAndDo(req *http.Request, bodyAsBytes []byte) (*http.Re
 var nilvalue string 
 	credentials := credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, nilvalue)
 	_, err := v4.NewSigner(credentials).Sign(req, bodyReader, client.config.AWSServiceName, client.config.Region, time.Now())
+	
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign request: %s", err)
 	}

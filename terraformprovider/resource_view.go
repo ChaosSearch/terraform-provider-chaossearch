@@ -4,8 +4,6 @@ import (
 	"context"
 	"cs-tf-provider/client"
 
-	// "fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -98,6 +96,7 @@ func resourceView() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
+	
 		},
 	}
 }
@@ -106,6 +105,8 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	c := meta.(*ProviderMeta).Client
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value------------>>>>", tokenValue)
+
+
 	// arrayFlattenTF := data.Get("array_flatten_depth").(int)
 	// log.Info("arrayFlattenTF-->",arrayFlattenTF)
 	var arrayFlattenCS *int

@@ -97,3 +97,8 @@ type CreateViewRequest struct {
 type RequestHeaders struct {
 	Headers map[string]interface{}
 }
+
+type CreateUserGroupRequest struct{
+    Id string
+    Name string
+}
