@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 0.1.7"
+      version = "~> 0.1.19"
       source  = "chaossearch/chaossearch"
     }
   }
@@ -34,7 +34,7 @@ provider "chaossearch" {
 
 resource "chaossearch_object_group" "my-object-group" {
 
-  bucket = "nibras-create-object-vs-code-10"
+  bucket = "dinesh-og-0102"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"

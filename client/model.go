@@ -1,7 +1,5 @@
 package client
 
-import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 type Bucket struct {
 	Name         string `xml:"Name"`
 	CreationDate string `xml:"CreationDate"`
@@ -58,23 +56,28 @@ type Interval struct {
 }
 
 type IndexRetention struct {
-	ForPartition []interface {}
-	Overall       int
+	ForPartition []interface{}
+	Overall      int
 }
 
 type Filter struct {
-	Obj1 *schema.Set
-	Obj2 *schema.Set
+	// Obj1 *schema.Set
+	ClassOne *ClassOne
+	ClassTwo *ClassTwo
+	// Obj2 *schema.Set
+
 }
 
+
+
 type ClassOne struct {
-	Field  string
-	Prefix string
+	Field  string `json:"field"`
+	Prefix string  `json:"prefix"`
 }
 
 type ClassTwo struct {
-	Field  string
-	Regex string
+	Field string `json:"field"`
+	Regex string  `json:"regex"`
 }
 
 type Options struct {
