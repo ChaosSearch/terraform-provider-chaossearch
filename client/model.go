@@ -1,6 +1,6 @@
 package client
 
-//import "container/list"
+import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 type Bucket struct {
 	Name         string `xml:"Name"`
@@ -40,7 +40,7 @@ type CreateObjectGroupRequest struct {
 	Format         *Format
 	Interval       *Interval
 	IndexRetention *IndexRetention
-	Filter         *[]Filter
+	Filter         *Filter
 	Options        *Options
 	Realtime       bool
 }
@@ -63,8 +63,8 @@ type IndexRetention struct {
 }
 
 type Filter struct {
-	Obj1 *ClassOne
-	Obj2 *ClassTwo
+	Obj1 *schema.Set
+	Obj2 *schema.Set
 }
 
 type ClassOne struct {

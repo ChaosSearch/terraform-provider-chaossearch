@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -31,6 +32,7 @@ func (client *Client) CreateObjectGroup(ctx context.Context, req *CreateObjectGr
 }
 
 func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, error) {
+	log.Info("marshal obj1 = ", req.Filter.Obj1)
 	body := map[string]interface{}{
 		"bucket": req.Bucket,
 		"source": req.Source,
@@ -40,7 +42,9 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 			"rowDelimiter":    req.Format.RowDelimiter,
 			"headerRow":  req.Format.HeaderRow,
 		},
-		//"filter":         req.Filter,
+		"filter": []interface{}{
+			req.Filter.Obj1, req.Filter.Obj2,
+		},
 		"indexRetention": map[string]interface{}{
 			"forPartition": req.IndexRetention.ForPartition,
 			"overall": req.IndexRetention.Overall,
@@ -54,6 +58,8 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		},
 		"realtime": req.Realtime,
 	}
+
+	log.Info("req body = ", body)
 
 	bodyAsBytes, err := json.Marshal(body)
 

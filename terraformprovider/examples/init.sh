@@ -7,13 +7,9 @@ rm -rf terraform.tfstate
 
 echo "Deleted chache files..."
 
-echo "---------------------------------------------------"
-ls -a
-echo "---------------------------------------------------"
-
 cd ..
 make install
 cd examples
 
 terraform init --upgrade
-terraform apply
+terraform apply -auto-approve

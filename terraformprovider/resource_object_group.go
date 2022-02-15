@@ -11,6 +11,7 @@ import (
 )
 
 func resourceObjectGroup() *schema.Resource {
+	log.Info("called resourceObjectGroup")
 	return &schema.Resource{
 		CreateContext: resourceObjectGroupCreate,
 		ReadContext:   resourceObjectGroupRead,
@@ -68,16 +69,63 @@ func resourceObjectGroup() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"for_partition": {
-							Type:     schema.TypeList,
+							Type: schema.TypeList,
 							Elem: &schema.Schema{
-							  Type: schema.TypeString,
+								Type: schema.TypeString,
 							},
 							Optional: true,
-						  },
+						},
 						"overall": {
 							Type:     schema.TypeInt,
 							Optional: true,
 							ForceNew: true,
+						},
+					},
+				},
+			},
+			"filter": {
+				Type:     schema.TypeSet,
+				Required: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"obj1": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							ForceNew: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"field": {
+										Type:     schema.TypeString,
+										Required: true,
+										ForceNew: true,
+									},
+									"prefix": {
+										Type:     schema.TypeString,
+										Optional: true,
+										ForceNew: true,
+									},
+								},
+							},
+						},
+						"obj2": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							ForceNew: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"field": {
+										Type:     schema.TypeString,
+										Required: true,
+										ForceNew: true,
+									},
+									"regex": {
+										Type:     schema.TypeString,
+										Optional: true,
+										ForceNew: true,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -128,16 +176,18 @@ func resourceObjectGroup() *schema.Resource {
 			},
 		},
 	}
-	
+
 }
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	log.Info("called resourceObjectGroupCreate")
 	c := meta.(*ProviderMeta).Client
 
 	formatColumnSelectionInterface := data.Get("format").(*schema.Set).List()[0].(map[string]interface{})
 	intervalColumnSelectionInterface := data.Get("interval").(*schema.Set).List()[0].(map[string]interface{})
 	indexRetentionColumnSelectionInterface := data.Get("index_retention").(*schema.Set).List()[0].(map[string]interface{})
 	optionsColumnSelectionInterface := data.Get("options").(*schema.Set).List()[0].(map[string]interface{})
+	filterColumnSelectionInterface := data.Get("filter").(*schema.Set).List()[0].(map[string]interface{})
 
 	format := client.Format{
 		Type:            formatColumnSelectionInterface["_type"].(string),
@@ -152,12 +202,17 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	indexRetention := client.IndexRetention{
-		ForPartition: indexRetentionColumnSelectionInterface["for_partition"].([]interface {}),
+		ForPartition: indexRetentionColumnSelectionInterface["for_partition"].([]interface{}),
 		Overall:      indexRetentionColumnSelectionInterface["overall"].(int),
 	}
 
 	options := client.Options{
 		IgnoreIrregular: optionsColumnSelectionInterface["ignore_irregular"].(bool),
+	}
+
+	filter := client.Filter{
+		Obj1: filterColumnSelectionInterface["obj1"].(*schema.Set),
+		Obj2: filterColumnSelectionInterface["obj2"].(*schema.Set),
 	}
 
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
@@ -166,9 +221,9 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		Format:         &format,
 		Interval:       &interval,
 		IndexRetention: &indexRetention,
-		// //Filter:         data.Get("filter").(*[]client.Filter),
-		Options:  &options,
-		Realtime: data.Get("realtime").(bool),
+		Filter:         &filter,
+		Options:        &options,
+		Realtime:       data.Get("realtime").(bool),
 	}
 
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {

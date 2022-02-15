@@ -34,7 +34,7 @@ provider "chaossearch" {
 
 resource "chaossearch_object_group" "my-object-group" {
 
-  bucket = "nibras-create-object-vs-code-9"
+  bucket = "nibras-create-object-vs-code-10"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"
@@ -50,16 +50,16 @@ resource "chaossearch_object_group" "my-object-group" {
     for_partition = []
     overall       = -1
   }
-  # filter = [
-  #   {
-  #     field  = "key",
-  #     prefix = "bluebike"
-  #   },
-  #   {
-  #     field = "key",
-  #     regex = ".*"
-  #   }
-  # ]
+  filter {
+    obj1 {
+      field  = "key"
+      prefix = "bluebike"
+    }
+    obj2 {
+      field = "key"
+      regex = ".*"
+    }
+  }
   options {
     ignore_irregular = true
   }
