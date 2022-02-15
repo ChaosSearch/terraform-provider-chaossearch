@@ -77,12 +77,12 @@ type IndexingState struct {
 }
 
 type CreateViewRequest struct {
-	AuthToken         string
-	
+	AuthToken string
+
 	Bucket            string
-	FilterJSON        string
+	Filter            *Filter
 	TimeFieldName     string
-	Pattern           string
+	IndexPattern      string
 	CaseInsensitive   bool
 	ArrayFlattenDepth *int
 	IndexRetention    int
@@ -96,4 +96,19 @@ type CreateViewRequest struct {
 
 type RequestHeaders struct {
 	Headers map[string]interface{}
+}
+
+type Filter struct {
+	Predicate *Predicate
+}
+
+type Predicate struct {
+	Field string
+	Query string
+	State *State
+	Type_ string
+}
+
+type State struct {
+	Type_ string
 }

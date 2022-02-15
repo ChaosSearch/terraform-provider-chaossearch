@@ -52,7 +52,7 @@ func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
 		// "transforms":req.Transforms,
 		// "horizontal":  true,
 		// "stripPrefix": true,
-		"indexPattern":    req.Pattern,
+		"indexPattern":    req.IndexPattern,
 		"caseInsensitive": req.CaseInsensitive,
 		// "arrayFlattenDepth": req.ArrayFlattenDepth,
 		"indexRetention": req.IndexRetention,

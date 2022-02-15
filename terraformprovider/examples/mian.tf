@@ -2,7 +2,7 @@ terraform {
   required_providers {
     chaossearch = {
       version = "~> 0.1.2"
-      source = "chaos/chaossearch"
+      source = "chaossearch/chaossearch"
     }
   }
 }
@@ -21,14 +21,32 @@ provider "chaossearch" {
 
 
 resource "chaossearch_view" "chaossearch-create-view" {
-  bucket="dinesh-tf-004"
-  index_pattern=".*"
-  filter_json=""
-  //array_flatten_depth =-1 
-  case_insensitive=false
-  index_retention =-1
-  transforms=[]
-  sources=[]
+  # bucket="dinesh-tf-004"
+  # index_pattern=".*"
+  # filter_json=""
+  # //array_flatten_depth =-1 
+  # case_insensitive=false
+  # index_retention =-1
+  # transforms=[]
+  # sources=[]
+   bucket= "test-view-name-new90-90"
+    sources= []
+    index_pattern= ".*"
+    overwrite= true
+    case_insensitive= true
+    index_retention= -1
+    time_field_name= "@timestamp"
+    transforms= []
+    filter {
+            predicate{
+                    field= "cs_partition_key_0"
+                    query= "bluebike"
+                    state {
+                        _type= "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+                    }
+                    _type= "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+                }
+        }
 }
 
 
