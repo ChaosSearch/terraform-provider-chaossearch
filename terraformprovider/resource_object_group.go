@@ -180,7 +180,6 @@ func resourceObjectGroup() *schema.Resource {
 }
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Info("called resourceObjectGroupCreate")
 	c := meta.(*ProviderMeta).Client
 
 	formatColumnSelectionInterface := data.Get("format").(*schema.Set).List()[0].(map[string]interface{})
@@ -218,27 +217,15 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	if data.Get("filter").(*schema.Set).Len() > 0 {
 		filterColumnSelectionInterface := data.Get("filter").(*schema.Set).List()[0]
 		filtreColumnSelection := filterColumnSelectionInterface.(map[string]interface{})
-		// columnSelectionInterfaces := d.Get("login").(*schema.Set).List()[0]
 
-		objectOne := filtreColumnSelection["obj1"].(*schema.Set).List()[0]
-		// objectOne := data.Get("obj1").(*schema.Set).List()[0]
-		fileterOne := objectOne.(map[string]interface{})
+		fileterObjectOne := filtreColumnSelection["obj1"].(*schema.Set).List()[0].(map[string]interface{})
+		fileterObjectTwo := filtreColumnSelection["obj2"].(*schema.Set).List()[0].(map[string]interface{})
 
-		objectTwo := filtreColumnSelection["obj2"].(*schema.Set).List()[0]
-		// objectTwo := data.Get("obj2").(*schema.Set).List()[0]
-		fileterTwo := objectTwo.(map[string]interface{})
+		fieldOne = fileterObjectOne["field"].(string)
+		prefix = fileterObjectOne["prefix"].(string)
 
-		fieldOne = fileterOne["field"].(string)
-		prefix = fileterOne["prefix"].(string)
-		log.Debug("fieldOne----------->", fieldOne)
-		log.Debug("prefix----------->", prefix)
-
-		fieldTwo = fileterTwo["field"].(string)
-		regeX = fileterTwo["regex"].(string)
-
-		log.Debug("fieldTwo----------->", fieldTwo)
-		log.Debug("regeX----------->", regeX)
-
+		fieldTwo = fileterObjectTwo["field"].(string)
+		regeX = fileterObjectTwo["regex"].(string)
 	}
 
 	classOne := client.ClassOne{
@@ -246,15 +233,15 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		Prefix: prefix,
 	}
 	
-
 	classTwo := client.ClassTwo{
 		Field: fieldTwo,
 		Regex: regeX,
 	}
-	filter := &client.Filter{&classOne, &classTwo}
+	filter := &client.Filter{
+		&classOne,
+		&classTwo,
+	}
 	
-	log.Debug("filter----------->", filter)
-
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
 		Bucket:         data.Get("bucket").(string),
 		Source:         data.Get("source").(string),
@@ -269,6 +256,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {
 		return diag.FromErr(err)
 	}
+	data.SetId(data.Get("bucket").(string))
 	return nil
 }
 

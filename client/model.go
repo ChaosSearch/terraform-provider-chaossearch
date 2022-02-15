@@ -61,14 +61,9 @@ type IndexRetention struct {
 }
 
 type Filter struct {
-	// Obj1 *schema.Set
 	ClassOne *ClassOne
 	ClassTwo *ClassTwo
-	// Obj2 *schema.Set
-
 }
-
-
 
 type ClassOne struct {
 	Field  string `json:"field"`
