@@ -116,3 +116,8 @@ terraform.rc
 
 # End of https://www.toptal.com/developers/gitignore/api/terraform,go
 
+terraformprovider/examples/.terraform.lock.hcl
+terraformprovider/examples/.terraform
+terraformprovider/examples/.terraform.lock.hcl
+terraformprovider/examples/terraform.tfstate
+terraformprovider/examples/terraform.txt
