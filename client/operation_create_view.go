@@ -47,15 +47,18 @@ func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
 	body := map[string]interface{}{
 		"bucket":    req.Bucket,
 		"sources":   req.Sources,
-		"cacheable": req.Cacheable,
+		"indexPattern":    req.IndexPattern,
 		"overwrite": req.Overwrite,
-		// "transforms":req.Transforms,
+		"caseInsensitive": req.CaseInsensitive,
+		"indexRetention": req.IndexRetention,
+		"timeFieldName":req.TimeFieldName,
+		"transforms":req.Transforms,
+		"filter":req.Filter,
+		
+		//"cacheable": req.Cacheable,
 		// "horizontal":  true,
 		// "stripPrefix": true,
-		"indexPattern":    req.Pattern,
-		"caseInsensitive": req.CaseInsensitive,
 		// "arrayFlattenDepth": req.ArrayFlattenDepth,
-		"indexRetention": req.IndexRetention,
 		// "options": map[string]interface{}{
 		// 	"ignoreIrregular": true,
 		// },
@@ -66,13 +69,13 @@ func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
 	}
 	log.Warn("body----", body)
 
-	if req.FilterJSON != "" {
-		filter := make(map[string]interface{})
-		if err := json.Unmarshal([]byte(req.FilterJSON), &filter); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal JSON string: %s %s", req.FilterJSON, err)
-		}
-		body["filter"] = filter
-	}
+	// if req.FilterJSON != "" {
+	// 	filter := make(map[string]interface{})
+	// 	if err := json.Unmarshal([]byte(req.FilterJSON), &filter); err != nil {
+	// 		return nil, fmt.Errorf("failed to unmarshal JSON string: %s %s", req.FilterJSON, err)
+	// 	}
+	// 	body["filter"] = filter
+	// }
 
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {

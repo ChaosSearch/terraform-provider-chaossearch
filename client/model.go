@@ -1,5 +1,10 @@
 package client
 
+import (
+	// "github.com/aws/aws-sdk-go/aws/client"
+	// "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
 type Bucket struct {
 	Name         string `xml:"Name"`
 	CreationDate string `xml:"CreationDate"`
@@ -110,9 +115,9 @@ type CreateViewRequest struct {
 	AuthToken string
 
 	Bucket            string
-	FilterJSON        string
+	Filter            *Filter
 	TimeFieldName     string
-	Pattern           string
+	IndexPattern      string
 	CaseInsensitive   bool
 	ArrayFlattenDepth *int
 	IndexRetention    int
@@ -128,7 +133,22 @@ type RequestHeaders struct {
 	Headers map[string]interface{}
 }
 
-type CreateUserGroupRequest struct{
-    Id string
-    Name string
+type Filter struct {
+	Predicate *Predicate `json:"predicate"`
+}
+
+type Pred struct {
+	Field string `json:"field"`
+	Query string `json:"query"`
+	State State `json:"state"`
+	Type_ string `json:"_type"`
+}
+
+type Predicate struct {
+	Pred  Pred `json:"pred"`
+	Type_ string `json:"_type"`
+}
+
+type State struct {
+	Type_ string `json:"_type"`
 }
