@@ -1,5 +1,8 @@
 package client
 
+// "github.com/aws/aws-sdk-go/aws/client"
+// "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 type Bucket struct {
 	Name         string `xml:"Name"`
 	CreationDate string `xml:"CreationDate"`
@@ -33,21 +36,51 @@ type ReadObjectGroupResponse struct {
 }
 
 type CreateObjectGroupRequest struct {
-	Name              string
-	Compression       string
-	FilterJSON        string
-	Format            string
-	LiveEventsSqsArn  string
-	PartitionBy       string
-	SourceBucket      string
-	Pattern           string
-	IndexRetention    int
-	KeepOriginal      bool
-	ArrayFlattenDepth *int
-	ColumnRenames     map[string]interface{}
-	ColumnSelection   map[string]interface{}
+	Bucket         string
+	Source         string
+	Format         *Format
+	Interval       *Interval
+	IndexRetention *IndexRetention
+	Filter         *Filter
+	Options        *Options
+	Realtime       bool
 }
 
+type Format struct {
+	Type            string
+	ColumnDelimiter string
+	RowDelimiter    string
+	HeaderRow       bool
+}
+
+type Interval struct {
+	Mode   int
+	Column int
+}
+
+type IndexRetention struct {
+	ForPartition []interface{}
+	Overall      int
+}
+
+type Filter struct {
+	ClassOne *ClassOne
+	ClassTwo *ClassTwo
+}
+
+type ClassOne struct {
+	Field  string `json:"field"`
+	Prefix string `json:"prefix"`
+}
+
+type ClassTwo struct {
+	Field string `json:"field"`
+	Regex string `json:"regex"`
+}
+
+type Options struct {
+	IgnoreIrregular bool
+}
 type UpdateIndexingStateRequest struct {
 	ObjectGroupName string
 	Active          bool
@@ -74,4 +107,51 @@ type readBucketMetadataRequest struct {
 type IndexingState struct {
 	ObjectGroupName string
 	Active          bool
+}
+
+type CreateViewRequest struct {
+	AuthToken string
+
+	Bucket            string
+	FilterPredicate   *FilterPredicate `json:"filter"`
+	TimeFieldName     string
+	IndexPattern      string
+	CaseInsensitive   bool
+	ArrayFlattenDepth *int
+	IndexRetention    int
+	// IndexRetention    map[string]interface{}
+	Cacheable bool
+	Overwrite bool
+	// Sources           map[string]string
+	Sources    []interface{}
+	Transforms []interface{}
+}
+
+type RequestHeaders struct {
+	Headers map[string]interface{}
+}
+
+type FilterPredicate struct {
+	Predicate *Predicate `json:"predicate"`
+}
+
+type Pred struct {
+	Field string `json:"field"`
+	Query string `json:"query"`
+	State State  `json:"state"`
+	Type_ string `json:"_type"`
+}
+
+type Predicate struct {
+	Pred  Pred   `json:"pred"`
+	Type_ string `json:"_type"`
+}
+
+type State struct {
+	Type_ string `json:"_type"`
+}
+
+type CreateUserGroupRequest struct {
+	Id   string
+	Name string
 }

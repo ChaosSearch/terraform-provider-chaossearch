@@ -20,12 +20,12 @@ func (client *Client) UpdateIndexingState(ctx context.Context, req *UpdateIndexi
 
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
-		return fmt.Errorf("Failed to create request: %s", err)
+		return fmt.Errorf("failed to create request: %s", err)
 	}
 
 	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
 	if err != nil {
-		return fmt.Errorf("Failed to %s to %s: %s", method, url, err)
+		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
 	defer httpResp.Body.Close()
 

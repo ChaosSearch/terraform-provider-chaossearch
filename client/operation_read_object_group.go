@@ -41,12 +41,12 @@ func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req
 
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
-		return fmt.Errorf("Failed to create request: %s", err)
+		return fmt.Errorf("failed to create request: %s", err)
 	}
 
 	httpResp, err := client.signAndDo(httpReq, nil)
 	if err != nil {
-		return fmt.Errorf("Failed to %s to %s: %s", method, url, err)
+		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
 	defer httpResp.Body.Close()
 
@@ -58,7 +58,7 @@ func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req
 		} `json:"options"`
 	}
 	if err := client.unmarshalJSONBody(httpResp.Body, &getDatasetResp); err != nil {
-		return fmt.Errorf("Failed to unmarshal JSON response body: %s", err)
+		return fmt.Errorf("failed to unmarshal JSON response body: %s", err)
 	}
 
 	resp.PartitionBy = getDatasetResp.PartitionBy
@@ -78,7 +78,7 @@ func (client *Client) readAttributesFromBucketTagging(ctx context.Context, req *
 		Logger:           appLogger{},
 	})
 	if err != nil {
-		return fmt.Errorf("Failed to create AWS session: %s", err)
+		return fmt.Errorf("failed to create AWS session: %s", err)
 	}
 
 	svc := s3.New(session)
@@ -88,11 +88,11 @@ func (client *Client) readAttributesFromBucketTagging(ctx context.Context, req *
 
 	tagging, err := svc.GetBucketTaggingWithContext(ctx, input)
 	if err != nil {
-		return fmt.Errorf("Failed to read bucket tagging: %s", err)
+		return fmt.Errorf("failed to read bucket tagging: %s", err)
 	}
 
 	if err := mapBucketTaggingToResponse(tagging, resp); err != nil {
-		return fmt.Errorf("Failed to unmarshal XML response body: %s", err)
+		return fmt.Errorf("failed to unmarshal XML response body: %s", err)
 	}
 
 	return nil
@@ -166,5 +166,5 @@ func findTagValue(tagging *s3.GetBucketTaggingOutput, key string) (string, error
 		}
 	}
 
-	return "", fmt.Errorf("No tag found with key: %s", key)
+	return "", fmt.Errorf("no tag found with key: %s", key)
 }
