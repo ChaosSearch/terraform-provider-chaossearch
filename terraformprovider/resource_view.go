@@ -270,7 +270,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		Pred:  pred,
 	}
 
-	filter := &client.Filter{
+	filter := &client.FilterPredicate{
 		&Predicate,
 	}
 
@@ -357,7 +357,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		IndexRetention:  data.Get("index_retention").(int),
 		TimeFieldName:   data.Get("time_field_name").(string),
 		Transforms:      transforms,
-		 Filter:         filter,
+		FilterPredicate:         filter,
 
 		// Cacheable:         data.Get("cachable").(bool),
 		// ArrayFlattenDepth: arrayFlattenCS,

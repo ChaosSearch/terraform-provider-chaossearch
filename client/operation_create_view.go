@@ -31,6 +31,11 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 	// var sessionToken = req.AuthToken
 	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
 
+	// httpResp_, err :=client.signV2(sessionToken,httpReq,bodyAsBytes)
+
+	// log.Warn("httpResp_-->", httpResp_)
+
+
 	log.Warn("httpReq-->", httpReq)
 	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)
@@ -53,7 +58,7 @@ func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
 		"indexRetention": req.IndexRetention,
 		"timeFieldName":req.TimeFieldName,
 		"transforms":req.Transforms,
-		"filter":req.Filter,
+		"filter":req.FilterPredicate,
 		
 		//"cacheable": req.Cacheable,
 		// "horizontal":  true,
