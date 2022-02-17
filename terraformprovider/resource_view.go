@@ -96,7 +96,7 @@ func resourceView() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
-	
+
 		},
 	}
 }
@@ -187,8 +187,9 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 	data.SetId(data.Get("bucket").(string))
 
-	// return resourceObjectGroupRead(ctx, data, meta)
+	//return resourceObjectGroupRead(ctx, data, meta)
 	return nil
+
 }
 
 func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {

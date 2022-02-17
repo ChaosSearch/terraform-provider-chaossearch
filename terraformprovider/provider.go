@@ -70,8 +70,9 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			 "chaossearch_object_group":   resourceObjectGroup(),
-			// "chaossearch_indexing_state": resourceIndexingState(),
+ 			"chaossearch_object_group":   resourceObjectGroup(),
+			//"chaossearch_indexing_state": resourceIndexingState(),
+			//"chaossearch_view": resourceView(),
 			"chaossearch_view": resourceView(),
 			"chaossearch_user_group":resourceUserGroup(),
 		},

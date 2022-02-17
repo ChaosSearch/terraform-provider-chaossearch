@@ -33,21 +33,51 @@ type ReadObjectGroupResponse struct {
 }
 
 type CreateObjectGroupRequest struct {
-	Name              string
-	Compression       string
-	FilterJSON        string
-	Format            string
-	LiveEventsSqsArn  string
-	PartitionBy       string
-	SourceBucket      string
-	Pattern           string
-	IndexRetention    int
-	KeepOriginal      bool
-	ArrayFlattenDepth *int
-	ColumnRenames     map[string]interface{}
-	ColumnSelection   map[string]interface{}
+	Bucket         string
+	Source         string
+	Format         *Format
+	Interval       *Interval
+	IndexRetention *IndexRetention
+	Filter         *Filter
+	Options        *Options
+	Realtime       bool
 }
 
+type Format struct {
+	Type            string
+	ColumnDelimiter string
+	RowDelimiter    string
+	HeaderRow       bool
+}
+
+type Interval struct {
+	Mode   int
+	Column int
+}
+
+type IndexRetention struct {
+	ForPartition []interface{}
+	Overall      int
+}
+
+type Filter struct {
+	ClassOne *ClassOne
+	ClassTwo *ClassTwo
+}
+
+type ClassOne struct {
+	Field  string `json:"field"`
+	Prefix string  `json:"prefix"`
+}
+
+type ClassTwo struct {
+	Field string `json:"field"`
+	Regex string  `json:"regex"`
+}
+
+type Options struct {
+	IgnoreIrregular bool
+}
 type UpdateIndexingStateRequest struct {
 	ObjectGroupName string
 	Active          bool
@@ -77,8 +107,8 @@ type IndexingState struct {
 }
 
 type CreateViewRequest struct {
-	AuthToken         string
-	
+	AuthToken string
+
 	Bucket            string
 	FilterJSON        string
 	TimeFieldName     string
