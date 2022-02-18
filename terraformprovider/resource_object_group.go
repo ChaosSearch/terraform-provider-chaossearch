@@ -7,11 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	log "github.com/sirupsen/logrus"
 )
 
 func resourceObjectGroup() *schema.Resource {
-	log.Info("called resourceObjectGroup")
 	return &schema.Resource{
 		CreateContext: resourceObjectGroupCreate,
 		ReadContext:   resourceObjectGroupRead,
@@ -89,7 +87,7 @@ func resourceObjectGroup() *schema.Resource {
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"obj1": {
+						"prefix_filter": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							ForceNew: true,
@@ -108,7 +106,7 @@ func resourceObjectGroup() *schema.Resource {
 								},
 							},
 						},
-						"obj2": {
+						"regex_filter": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							ForceNew: true,
@@ -216,24 +214,24 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 
 	if data.Get("filter").(*schema.Set).Len() > 0 {
 		filterColumnSelectionInterface := data.Get("filter").(*schema.Set).List()[0]
-		filtreColumnSelection := filterColumnSelectionInterface.(map[string]interface{})
+		filterColumnSelection := filterColumnSelectionInterface.(map[string]interface{})
 
-		fileterObjectOne := filtreColumnSelection["obj1"].(*schema.Set).List()[0].(map[string]interface{})
-		fileterObjectTwo := filtreColumnSelection["obj2"].(*schema.Set).List()[0].(map[string]interface{})
+		prefixFilter := filterColumnSelection["prefix_filter"].(*schema.Set).List()[0].(map[string]interface{})
+		regexFilter := filterColumnSelection["regex_filter"].(*schema.Set).List()[0].(map[string]interface{})
 
-		fieldOne = fileterObjectOne["field"].(string)
-		prefix = fileterObjectOne["prefix"].(string)
+		fieldOne = prefixFilter["field"].(string)
+		prefix = prefixFilter["prefix"].(string)
 
-		fieldTwo = fileterObjectTwo["field"].(string)
-		regeX = fileterObjectTwo["regex"].(string)
+		fieldTwo = regexFilter["field"].(string)
+		regeX = regexFilter["regex"].(string)
 	}
 
-	classOne := client.ClassOne{
+	classOne := client.PrefixFilter{
 		Field:  fieldOne,
 		Prefix: prefix,
 	}
 
-	classTwo := client.ClassTwo{
+	classTwo := client.RegexFilter{
 		Field: fieldTwo,
 		Regex: regeX,
 	}
@@ -261,23 +259,14 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Info("called READ")
-
-	log.Info("11111111111111111111")
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).Client
-
-	log.Info("22222222222222")
 
 	req := &client.ReadObjectGroupRequest{
 		ID: data.Id(),
 	}
 
-	log.Info("33333333333333")
-
-	log.Warn("req---->", req)
 	resp, err := c.ReadObjectGroup(ctx, req)
-	log.Info("4444444444444")
 
 	if err != nil {
 		return diag.Errorf("Failed to read object group: %s", err)
