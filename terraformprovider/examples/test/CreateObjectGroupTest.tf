@@ -61,31 +61,12 @@ resource "chaossearch_object_group" "my-object-group-test-2" {
     header_row       = true
   }
   interval {
-    mode   = 0
-    column = 0
+    mode   = 1
+    column = 2
   }
   index_retention {
     for_partition = []
     overall       = -1
-  }
-  options {
-    ignore_irregular = true
-  }
-  realtime = false
-}
-
-resource "chaossearch_object_group" "my-object-group-test-3" {
-  bucket = "object-group-002"
-  source = "chaos-test-data-aps1"
-  format {
-    _type            = "CSV"
-    column_delimiter = ","
-    row_delimiter    = "\n"
-    header_row       = true
-  }
-  interval {
-    mode   = 0
-    column = 0
   }
   filter {
     obj1 {
@@ -101,4 +82,37 @@ resource "chaossearch_object_group" "my-object-group-test-3" {
     ignore_irregular = true
   }
   realtime = false
+}
+
+resource "chaossearch_object_group" "my-object-group-test-3" {
+  bucket = "object-group-003"
+  source = "chaos-test-data-aps1"
+  format {
+    _type            = "CSV"
+    column_delimiter = ","
+    row_delimiter    = "\n"
+    header_row       = false
+  }
+  interval {
+    mode   = 0
+    column = 0
+  }
+  index_retention {
+    for_partition = []
+    overall       = 1
+  }
+  filter {
+    obj1 {
+      field  = "key"
+      prefix = "bluebike"
+    }
+    obj2 {
+      field = "key"
+      regex = ".*"
+    }
+  }
+  options {
+    ignore_irregular = true
+  }
+  realtime = true
 }
