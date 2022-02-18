@@ -64,8 +64,8 @@ type IndexRetention struct {
 }
 
 type Filter struct {
-	ClassOne *PrefixFilter
-	ClassTwo *RegexFilter
+	PrefixFilter *PrefixFilter
+	RegexFilter  *RegexFilter
 }
 
 type PrefixFilter struct {
