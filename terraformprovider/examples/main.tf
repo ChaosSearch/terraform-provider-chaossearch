@@ -66,11 +66,11 @@ resource "chaossearch_object_group" "my-object-group" {
     overall       = -1
   }
   filter {
-    obj1 {
+    prefix_filter {
       field  = "key"
       prefix = "bluebike"
     }
-    obj2 {
+    regex_filter {
       field = "key"
       regex = ".*"
     }

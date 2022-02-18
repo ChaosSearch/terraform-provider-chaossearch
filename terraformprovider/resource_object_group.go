@@ -89,7 +89,7 @@ func resourceObjectGroup() *schema.Resource {
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"obj1": {
+						"prefix_filter": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							ForceNew: true,
@@ -108,7 +108,7 @@ func resourceObjectGroup() *schema.Resource {
 								},
 							},
 						},
-						"obj2": {
+						"regex_filter": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							ForceNew: true,
@@ -216,24 +216,24 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 
 	if data.Get("filter").(*schema.Set).Len() > 0 {
 		filterColumnSelectionInterface := data.Get("filter").(*schema.Set).List()[0]
-		filtreColumnSelection := filterColumnSelectionInterface.(map[string]interface{})
+		filterColumnSelection := filterColumnSelectionInterface.(map[string]interface{})
 
-		fileterObjectOne := filtreColumnSelection["obj1"].(*schema.Set).List()[0].(map[string]interface{})
-		fileterObjectTwo := filtreColumnSelection["obj2"].(*schema.Set).List()[0].(map[string]interface{})
+		prefixFilter := filterColumnSelection["prefix_filter"].(*schema.Set).List()[0].(map[string]interface{})
+		regexFilter := filterColumnSelection["regex_filter"].(*schema.Set).List()[0].(map[string]interface{})
 
-		fieldOne = fileterObjectOne["field"].(string)
-		prefix = fileterObjectOne["prefix"].(string)
+		fieldOne = prefixFilter["field"].(string)
+		prefix = prefixFilter["prefix"].(string)
 
-		fieldTwo = fileterObjectTwo["field"].(string)
-		regeX = fileterObjectTwo["regex"].(string)
+		fieldTwo = regexFilter["field"].(string)
+		regeX = regexFilter["regex"].(string)
 	}
 
-	classOne := client.ClassOne{
+	classOne := client.PrefixFilter{
 		Field:  fieldOne,
 		Prefix: prefix,
 	}
 
-	classTwo := client.ClassTwo{
+	classTwo := client.RegexFilter{
 		Field: fieldTwo,
 		Regex: regeX,
 	}

@@ -36,11 +36,11 @@ resource "chaossearch_object_group" "my-object-group-test-1" {
     overall       = -1
   }
   filter {
-    obj1 {
+    prefix_filter {
       field  = "key"
       prefix = "bluebike"
     }
-    obj2 {
+    regex_filter {
       field = "key"
       regex = ".*"
     }
@@ -69,11 +69,11 @@ resource "chaossearch_object_group" "my-object-group-test-2" {
     overall       = -1
   }
   filter {
-    obj1 {
+    prefix_filter {
       field  = "key"
       prefix = "bluebike"
     }
-    obj2 {
+    regex_filter {
       field = "key"
       regex = ".*"
     }
@@ -102,11 +102,11 @@ resource "chaossearch_object_group" "my-object-group-test-3" {
     overall       = 1
   }
   filter {
-    obj1 {
+    prefix_filter {
       field  = "key"
       prefix = "bluebike"
     }
-    obj2 {
+    regex_filter {
       field = "key"
       regex = ".*"
     }
