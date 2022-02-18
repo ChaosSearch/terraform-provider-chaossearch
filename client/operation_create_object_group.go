@@ -39,14 +39,14 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 			"_type":           req.Format.Type,
 			"columnDelimiter": req.Format.ColumnDelimiter,
 			"rowDelimiter":    req.Format.RowDelimiter,
-			"headerRow":  req.Format.HeaderRow,
+			"headerRow":       req.Format.HeaderRow,
 		},
-		"filter" : []interface{}{
-			req.Filter.ClassOne,req.Filter.ClassTwo,
+		"filter": []interface{}{
+			req.Filter.PrefixFilter, req.Filter.RegexFilter,
 		},
 		"indexRetention": map[string]interface{}{
 			"forPartition": req.IndexRetention.ForPartition,
-			"overall": req.IndexRetention.Overall,
+			"overall":      req.IndexRetention.Overall,
 		},
 		"options": map[string]interface{}{
 			"ignoreIrregular": req.Options.IgnoreIrregular,
