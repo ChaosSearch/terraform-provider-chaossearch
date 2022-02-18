@@ -7,11 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	log "github.com/sirupsen/logrus"
 )
 
 func resourceObjectGroup() *schema.Resource {
-	log.Info("called resourceObjectGroup")
 	return &schema.Resource{
 		CreateContext: resourceObjectGroupCreate,
 		ReadContext:   resourceObjectGroupRead,
@@ -209,9 +207,9 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		IgnoreIrregular: optionsColumnSelectionInterface["ignore_irregular"].(bool),
 	}
 
-	var fieldOne string
+	var prefixFilterField string
 	var prefix string
-	var fieldTwo string
+	var regexFilterField string
 	var regeX string
 
 	if data.Get("filter").(*schema.Set).Len() > 0 {
@@ -221,25 +219,25 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		prefixFilter := filterColumnSelection["prefix_filter"].(*schema.Set).List()[0].(map[string]interface{})
 		regexFilter := filterColumnSelection["regex_filter"].(*schema.Set).List()[0].(map[string]interface{})
 
-		fieldOne = prefixFilter["field"].(string)
+		prefixFilterField = prefixFilter["field"].(string)
 		prefix = prefixFilter["prefix"].(string)
 
-		fieldTwo = regexFilter["field"].(string)
+		regexFilterField = regexFilter["field"].(string)
 		regeX = regexFilter["regex"].(string)
 	}
 
-	classOne := client.PrefixFilter{
-		Field:  fieldOne,
+	prefixFilter := client.PrefixFilter{
+		Field:  prefixFilterField,
 		Prefix: prefix,
 	}
 
-	classTwo := client.RegexFilter{
-		Field: fieldTwo,
+	regexFilter := client.RegexFilter{
+		Field: regexFilterField,
 		Regex: regeX,
 	}
 	filter := &client.Filter{
-		&classOne,
-		&classTwo,
+		PrefixFilter: &prefixFilter,
+		RegexFilter:  &regexFilter,
 	}
 
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
@@ -261,23 +259,14 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Info("called READ")
-
-	log.Info("11111111111111111111")
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).Client
-
-	log.Info("22222222222222")
 
 	req := &client.ReadObjectGroupRequest{
 		ID: data.Id(),
 	}
 
-	log.Info("33333333333333")
-
-	log.Warn("req---->", req)
 	resp, err := c.ReadObjectGroup(ctx, req)
-	log.Info("4444444444444")
 
 	if err != nil {
 		return diag.Errorf("Failed to read object group: %s", err)
