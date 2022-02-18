@@ -7,11 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	log "github.com/sirupsen/logrus"
 )
 
 func resourceObjectGroup() *schema.Resource {
-	log.Info("called resourceObjectGroup")
 	return &schema.Resource{
 		CreateContext: resourceObjectGroupCreate,
 		ReadContext:   resourceObjectGroupRead,
@@ -261,23 +259,14 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Info("called READ")
-
-	log.Info("11111111111111111111")
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).Client
-
-	log.Info("22222222222222")
 
 	req := &client.ReadObjectGroupRequest{
 		ID: data.Id(),
 	}
 
-	log.Info("33333333333333")
-
-	log.Warn("req---->", req)
 	resp, err := c.ReadObjectGroup(ctx, req)
-	log.Info("4444444444444")
 
 	if err != nil {
 		return diag.Errorf("Failed to read object group: %s", err)
