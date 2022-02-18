@@ -21,7 +21,7 @@ provider "chaossearch" {
 
 
 resource "chaossearch_view" "chaossearch-create-view" {
-bucket = "dinesh-view-10012"
+bucket = "dinesh-view-100121"
 
   case_insensitive = false
 
@@ -49,7 +49,7 @@ bucket = "dinesh-view-10012"
 
 resource "chaossearch_object_group" "my-object-group" {
 
-  bucket = "dinesh-og-10012"
+  bucket = "dinesh-og-100121"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"
@@ -66,11 +66,11 @@ resource "chaossearch_object_group" "my-object-group" {
     overall       = -1
   }
   filter {
-    obj1 {
+    prefix_filter {
       field  = "key"
       prefix = "bluebike"
     }
-    obj2 {
+    regex_filter {
       field = "key"
       regex = ".*"
     }

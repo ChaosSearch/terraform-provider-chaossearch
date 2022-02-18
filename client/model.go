@@ -64,16 +64,16 @@ type IndexRetention struct {
 }
 
 type Filter struct {
-	ClassOne *ClassOne
-	ClassTwo *ClassTwo
+	PrefixFilter *PrefixFilter
+	RegexFilter  *RegexFilter
 }
 
-type ClassOne struct {
+type PrefixFilter struct {
 	Field  string `json:"field"`
 	Prefix string `json:"prefix"`
 }
 
-type ClassTwo struct {
+type RegexFilter struct {
 	Field string `json:"field"`
 	Regex string `json:"regex"`
 }

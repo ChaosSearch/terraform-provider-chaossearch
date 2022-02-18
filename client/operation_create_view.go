@@ -28,14 +28,6 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 	log.Debug(" adding headers...")
 	httpReq.Header.Add("Content-Type", "text/plain")
 
-	// var sessionToken = req.AuthToken
-	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
-
-	// httpResp_, err :=client.signV2(sessionToken,httpReq,bodyAsBytes)
-
-	// log.Warn("httpResp_-->", httpResp_)
-
-
 	log.Warn("httpReq-->", httpReq)
 	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)
@@ -50,37 +42,17 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
 	log.Warn("req.Sources----", req.Sources)
 	body := map[string]interface{}{
-		"bucket":    req.Bucket,
-		"sources":   req.Sources,
+		"bucket":          req.Bucket,
+		"sources":         req.Sources,
 		"indexPattern":    req.IndexPattern,
-		"overwrite": req.Overwrite,
+		"overwrite":       req.Overwrite,
 		"caseInsensitive": req.CaseInsensitive,
-		"indexRetention": req.IndexRetention,
-		"timeFieldName":req.TimeFieldName,
-		"transforms":req.Transforms,
-		"filter":req.FilterPredicate,
-		
-		//"cacheable": req.Cacheable,
-		// "horizontal":  true,
-		// "stripPrefix": true,
-		// "arrayFlattenDepth": req.ArrayFlattenDepth,
-		// "options": map[string]interface{}{
-		// 	"ignoreIrregular": true,
-		// },
-		// "interval": map[string]interface{}{
-		// 	"mode":   0,
-		// 	"column": 0,
-		// },
+		"indexRetention":  req.IndexRetention,
+		"timeFieldName":   req.TimeFieldName,
+		"transforms":      req.Transforms,
+		"filter":          req.FilterPredicate,
 	}
 	log.Warn("body----", body)
-
-	// if req.FilterJSON != "" {
-	// 	filter := make(map[string]interface{})
-	// 	if err := json.Unmarshal([]byte(req.FilterJSON), &filter); err != nil {
-	// 		return nil, fmt.Errorf("failed to unmarshal JSON string: %s %s", req.FilterJSON, err)
-	// 	}
-	// 	body["filter"] = filter
-	// }
 
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
