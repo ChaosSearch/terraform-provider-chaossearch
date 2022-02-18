@@ -5,7 +5,7 @@ rm -rf .terraform.lock.hcl
 rm -rf terraform.txt
 rm -rf terraform.tfstate
 
-echo "Deleted chache files..."
+echo "Deleted cache files..."
 
 cd ..
 make install
