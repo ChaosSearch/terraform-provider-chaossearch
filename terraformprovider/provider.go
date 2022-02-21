@@ -25,24 +25,20 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"url": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("CHAOSSEARCH_URL", ""),
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"access_key_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("CHAOSSEARCH_ACCESS_KEY_ID", ""),
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"secret_access_key": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("CHAOSSEARCH_SECRET_ACCESS_KEY", ""),
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"region": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("CHAOSSEARCH_REGION", "ap-south-1"),
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"login": {
 				Type: schema.TypeSet,
@@ -64,13 +60,13 @@ func Provider() *schema.Provider {
 						},
 					},
 				},
-				Optional:    true,
+				Required:    true,
 				ForceNew:    true,
 				Description: "List of fields in logs to include or exclude from parsing. If nothing is specified, all fields will be parsed",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			 "chaossearch_object_group":   resourceObjectGroup(),
+			"chaossearch_object_group": resourceObjectGroup(),
 			// "chaossearch_indexing_state": resourceIndexingState(),
 			"chaossearch_view": resourceView(),
 			//"chaossearch_user_group":resourceUserGroup(),

@@ -17,7 +17,7 @@ func (client *Client) Auth(ctx context.Context) (token string, err error) {
 	url := fmt.Sprintf("%s/user/login", client.config.URL)
 	method := "POST"
 	login_ := client.Login
-	
+
 	log.Warn("url--", url)
 
 	log.Warn("username--", login_.Username)
@@ -48,7 +48,7 @@ func (client *Client) Auth(ctx context.Context) (token string, err error) {
 		return
 	}
 	defer res.Body.Close()
-
+	// TODO add a status call once successful login to ensure that the user is actually deployed
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
@@ -59,19 +59,16 @@ func (client *Client) Auth(ctx context.Context) (token string, err error) {
 }
 
 func marshalLoginRequest(req *Login) ([]byte, error) {
-	log.Warn("req.Sources----", req.Username)
 
 	body := map[string]interface{}{
 		"Username":  req.Username,
 		"Password":  req.Password,
 		"ParentUid": req.ParentUserId,
 	}
-	log.Warn("body---->>", body)
 
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
-	log.Warn("marshalling--3")
 	return bodyAsBytes, nil
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -26,15 +27,28 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 	log.Debug(" adding headers...")
-	httpReq.Header.Add("Content-Type", "text/plain")
+	//httpReq.Header.Add("Content-Type", "text/plain")
+
+	var sessionToken = req.AuthToken
+	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
 
 	log.Warn("httpReq-->", httpReq)
-	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
+	log.Warn("-1-------------------------------------------------------------------------------------------------------------------------------------------------")
+
+	httpResp, err := client.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	log.Warn("-2-------------------------------------------------------------------------------------------------------------------------------------------------")
+
+	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(httpResp.Body)
 
 	return nil
 }

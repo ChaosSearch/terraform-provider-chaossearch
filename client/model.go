@@ -36,6 +36,7 @@ type ReadObjectGroupResponse struct {
 }
 
 type CreateObjectGroupRequest struct {
+	AuthToken      string
 	Bucket         string
 	Source         string
 	Format         *Format

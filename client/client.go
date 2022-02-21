@@ -2,20 +2,25 @@ package client
 
 import (
 	"bytes"
+	"crypto/hmac"
+	"crypto/sha1"
+	"github.com/dgrijalva/jwt-go"
+
+	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"io/ioutil"
-
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
-
 	log "github.com/sirupsen/logrus"
+	// v2 "github.com/aws/aws-sdk-go/private/signer/v2"
 )
 
 type Client struct {
@@ -40,7 +45,7 @@ func NewClient(config *Configuration, login *Login) *Client {
 	}
 }
 
-func (client *Client) signAndDo(req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
+func (client *Client) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
 	var bodyReader io.ReadSeeker
 	if bodyAsBytes == nil {
 		bodyReader = nil
@@ -48,11 +53,10 @@ func (client *Client) signAndDo(req *http.Request, bodyAsBytes []byte) (*http.Re
 		bodyReader = bytes.NewReader(bodyAsBytes)
 	}
 
-	// var sessionToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJTZWNyZXRBY2Nlc3NLZXkiOiJHRWx3Wm5xelhrb2RvKzYvWmRLcERxQ3I1VUExb1ltaWJyZ3dpVU01IiwiZXBvY2giOjE2NDQxMTUwNzM4NzEsImV4dGVybmFsX2lkIjoiYmU0YWViNTMtMjFkNS00OTAyLTg2MmMtOWM5YTE3YWQ2Njc1IiwiQ1NSb2xlIjoidXNlciIsIlJlcXVlc3RVc2VyIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImF3c19hY2NvdW50X2lkIjoiNzY3Mzk2NjcxNzMyIiwiVXNlcm5hbWUiOiJzZXJ2aWNlX3VzZXJAY2hhb3NzZWFyY2guY29tIiwiQWNjZXNzS2V5SWQiOiJEVFUzQTNEQzdBSjBJTlBXV1FJUyIsIlNlcnZpY2VUeXBlIjoiUHJlbWl1bSIsIm5hbWUiOiJzZXJ2aWNlX3VzZXIiLCJQcmltYXJ5VXNlciI6ImFldGVybnVtQGNoYW9zc2VhcmNoLmNvbSIsIndvcmtlci1xdW90YV9hcC1zb3V0aC0xIjoyNDAsIkxvZ2luVHlwZSI6ImFsaWFzIiwiZXhwIjoxNjQ0MzE3OTMyLCJpYXQiOjE2NDQyMzE1MzIsImVtYWlsIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImp0aSI6IjczYjRjMzU1LWNmZjAtNGVkYy1hOWJiLTdjNzkxYzE5MTY2ZiJ9.3ztiIwV0D7_i6uZrEHGcv1YUKfSedf86OIf2vdfQOUA"
 	// req.Header.Add("x-amz-security-token", sessionToken)
 
-	var nilvalue string
-	credentials := credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, nilvalue)
+	var sessionToken string
+	credentials := credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, sessionToken)
 	_, err := v4.NewSigner(credentials).Sign(req, bodyReader, client.config.AWSServiceName, client.config.Region, time.Now())
 
 	if err != nil {
@@ -81,26 +85,88 @@ func (client *Client) signAndDo(req *http.Request, bodyAsBytes []byte) (*http.Re
 	return resp, nil
 }
 
-// func (client *Client) signV2(tokenValue string,req *http.Request, bodyAsBytes []byte) (http.Header, error) {
-// 	tokenString := tokenValue
-// 	claims := jwt.MapClaims{}
-// 	log.Debug("token-->>", tokenString)
+func (client *Client) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
+	log.Debug("------- AWS V2 Sign Starts------")
 
-// 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-// 		return []byte("<YOUR VERIFICATION KEY>"), nil
-// 	})
+	claims := jwt.MapClaims{}
+	log.Debug("token-->>", tokenValue)
 
-// 	log.Debug("token---->", token)
-// 	log.Error("err----->", err)
+	token, err := jwt.ParseWithClaims(tokenValue, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("<YOUR VERIFICATION KEY>"), nil
+	})
 
-// 	for key, val := range claims {
-// 		log.Debug("Key -->", key, "value -->", val)
-// 	}
-// 	access_key := claims["AccessKeyId"]
-// 	secret_key := claims["SecretAccessKey"]
+	log.Debug("token,err---->", token, err)
 
-// 	return nil, nil
-// }
+	accessKey := claims["AccessKeyId"].(string)
+	secretAccessKey := claims["SecretAccessKey"].(string)
+	externalId := claims["external_id"].(string)
+	dateTime := time.Now().UTC().String()
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("x-amz-security-token", tokenValue)
+	req.Header.Add("x-amz-chaossumo-route-token", externalId)
+	req.Header.Add("X-Amz-Date", dateTime)
+
+	log.Debug("headers-->", req.Header)
+
+	msgLines := []string{
+		req.Method, "",
+		"application/json", "",
+		"x-amz-chaossumo-route-token:" + externalId,
+		"x-amz-date:" + dateTime,
+		"x-amz-security-token:" + tokenValue,
+		req.URL.Path,
+	}
+
+	msg := strings.Join(msgLines, "\n")
+	log.Debug("msg---->", msg)
+
+	signature := generateSignature(secretAccessKey, msg)
+	log.Debug("signature---->", signature)
+
+	auth := "AWS " + accessKey + ":" + signature
+	log.Debug("auth---->", auth)
+
+	req.Header.Add("Authorization", auth)
+	req.Header.Add("x-amz-cs3-authorization", auth)
+	log.Debug("req.Header-->", req.Header)
+
+	for key, val := range req.Header {
+		log.Debug("Header -->", key, "  value -->", val)
+	}
+	log.Debug("req.GetBody-->", req.GetBody)
+	b, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	log.Debug("body--->>", b)
+	resp, err := client.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %s", err)
+	}
+
+	log.Warn("Got response:\nStatus code: %d", resp.StatusCode)
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		respAsBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read response body: %s", err)
+		}
+		return nil, fmt.Errorf(
+			"expected a 2xx status code, but got %d.\nMethod: %s\nURL: %s\nRequest body: %s\nResponse body: %s",
+			resp.StatusCode, req.Method, req.URL, bodyAsBytes, respAsBytes)
+	}
+	log.Debug("------- AWS V2 Sign Ends------")
+	return resp, nil
+}
+
+func generateSignature(secretToken string, payloadBody string) string {
+	keyForSign := []byte(secretToken)
+	h := hmac.New(sha1.New, keyForSign)
+	h.Write([]byte(payloadBody))
+	return base64.StdEncoding.EncodeToString(h.Sum(nil))
+}
 
 func (client *Client) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)

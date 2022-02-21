@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -14,11 +15,16 @@ func (client *Client) ListBuckets(ctx context.Context) (*ListBucketsResponse, er
 		return nil, err
 	}
 
-	httpResp, err := client.signAndDo(httpReq, nil)
+	httpResp, err := client.signV4AndDo(httpReq, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(httpResp.Body)
 
 	var resp ListBucketsResponse
 	if err := client.unmarshalXMLBody(httpResp.Body, &resp); err != nil {

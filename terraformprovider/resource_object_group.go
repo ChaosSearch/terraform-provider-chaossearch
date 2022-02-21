@@ -5,6 +5,7 @@ import (
 	"cs-tf-provider/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	log "github.com/sirupsen/logrus"
 )
 
 func resourceObjectGroup() *schema.Resource {
@@ -237,8 +238,10 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		PrefixFilter: &prefixFilter,
 		RegexFilter:  &regexFilter,
 	}
-
+	tokenValue := meta.(*ProviderMeta).token
+	log.Warn("token value------------>>>>", tokenValue)
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
+		AuthToken:      tokenValue,
 		Bucket:         data.Get("bucket").(string),
 		Source:         data.Get("source").(string),
 		Format:         &format,

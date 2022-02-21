@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -15,7 +16,6 @@ type readBucketMetadataResponse struct {
 	State  string `json:"State"`
 }
 
-// For documentation see: https://docs.chaossearch.io/reference#bucketmodel
 func (client *Client) ReadIndexingState(ctx context.Context, req *ReadIndexingStateRequest) (*IndexingState, error) {
 	method := "POST"
 	body := &readBucketMetadataRequest{
@@ -53,11 +53,16 @@ func makeGetBucketMetadataRequest(method string, client *Client, ctx context.Con
 		return nil, fmt.Errorf("failed to create request: %s", err)
 	}
 
-	httpResp, err := client.signAndDo(httpReq, jsonedBody)
+	httpResp, err := client.signV4AndDo(httpReq, jsonedBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(httpResp.Body)
 
 	var response readBucketMetadataResponse
 	err = client.unmarshalJSONBody(httpResp.Body, &response)

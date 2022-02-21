@@ -19,9 +19,9 @@ provider "chaossearch" {
 
 }
 
-
+#
 resource "chaossearch_view" "chaossearch-create-view" {
-bucket = "dinesh-view-100121"
+bucket = "dinesh-view-09"
 
   case_insensitive = false
 
@@ -44,12 +44,14 @@ bucket = "dinesh-view-100121"
       }
     }
   }
+  depends_on = [
+    chaossearch_object_group.my-object-group
+  ]
   }
-
-
+#
+#
 resource "chaossearch_object_group" "my-object-group" {
-
-  bucket = "dinesh-og-100121"
+  bucket = "dinesh-og-09"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"

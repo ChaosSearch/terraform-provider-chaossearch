@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+
 	//log "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -23,11 +25,19 @@ func (client *Client) CreateObjectGroup(ctx context.Context, req *CreateObjectGr
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
+	var sessionToken = req.AuthToken
+	httpResp, err := client.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
+
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(httpResp.Body)
 	return nil
 }
 

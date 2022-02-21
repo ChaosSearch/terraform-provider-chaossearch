@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
-// For documentation see: https://docs.chaossearch.io/reference#bucketmodel
 func (client *Client) UpdateIndexingState(ctx context.Context, req *UpdateIndexingStateRequest) error {
 	method := "POST"
 	url := fmt.Sprintf("%s/Bucket/model", client.config.URL)
@@ -23,11 +23,16 @@ func (client *Client) UpdateIndexingState(ctx context.Context, req *UpdateIndexi
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
+	httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(httpResp.Body)
 
 	return nil
 }

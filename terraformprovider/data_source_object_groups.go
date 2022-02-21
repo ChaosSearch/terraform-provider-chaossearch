@@ -36,7 +36,6 @@ func dataSourceObjectGroups() *schema.Resource {
 }
 
 func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// client := &http.Client{Timeout: 10 * time.Second}
 
 	client := meta.(*ProviderMeta).Client
 
