@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -10,18 +11,23 @@ import (
 func (client *Client) DeleteView(ctx context.Context, req *DeleteViewRequest) error {
 	method := "DELETE"
 	safeViewName := url.PathEscape(req.Name)
-	url := fmt.Sprintf("%s/V1/%s", client.config.URL, safeViewName)
+	deleteViewUrl := fmt.Sprintf("%s/V1/%s", client.config.URL, safeViewName)
 
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, nil)
+	httpReq, err := http.NewRequestWithContext(ctx, method, deleteViewUrl, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
 	httpResp, err := client.signAndDo(httpReq, nil)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
+		return fmt.Errorf("failed to %s to %s: %s", method, deleteViewUrl, err)
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body %s", err)
+		}
+	}(httpResp.Body)
 
 	return nil
 }
