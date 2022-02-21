@@ -21,22 +21,20 @@ provider "chaossearch" {
 
 
 resource "chaossearch_view" "chaossearch-create-view" {
-bucket = "dinesh-view-100121"
-
+  bucket = "nibras-view-a-002"
   case_insensitive = false
-
-  index_pattern   = ".*"
-  index_retention = -1
-  overwrite       = true
-  sources         = []
-  time_field_name = "@timestamp"
-  transforms      = []
+  index_pattern    = ".*"
+  index_retention  = -1
+  overwrite        = true
+  sources          = []
+  time_field_name  = "@timestamp"
+  transforms       = []
   filter {
     predicate {
       _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
       pred {
         _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
-        field = "cs_partition_key_0"
+        field = "cs_partition_key_0_1111"
         query = "*bluebike*"
         state {
           _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
@@ -44,42 +42,76 @@ bucket = "dinesh-view-100121"
       }
     }
   }
-  }
-
-
-resource "chaossearch_object_group" "my-object-group" {
-
-  bucket = "dinesh-og-100121"
-  source = "chaos-test-data-aps1"
-  format {
-    _type            = "CSV"
-    column_delimiter = ","
-    row_delimiter    = "\n"
-    header_row       = true
-  }
-  interval {
-    mode   = 0
-    column = 0
-  }
-  index_retention {
-    for_partition = []
-    overall       = -1
-  }
-  filter {
-    prefix_filter {
-      field  = "key"
-      prefix = "bluebike"
-    }
-    regex_filter {
-      field = "key"
-      regex = ".*"
-    }
-  }
-  options {
-    ignore_irregular = true
-  }
-  realtime = false
 }
+
+
+#resource "chaossearch_object_group" "my-object-group-1" {
+#
+#  bucket = "nibras-og-0142"
+#  source = "chaos-test-data-aps1"
+#  format {
+#    _type            = "CSV"
+#    column_delimiter = ","
+#    row_delimiter    = "\n"
+#    header_row       = true
+#  }
+#  interval {
+#    mode   = 0
+#    column = 0
+#  }
+#  index_retention {
+#    for_partition = []
+#    overall       = -1
+#  }
+#  filter {
+#    prefix_filter {
+#      field  = "key"
+#      prefix = "bluebike"
+#    }
+#    regex_filter {
+#      field = "key"
+#      regex = ".*"
+#    }
+#  }
+#  options {
+#    ignore_irregular = true
+#  }
+#  realtime = false
+#}
+#
+#resource "chaossearch_object_group" "my-object-group-2" {
+#
+#  bucket = "nibras-og-0251"
+#  source = "chaos-test-data-aps1"
+#  format {
+#    _type            = "CSV"
+#    column_delimiter = ","
+#    row_delimiter    = "\n"
+#    header_row       = true
+#  }
+#  interval {
+#    mode   = 0
+#    column = 0
+#  }
+#  index_retention {
+#    for_partition = []
+#    overall       = -1
+#  }
+#  filter {
+#    prefix_filter {
+#      field  = "key"
+#      prefix = "bluebike"
+#    }
+#    regex_filter {
+#      field = "key"
+#      regex = ".*"
+#    }
+#  }
+#  options {
+#    ignore_irregular = true
+#  }
+#  realtime = false
+#}
 
 # resource "chaossearch_indexing_state" "my-object-group" {
 #   object_group_name = chaossearch_object_group.my-object-group.name

@@ -90,6 +90,10 @@ type DeleteObjectGroupRequest struct {
 	Name string
 }
 
+type DeleteViewRequest struct {
+	Name string
+}
+
 type UpdateObjectGroupRequest struct {
 	Name           string
 	IndexRetention int
