@@ -48,9 +48,6 @@ func (client *Client) signAndDo(req *http.Request, bodyAsBytes []byte) (*http.Re
 		bodyReader = bytes.NewReader(bodyAsBytes)
 	}
 
-	// var sessionToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJTZWNyZXRBY2Nlc3NLZXkiOiJHRWx3Wm5xelhrb2RvKzYvWmRLcERxQ3I1VUExb1ltaWJyZ3dpVU01IiwiZXBvY2giOjE2NDQxMTUwNzM4NzEsImV4dGVybmFsX2lkIjoiYmU0YWViNTMtMjFkNS00OTAyLTg2MmMtOWM5YTE3YWQ2Njc1IiwiQ1NSb2xlIjoidXNlciIsIlJlcXVlc3RVc2VyIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImF3c19hY2NvdW50X2lkIjoiNzY3Mzk2NjcxNzMyIiwiVXNlcm5hbWUiOiJzZXJ2aWNlX3VzZXJAY2hhb3NzZWFyY2guY29tIiwiQWNjZXNzS2V5SWQiOiJEVFUzQTNEQzdBSjBJTlBXV1FJUyIsIlNlcnZpY2VUeXBlIjoiUHJlbWl1bSIsIm5hbWUiOiJzZXJ2aWNlX3VzZXIiLCJQcmltYXJ5VXNlciI6ImFldGVybnVtQGNoYW9zc2VhcmNoLmNvbSIsIndvcmtlci1xdW90YV9hcC1zb3V0aC0xIjoyNDAsIkxvZ2luVHlwZSI6ImFsaWFzIiwiZXhwIjoxNjQ0MzE3OTMyLCJpYXQiOjE2NDQyMzE1MzIsImVtYWlsIjoic2VydmljZV91c2VyQGNoYW9zc2VhcmNoLmNvbSIsImp0aSI6IjczYjRjMzU1LWNmZjAtNGVkYy1hOWJiLTdjNzkxYzE5MTY2ZiJ9.3ztiIwV0D7_i6uZrEHGcv1YUKfSedf86OIf2vdfQOUA"
-	// req.Header.Add("x-amz-security-token", sessionToken)
-
 	var nilvalue string
 	credentials := credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, nilvalue)
 	_, err := v4.NewSigner(credentials).Sign(req, bodyReader, client.config.AWSServiceName, client.config.Region, time.Now())
@@ -80,27 +77,6 @@ func (client *Client) signAndDo(req *http.Request, bodyAsBytes []byte) (*http.Re
 
 	return resp, nil
 }
-
-// func (client *Client) signV2(tokenValue string,req *http.Request, bodyAsBytes []byte) (http.Header, error) {
-// 	tokenString := tokenValue
-// 	claims := jwt.MapClaims{}
-// 	log.Debug("token-->>", tokenString)
-
-// 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-// 		return []byte("<YOUR VERIFICATION KEY>"), nil
-// 	})
-
-// 	log.Debug("token---->", token)
-// 	log.Error("err----->", err)
-
-// 	for key, val := range claims {
-// 		log.Debug("Key -->", key, "value -->", val)
-// 	}
-// 	access_key := claims["AccessKeyId"]
-// 	secret_key := claims["SecretAccessKey"]
-
-// 	return nil, nil
-// }
 
 func (client *Client) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)

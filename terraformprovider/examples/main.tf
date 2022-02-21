@@ -21,7 +21,7 @@ provider "chaossearch" {
 
 
 resource "chaossearch_view" "chaossearch-create-view" {
-bucket = "dinesh-view-100121"
+bucket = "dinesh-view-201"
 
   case_insensitive = false
 
@@ -49,7 +49,7 @@ bucket = "dinesh-view-100121"
 
 resource "chaossearch_object_group" "my-object-group" {
 
-  bucket = "dinesh-og-100121"
+  bucket = "dinesh-og-201"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"

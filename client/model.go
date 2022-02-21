@@ -1,8 +1,5 @@
 package client
 
-// "github.com/aws/aws-sdk-go/aws/client"
-// "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 type Bucket struct {
 	Name         string `xml:"Name"`
 	CreationDate string `xml:"CreationDate"`
