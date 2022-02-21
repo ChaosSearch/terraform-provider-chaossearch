@@ -1,14 +1,15 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"bytes"
 )
 
 func (client *Client) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequest) error {
+	// TODO to be developed
 	method := "POST"
 	url := fmt.Sprintf("%s/user/groups", client.config.URL)
 	log.Debug("Url-->", url)
@@ -17,8 +18,8 @@ func (client *Client) CreateUserGroup(ctx context.Context, req *CreateUserGroupR
 	if err != nil {
 		return err
 	}
-	log.Debug("method-->",method)
-	log.Debug("bodyAsBytes-->",bodyAsBytes)
+	log.Debug("method-->", method)
+	log.Debug("bodyAsBytes-->", bodyAsBytes)
 
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
@@ -42,5 +43,6 @@ func (client *Client) CreateUserGroup(ctx context.Context, req *CreateUserGroupR
 }
 
 func marshalCreateUserGroupRequest(req *CreateUserGroupRequest) ([]byte, error) {
-	return nil,nil
+	// TODO to be developed
+	return nil, nil
 }

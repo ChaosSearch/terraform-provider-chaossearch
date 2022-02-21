@@ -17,7 +17,7 @@ func (client *Client) Auth(ctx context.Context) (token string, err error) {
 	url := fmt.Sprintf("%s/user/login", client.config.URL)
 	method := "POST"
 	login_ := client.Login
-	
+
 	log.Warn("url--", url)
 
 	log.Warn("username--", login_.Username)
@@ -43,6 +43,8 @@ func (client *Client) Auth(ctx context.Context) (token string, err error) {
 	req.Header.Add("Content-Type", "text/plain")
 
 	res, err := client.httpClient.Do(req)
+	//TODO add a status call after successful login to ensure that the user is actually deployed
+	//	TODO API end point will be provided
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -66,12 +68,10 @@ func marshalLoginRequest(req *Login) ([]byte, error) {
 		"Password":  req.Password,
 		"ParentUid": req.ParentUserId,
 	}
-	log.Warn("body---->>", body)
 
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
-	log.Warn("marshalling--3")
 	return bodyAsBytes, nil
 }

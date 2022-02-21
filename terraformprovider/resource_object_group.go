@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"cs-tf-provider/client"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -259,51 +257,51 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	diags := diag.Diagnostics{}
-	c := meta.(*ProviderMeta).Client
+	//diags := diag.Diagnostics{}
+	//c := meta.(*ProviderMeta).Client
+	//
+	//req := &client.ReadObjectGroupRequest{
+	//	ID: data.Id(),
+	//}
+	//
+	//resp, err := c.ReadObjectGroup(ctx, req)
+	//
+	//if err != nil {
+	//	return diag.Errorf("Failed to read object group: %s", err)
+	//}
+	//
+	//data.Set("name", data.Id())
+	//data.Set("filter_json", resp.FilterJSON)
+	//data.Set("format", resp.Format)
+	//data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
+	//data.Set("index_retention", resp.IndexRetention)
+	//
+	//// When the object in an Object Group use no compression, you need to create it with
+	//// `compression = ""`. However, when querying an Object Group whose object are not
+	//// compressed, the API returns `compression = "none"`. We coerce the "none" value to
+	//// an empty string in order not to confuse Terraform.
+	//compressionOrEmptyString := resp.Compression
+	//if strings.ToLower(compressionOrEmptyString) == "none" {
+	//	compressionOrEmptyString = ""
+	//}
+	//data.Set("compression", compressionOrEmptyString)
+	//
+	//data.Set("partition_by", resp.PartitionBy)
+	//data.Set("pattern", resp.Pattern)
+	//data.Set("source_bucket", resp.SourceBucket)
+	//
+	//data.Set("column_selection", resp.ColumnSelection)
+	//
+	//// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
+	//// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
+	//// We represent "null" as an int pointer to nil in the code.
+	//if resp.ArrayFlattenDepth == nil {
+	//	data.Set("array_flatten_depth", -1)
+	//} else {
+	//	data.Set("array_flatten_depth", resp.ArrayFlattenDepth)
+	//}
 
-	req := &client.ReadObjectGroupRequest{
-		ID: data.Id(),
-	}
-
-	resp, err := c.ReadObjectGroup(ctx, req)
-
-	if err != nil {
-		return diag.Errorf("Failed to read object group: %s", err)
-	}
-
-	data.Set("name", data.Id())
-	data.Set("filter_json", resp.FilterJSON)
-	data.Set("format", resp.Format)
-	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
-	data.Set("index_retention", resp.IndexRetention)
-
-	// When the object in an Object Group use no compression, you need to create it with
-	// `compression = ""`. However, when querying an Object Group whose object are not
-	// compressed, the API returns `compression = "none"`. We coerce the "none" value to
-	// an empty string in order not to confuse Terraform.
-	compressionOrEmptyString := resp.Compression
-	if strings.ToLower(compressionOrEmptyString) == "none" {
-		compressionOrEmptyString = ""
-	}
-	data.Set("compression", compressionOrEmptyString)
-
-	data.Set("partition_by", resp.PartitionBy)
-	data.Set("pattern", resp.Pattern)
-	data.Set("source_bucket", resp.SourceBucket)
-
-	data.Set("column_selection", resp.ColumnSelection)
-
-	// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
-	// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
-	// We represent "null" as an int pointer to nil in the code.
-	if resp.ArrayFlattenDepth == nil {
-		data.Set("array_flatten_depth", -1)
-	} else {
-		data.Set("array_flatten_depth", resp.ArrayFlattenDepth)
-	}
-
-	return diags
+	return nil
 }
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -325,12 +323,13 @@ func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, m
 	c := meta.(*ProviderMeta).Client
 
 	deleteObjectGroupRequest := &client.DeleteObjectGroupRequest{
-		Name: data.Get("name").(string),
+		Name: data.Get("bucket").(string),
 	}
 
 	if err := c.DeleteObjectGroup(ctx, deleteObjectGroupRequest); err != nil {
 		return diag.FromErr(err)
 	}
 
+	data.SetId(data.Get("bucket").(string))
 	return nil
 }
