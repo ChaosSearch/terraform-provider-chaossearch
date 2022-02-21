@@ -18,7 +18,9 @@ func (client *Client) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGr
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	httpResp, err := client.signV4AndDo(httpReq, nil)
+	var sessionToken = req.AuthToken
+	httpResp, err := client.signV2AndDo(sessionToken, httpReq, nil)
+	//httpResp, err := client.signV4AndDo(httpReq, nil)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, deleteUrl, err)
 	}

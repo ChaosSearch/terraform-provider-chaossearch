@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (client *Client) ListBuckets(ctx context.Context) (*ListBucketsResponse, error) {
+func (client *Client) ListBuckets(ctx context.Context, authToken string) (*ListBucketsResponse, error) {
 	url := fmt.Sprintf("%s/V1/", client.config.URL)
 
 	httpReq, err := http.NewRequestWithContext(ctx, "GET", url, nil)
@@ -15,7 +15,8 @@ func (client *Client) ListBuckets(ctx context.Context) (*ListBucketsResponse, er
 		return nil, err
 	}
 
-	httpResp, err := client.signV4AndDo(httpReq, nil)
+	httpResp, err := client.signV2AndDo(authToken, httpReq, nil)
+	//httpResp, err := client.signV4AndDo(httpReq, nil)
 	if err != nil {
 		return nil, err
 	}

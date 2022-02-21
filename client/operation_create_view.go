@@ -21,7 +21,6 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 		return err
 	}
 
-	log.Warn("bodyAsBytes--1")
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
@@ -33,10 +32,8 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
 
 	log.Warn("httpReq-->", httpReq)
-	log.Warn("-1-------------------------------------------------------------------------------------------------------------------------------------------------")
 
 	httpResp, err := client.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
-	log.Warn("-2-------------------------------------------------------------------------------------------------------------------------------------------------")
 
 	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)

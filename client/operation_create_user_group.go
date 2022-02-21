@@ -28,12 +28,12 @@ func (client *Client) CreateUserGroup(ctx context.Context, req *CreateUserGroupR
 	log.Debug(" adding headers...")
 	httpReq.Header.Add("Content-Type", "text/plain")
 
-	//var sessionToken = req.AuthToken
+	var sessionToken = req.AuthToken
 	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
 
 	log.Warn("httpReq-->", httpReq)
-	//httpResp, err := client.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
-	httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
+	httpResp, err := client.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
@@ -49,5 +49,6 @@ func (client *Client) CreateUserGroup(ctx context.Context, req *CreateUserGroupR
 }
 
 func marshalCreateUserGroupRequest(req *CreateUserGroupRequest) ([]byte, error) {
+	// todo to be implemented
 	return nil, nil
 }

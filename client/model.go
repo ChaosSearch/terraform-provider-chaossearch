@@ -17,7 +17,8 @@ type ListBucketsResponse struct {
 }
 
 type ReadObjectGroupRequest struct {
-	ID string
+	AuthToken string
+	ID        string
 }
 
 type ReadObjectGroupResponse struct {
@@ -88,10 +89,12 @@ type UpdateIndexingStateRequest struct {
 }
 
 type DeleteObjectGroupRequest struct {
-	Name string
+	AuthToken string
+	Name      string
 }
 
 type UpdateObjectGroupRequest struct {
+	AuthToken      string
 	Name           string
 	IndexRetention int
 }
@@ -101,6 +104,7 @@ type ReadIndexingStateRequest struct {
 }
 
 type readBucketMetadataRequest struct {
+	AuthToken  string
 	BucketName string `json:"BucketName"`
 	Stats      bool   `json:"Stats"`
 }
@@ -153,6 +157,7 @@ type State struct {
 }
 
 type CreateUserGroupRequest struct {
-	Id   string
-	Name string
+	AuthToken string
+	Id        string
+	Name      string
 }

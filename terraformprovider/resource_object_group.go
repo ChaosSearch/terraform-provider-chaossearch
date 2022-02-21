@@ -309,8 +309,9 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
-
+	tokenValue := meta.(*ProviderMeta).token
 	updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
+		AuthToken:      tokenValue,
 		Name:           data.Get("name").(string),
 		IndexRetention: data.Get("index_retention").(int),
 	}
@@ -324,9 +325,10 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 
 func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).Client
-
+	tokenValue := meta.(*ProviderMeta).token
 	deleteObjectGroupRequest := &client.DeleteObjectGroupRequest{
-		Name: data.Get("bucket").(string),
+		AuthToken: tokenValue,
+		Name:      data.Get("bucket").(string),
 	}
 
 	if err := c.DeleteObjectGroup(ctx, deleteObjectGroupRequest); err != nil {

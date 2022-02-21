@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"cs-tf-provider/client"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -56,6 +55,7 @@ func resourceIndexingStateRead(ctx context.Context, data *schema.ResourceData, m
 	c := meta.(*ProviderMeta).Client
 
 	readIndexingStateRequest := &client.ReadIndexingStateRequest{
+
 		ObjectGroupName: data.Get("object_group_name").(string),
 	}
 
@@ -65,7 +65,10 @@ func resourceIndexingStateRead(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	data.SetId(resp.ObjectGroupName)
-	data.Set("active", resp.Active)
+	err1 := data.Set("active", resp.Active)
+	if err1 != nil {
+		return nil
+	}
 
 	return diags
 }

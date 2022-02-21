@@ -45,7 +45,9 @@ func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	httpResp, err := client.signV4AndDo(httpReq, nil)
+	var sessionToken = req.AuthToken
+	httpResp, err := client.signV2AndDo(sessionToken, httpReq, nil)
+	//httpResp, err := client.signV4AndDo(httpReq, nil)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
@@ -75,7 +77,7 @@ func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req
 }
 
 func (client *Client) readAttributesFromBucketTagging(ctx context.Context, req *ReadObjectGroupRequest, resp *ReadObjectGroupResponse) error {
-	session, err := session.NewSession(&aws.Config{
+	session_, err := session.NewSession(&aws.Config{
 		Credentials:      credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, ""),
 		Endpoint:         aws.String(fmt.Sprintf("%s/V1", client.config.URL)),
 		Region:           aws.String(client.config.Region),
@@ -87,7 +89,7 @@ func (client *Client) readAttributesFromBucketTagging(ctx context.Context, req *
 		return fmt.Errorf("failed to create AWS session: %s", err)
 	}
 
-	svc := s3.New(session)
+	svc := s3.New(session_)
 	input := &s3.GetBucketTaggingInput{
 		Bucket: aws.String(req.ID),
 	}

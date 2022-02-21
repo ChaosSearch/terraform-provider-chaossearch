@@ -4,6 +4,7 @@ import (
 	"context"
 	"cs-tf-provider/client"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -133,7 +134,10 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	} else {
 		tokenData := AuthResponse{}
-		json.Unmarshal([]byte(authResponseString), &tokenData)
+
+		if err := json.Unmarshal([]byte(authResponseString), &tokenData); err != nil {
+			return fmt.Errorf("failed to unmarshal JSON: %s", err), nil
+		}
 
 		providerMeta := &ProviderMeta{
 			Client: csClient,

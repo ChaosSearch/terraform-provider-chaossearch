@@ -22,8 +22,9 @@ func (client *Client) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGr
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
-
-	httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
+	var sessionToken = req.AuthToken
+	httpResp, err := client.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}

@@ -36,10 +36,11 @@ func dataSourceObjectGroups() *schema.Resource {
 }
 
 func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
+	// todo to be implemented
 	client := meta.(*ProviderMeta).Client
+	tokenValue := meta.(*ProviderMeta).token
 
-	clientResponse, err := client.ListBuckets(ctx)
+	clientResponse, err := client.ListBuckets(ctx, tokenValue)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -52,33 +53,14 @@ func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, 
 		}
 	}
 
-	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	// req, err := http.NewRequest("GET", fmt.Sprintf("%s/coffees", "http://api:9090"), nil)
-	// if err != nil {
-	//   return diag.FromErr(err)
-	// }
-
-	// r, err := client.Do(req)
-	// if err != nil {
-	//   return diag.FromErr(err)
-	// }
-	// defer r.Body.Close()
-
-	// objectGroups := make([]map[string]interface{}, 1)
 	objectGroups := result
-
-	// err = json.NewDecoder(r.Body).Decode(&coffees)
-	// if err != nil {
-	//   return diag.FromErr(err)
-	// }
 
 	if err := data.Set("object_groups", objectGroups); err != nil {
 		return diag.FromErr(err)
 	}
 
-	// always run
 	data.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 
 	return diags

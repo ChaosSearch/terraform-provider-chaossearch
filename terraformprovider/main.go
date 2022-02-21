@@ -18,11 +18,10 @@ func main() {
 }
 
 func init() {
-	fname, ok := os.LookupEnv("TF_LOG_PATH")
+	fileName, ok := os.LookupEnv("TF_LOG_PATH")
 	if ok {
-		var filename string = fname
 
-		f, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+		f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 		Formatter := new(log.TextFormatter)
 
 		Formatter.TimestampFormat = "02-01-2006 15:04:05"
