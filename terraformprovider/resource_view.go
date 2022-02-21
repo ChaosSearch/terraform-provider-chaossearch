@@ -146,16 +146,16 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 	var predicateType string
 
-	var field_value string
-	var query_value string
-	var _type_value string
+	var fieldValue string
+	var queryValue string
+	var typeValue string
 
 	var stateType string
 
 	predicateType = predicateColumnSelectionInterface["_type"].(string)
-	field_value = predColumnSelectionInterface["field"].(string)
-	query_value = predColumnSelectionInterface["query"].(string)
-	_type_value = predColumnSelectionInterface["_type"].(string)
+	fieldValue = predColumnSelectionInterface["field"].(string)
+	queryValue = predColumnSelectionInterface["query"].(string)
+	typeValue = predColumnSelectionInterface["_type"].(string)
 	stateType = stateColumnSelectionInterface["_type"].(string)
 
 	state := client.State{
@@ -163,10 +163,10 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	}
 
 	pred := client.Pred{
-		Field: field_value,
-		Query: query_value,
+		Field: fieldValue,
+		Query: queryValue,
 		State: state,
-		Type_: _type_value,
+		Type_: typeValue,
 	}
 
 	Predicate := client.Predicate{
@@ -175,7 +175,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	}
 
 	filter := &client.FilterPredicate{
-		&Predicate,
+		Predicate: &Predicate,
 	}
 
 	c := meta.(*ProviderMeta).Client
@@ -226,18 +226,22 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 	data.SetId(data.Get("bucket").(string))
 
+	// TODO to be developed
 	// return resourceObjectGroupRead(ctx, data, meta)
 	return nil
 }
 
 func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// TODO to be developed
 	return nil
 }
 
 func resourceViewUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// TODO to be developed
 	return nil
 }
 
 func resourceViewDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// TODO to be developed
 	return nil
 }

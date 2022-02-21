@@ -33,14 +33,12 @@ func resourceUserGroup() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			"permissions":{
-				Type: schema.TypeSet,
-                Optional: false,
-                Required: true,
+			"permissions": {
+				Type:     schema.TypeSet,
+				Optional: false,
+				Required: true,
 				Elem: &schema.Resource{
-                    Schema: map[string]*schema.Schema{
-						
-					},
+					Schema: map[string]*schema.Schema{},
 				},
 			},
 		},
@@ -49,19 +47,16 @@ func resourceUserGroup() *schema.Resource {
 
 func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Debug("creating groups")
-	 c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).Client
 	tokenValue := meta.(*ProviderMeta).token
-	log.Warn("token value------------>>>>", tokenValue)
+	log.Debug("token value------------>>>>", tokenValue)
 
 	createUserGroupRequest := &client.CreateUserGroupRequest{
 		Id:   data.Get("id").(string),
 		Name: data.Get("name").(string),
 	}
 
-	log.Debug("createUserGroupRequest.id-->", createUserGroupRequest.Id)
-	log.Debug("createUserGroupRequest.name-->", createUserGroupRequest.Name)
-
-
+	//TODO to be developed
 	if err := c.CreateUserGroup(ctx, createUserGroupRequest); err != nil {
 		return diag.FromErr(err)
 	}
@@ -76,6 +71,7 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	// c := meta.(*ProviderMeta).Client
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value------------>>>>", tokenValue)
+	//TODO to be developed
 	return nil
 }
 
@@ -84,6 +80,7 @@ func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta in
 	// c := meta.(*ProviderMeta).Client
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value------------>>>>", tokenValue)
+	//TODO to be developed
 	return nil
 }
 func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -91,5 +88,6 @@ func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta in
 	// c := meta.(*ProviderMeta).Client
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value------------>>>>", tokenValue)
+	//TODO to be developed
 	return nil
 }

@@ -20,7 +20,6 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 		return err
 	}
 
-	log.Warn("bodyAsBytes--1")
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
@@ -28,9 +27,9 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 	log.Debug(" adding headers...")
 	httpReq.Header.Add("Content-Type", "text/plain")
 
-	log.Warn("httpReq-->", httpReq)
+	log.Debug("httpReq-->", httpReq)
 	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
-	log.Warn("httpResp-->", httpResp)
+	log.Debug("httpResp-->", httpResp)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
@@ -40,7 +39,7 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 }
 
 func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
-	log.Warn("req.Sources----", req.Sources)
+	log.Debug("req.Sources----", req.Sources)
 	body := map[string]interface{}{
 		"bucket":          req.Bucket,
 		"sources":         req.Sources,
@@ -52,12 +51,11 @@ func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
 		"transforms":      req.Transforms,
 		"filter":          req.FilterPredicate,
 	}
-	log.Warn("body----", body)
+	log.Debug("body----", body)
 
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
-	log.Warn("marshalling--3")
 	return bodyAsBytes, nil
 }
