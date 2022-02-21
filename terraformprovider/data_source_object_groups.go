@@ -37,10 +37,10 @@ func dataSourceObjectGroups() *schema.Resource {
 
 func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// todo to be implemented
-	client := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 
-	clientResponse, err := client.ListBuckets(ctx, tokenValue)
+	clientResponse, err := c.ListBuckets(ctx, tokenValue)
 	if err != nil {
 		return diag.FromErr(err)
 	}

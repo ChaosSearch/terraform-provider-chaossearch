@@ -9,9 +9,9 @@ import (
 	"net/http"
 )
 
-func (client *Client) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequest) error {
+func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequest) error {
 	method := "POST"
-	url := fmt.Sprintf("%s/user/groups", client.config.URL)
+	url := fmt.Sprintf("%s/user/groups", csClient.config.URL)
 	log.Debug("Url-->", url)
 	log.Debug("req-->", req)
 	bodyAsBytes, err := marshalCreateUserGroupRequest(req)
@@ -32,7 +32,7 @@ func (client *Client) CreateUserGroup(ctx context.Context, req *CreateUserGroupR
 	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
 
 	log.Warn("httpReq-->", httpReq)
-	httpResp, err := client.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
 	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)
 	if err != nil {

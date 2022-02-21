@@ -11,9 +11,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) error {
+func (csClient *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error {
 	method := "POST"
-	url := fmt.Sprintf("%s/Bucket/createView", client.config.URL)
+	url := fmt.Sprintf("%s/Bucket/createView", csClient.config.URL)
 	log.Debug("Url-->", url)
 	log.Debug("req-->", req)
 	bodyAsBytes, err := marshalCreateViewRequest(req)
@@ -33,7 +33,7 @@ func (client *Client) CreateView(ctx context.Context, req *CreateViewRequest) er
 
 	log.Warn("httpReq-->", httpReq)
 
-	httpResp, err := client.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
 
 	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)

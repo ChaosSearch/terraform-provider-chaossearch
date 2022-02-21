@@ -12,8 +12,8 @@ import (
 )
 
 type ProviderMeta struct {
-	Client *client.Client
-	token  string
+	CSClient *client.CSClient
+	token    string
 }
 
 type AuthResponse struct {
@@ -140,8 +140,8 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		}
 
 		providerMeta := &ProviderMeta{
-			Client: csClient,
-			token:  tokenData.Token,
+			CSClient: csClient,
+			token:    tokenData.Token,
 		}
 		return providerMeta, nil
 

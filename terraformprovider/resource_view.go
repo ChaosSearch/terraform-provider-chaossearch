@@ -178,7 +178,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		Predicate: &Predicate,
 	}
 
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value------------>>>>", tokenValue)
 

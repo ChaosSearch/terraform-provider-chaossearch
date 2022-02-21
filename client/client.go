@@ -23,21 +23,21 @@ import (
 	// v2 "github.com/aws/aws-sdk-go/private/signer/v2"
 )
 
-type Client struct {
+type CSClient struct {
 	config     *Configuration
 	httpClient *http.Client
 	userAgent  string
 	Login      *Login
 }
 
-func NewClient(config *Configuration, login *Login) *Client {
+func NewClient(config *Configuration, login *Login) *CSClient {
 	binaryName := os.Getenv("BINARY")
 	hostName := os.Getenv("HOSTNAME")
 	version := os.Getenv("VERSION")
 	namespace := os.Getenv("NAMESPACE")
 	userAgent := fmt.Sprintf("%s/%s %s/%s/%s", binaryName, version, hostName, namespace, binaryName)
 
-	return &Client{
+	return &CSClient{
 		config:     config,
 		httpClient: http.DefaultClient,
 		userAgent:  userAgent,
@@ -45,7 +45,7 @@ func NewClient(config *Configuration, login *Login) *Client {
 	}
 }
 
-func (client *Client) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
+func (csClient *CSClient) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
 	var bodyReader io.ReadSeeker
 	if bodyAsBytes == nil {
 		bodyReader = nil
@@ -56,8 +56,8 @@ func (client *Client) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*http.
 	// req.Header.Add("x-amz-security-token", sessionToken)
 
 	var sessionToken string
-	credentials := credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, sessionToken)
-	_, err := v4.NewSigner(credentials).Sign(req, bodyReader, client.config.AWSServiceName, client.config.Region, time.Now())
+	credentials := credentials.NewStaticCredentials(csClient.config.AccessKeyID, csClient.config.SecretAccessKey, sessionToken)
+	_, err := v4.NewSigner(credentials).Sign(req, bodyReader, csClient.config.AWSServiceName, csClient.config.Region, time.Now())
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign request: %s", err)
@@ -65,7 +65,7 @@ func (client *Client) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*http.
 
 	log.Warn("Sending request:\nMethod: %s\nURL: %s\nBody: %s", req.Method, req.URL, bodyAsBytes)
 	log.Warn("req--------->", req)
-	resp, err := client.httpClient.Do(req)
+	resp, err := csClient.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %s", err)
 	}
@@ -85,7 +85,7 @@ func (client *Client) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*http.
 	return resp, nil
 }
 
-func (client *Client) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
+func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
 	log.Debug("------- AWS V2 Sign Starts------")
 
 	claims := jwt.MapClaims{}
@@ -141,7 +141,7 @@ func (client *Client) signV2AndDo(tokenValue string, req *http.Request, bodyAsBy
 	}
 
 	log.Debug("body--->>", b)
-	resp, err := client.httpClient.Do(req)
+	resp, err := csClient.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %s", err)
 	}
@@ -168,7 +168,7 @@ func generateSignature(secretToken string, payloadBody string) string {
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
-func (client *Client) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
+func (csClient *CSClient) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %s", err)
@@ -183,7 +183,7 @@ func (client *Client) unmarshalXMLBody(bodyReader io.Reader, v interface{}) erro
 	return nil
 }
 
-func (client *Client) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
+func (csClient *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %s", err)

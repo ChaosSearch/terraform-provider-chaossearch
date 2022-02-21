@@ -38,7 +38,14 @@ func resourceUserGroup() *schema.Resource {
 				Optional: false,
 				Required: true,
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{},
+					Schema: map[string]*schema.Schema{
+						"Effect": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: false,
+							Computed: true,
+						},
+					},
 				},
 			},
 		},
@@ -47,7 +54,7 @@ func resourceUserGroup() *schema.Resource {
 
 func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Debug("creating groups")
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value------------>>>>", tokenValue)
 

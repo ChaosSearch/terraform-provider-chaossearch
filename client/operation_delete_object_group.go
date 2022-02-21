@@ -8,10 +8,10 @@ import (
 	"net/url"
 )
 
-func (client *Client) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
+func (csClient *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
 	method := "DELETE"
 	safeObjectGroupName := url.PathEscape(req.Name)
-	deleteUrl := fmt.Sprintf("%s/V1/%s", client.config.URL, safeObjectGroupName)
+	deleteUrl := fmt.Sprintf("%s/V1/%s", csClient.config.URL, safeObjectGroupName)
 
 	httpReq, err := http.NewRequestWithContext(ctx, method, deleteUrl, nil)
 	if err != nil {
@@ -19,7 +19,7 @@ func (client *Client) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGr
 	}
 
 	var sessionToken = req.AuthToken
-	httpResp, err := client.signV2AndDo(sessionToken, httpReq, nil)
+	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, nil)
 	//httpResp, err := client.signV4AndDo(httpReq, nil)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, deleteUrl, err)

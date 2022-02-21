@@ -177,7 +177,7 @@ func resourceObjectGroup() *schema.Resource {
 }
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 
 	formatColumnSelectionInterface := data.Get("format").(*schema.Set).List()[0].(map[string]interface{})
 	intervalColumnSelectionInterface := data.Get("interval").(*schema.Set).List()[0].(map[string]interface{})
@@ -308,7 +308,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 }
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
 		AuthToken:      tokenValue,
@@ -324,7 +324,7 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	deleteObjectGroupRequest := &client.DeleteObjectGroupRequest{
 		AuthToken: tokenValue,

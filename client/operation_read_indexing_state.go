@@ -16,14 +16,14 @@ type readBucketMetadataResponse struct {
 	State  string `json:"State"`
 }
 
-func (client *Client) ReadIndexingState(ctx context.Context, req *ReadIndexingStateRequest) (*IndexingState, error) {
+func (csClient *CSClient) ReadIndexingState(ctx context.Context, req *ReadIndexingStateRequest) (*IndexingState, error) {
 	method := "POST"
 	body := &readBucketMetadataRequest{
 		BucketName: req.ObjectGroupName,
 		Stats:      false,
 	}
 
-	response, err := makeGetBucketMetadataRequest(method, client, ctx, body)
+	response, err := makeGetBucketMetadataRequest(method, csClient, ctx, body)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %s", err)
 	}
@@ -40,20 +40,20 @@ func (client *Client) ReadIndexingState(ctx context.Context, req *ReadIndexingSt
 	return bucketMetadata, nil
 }
 
-func makeGetBucketMetadataRequest(method string, client *Client, ctx context.Context, body *readBucketMetadataRequest) (*readBucketMetadataResponse, error) {
-	url := fmt.Sprintf("%s/Bucket/metadata", client.config.URL)
+func makeGetBucketMetadataRequest(method string, c *CSClient, ctx context.Context, body *readBucketMetadataRequest) (*readBucketMetadataResponse, error) {
+	url := fmt.Sprintf("%s/Bucket/metadata", c.config.URL)
 
-	jsonedBody, err := json.Marshal(body)
+	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal request body: %s", err)
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(jsonedBody))
+	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(jsonBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %s", err)
 	}
 
-	httpResp, err := client.signV4AndDo(httpReq, jsonedBody)
+	httpResp, err := c.signV4AndDo(httpReq, jsonBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
@@ -65,7 +65,7 @@ func makeGetBucketMetadataRequest(method string, client *Client, ctx context.Con
 	}(httpResp.Body)
 
 	var response readBucketMetadataResponse
-	err = client.unmarshalJSONBody(httpResp.Body, &response)
+	err = c.unmarshalJSONBody(httpResp.Body, &response)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal response: %s", err)
 	}

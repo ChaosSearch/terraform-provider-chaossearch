@@ -33,7 +33,7 @@ func resourceIndexingState() *schema.Resource {
 }
 
 func resourceIndexingStateCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 
 	updateIndexingStateRequest := &client.UpdateIndexingStateRequest{
 		ObjectGroupName: data.Get("object_group_name").(string),
@@ -52,7 +52,7 @@ func resourceIndexingStateCreate(ctx context.Context, data *schema.ResourceData,
 func resourceIndexingStateRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 
 	readIndexingStateRequest := &client.ReadIndexingStateRequest{
 
@@ -74,7 +74,7 @@ func resourceIndexingStateRead(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceIndexingStateUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 
 	updateIndexingStateRequest := &client.UpdateIndexingStateRequest{
 		ObjectGroupName: data.Get("object_group_name").(string),
@@ -88,7 +88,7 @@ func resourceIndexingStateUpdate(ctx context.Context, data *schema.ResourceData,
 }
 
 func resourceIndexingStateDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 
 	stopIndexingRequest := &client.UpdateIndexingStateRequest{
 		ObjectGroupName: data.Get("object_group_name").(string),

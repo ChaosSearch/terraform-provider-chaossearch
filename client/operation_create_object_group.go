@@ -11,9 +11,9 @@ import (
 	"net/http"
 )
 
-func (client *Client) CreateObjectGroup(ctx context.Context, req *CreateObjectGroupRequest) error {
+func (csClient *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroupRequest) error {
 	method := "POST"
-	url := fmt.Sprintf("%s/Bucket/createObjectGroup", client.config.URL)
+	url := fmt.Sprintf("%s/Bucket/createObjectGroup", csClient.config.URL)
 
 	bodyAsBytes, err := marshalCreateObjectGroupRequest(req)
 	if err != nil {
@@ -26,7 +26,7 @@ func (client *Client) CreateObjectGroup(ctx context.Context, req *CreateObjectGr
 	}
 
 	var sessionToken = req.AuthToken
-	httpResp, err := client.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
 	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 
 	if err != nil {

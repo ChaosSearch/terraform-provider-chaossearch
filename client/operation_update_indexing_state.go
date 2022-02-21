@@ -9,9 +9,9 @@ import (
 	"net/http"
 )
 
-func (client *Client) UpdateIndexingState(ctx context.Context, req *UpdateIndexingStateRequest) error {
+func (csClient *CSClient) UpdateIndexingState(ctx context.Context, req *UpdateIndexingStateRequest) error {
 	method := "POST"
-	url := fmt.Sprintf("%s/Bucket/model", client.config.URL)
+	url := fmt.Sprintf("%s/Bucket/model", csClient.config.URL)
 
 	bodyAsBytes, err := marshalUpdateIndexingStateRequest(req)
 	if err != nil {
@@ -23,7 +23,7 @@ func (client *Client) UpdateIndexingState(ctx context.Context, req *UpdateIndexi
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
+	httpResp, err := csClient.signV4AndDo(httpReq, bodyAsBytes)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
