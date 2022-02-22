@@ -166,6 +166,30 @@ func resourceObjectGroup() *schema.Resource {
 				ForceNew:    true,
 				Description: "",
 			},
+			"index_parallelism": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "",
+			},
+			"index_retention_value": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "",
+			},
+			"target_active_index": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "",
+			},
+			"live_events_parallelism": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "",
+			},
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -308,12 +332,17 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 }
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	log.Debug("resourceObjectGroupUpdate called >>> ")
+	log.Debug("target >>> ", data.Get("target_activeIndex").(int))
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
-		AuthToken:      tokenValue,
-		Name:           data.Get("name").(string),
-		IndexRetention: data.Get("index_retention").(int),
+		AuthToken:             tokenValue,
+		Bucket:                data.Get("bucket").(string),
+		IndexParallelism:      data.Get("index_parallelism").(int),
+		IndexRetention:        data.Get("index_retention_value").(int),
+		TargetActiveIndex:     data.Get("target_active_index").(int),
+		LiveEventsParallelism: data.Get("live_events_parallelism").(int),
 	}
 
 	if err := c.UpdateObjectGroup(ctx, updateObjectGroupRequest); err != nil {

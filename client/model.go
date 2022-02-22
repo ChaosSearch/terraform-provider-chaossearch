@@ -96,9 +96,12 @@ type DeleteViewRequest struct {
 }
 
 type UpdateObjectGroupRequest struct {
-	AuthToken      string
-	Name           string
-	IndexRetention int
+	AuthToken             string
+	Bucket                string
+	IndexParallelism      int
+	IndexRetention        int
+	TargetActiveIndex     int
+	LiveEventsParallelism int
 }
 
 type ReadIndexingStateRequest struct {

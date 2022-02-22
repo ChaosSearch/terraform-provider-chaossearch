@@ -40,8 +40,11 @@ func (csClient *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObje
 
 func marshalUpdateObjectGroupRequest(req *UpdateObjectGroupRequest) ([]byte, error) {
 	body := map[string]interface{}{
-		"bucket":         req.Name,
-		"indexRetention": req.IndexRetention,
+		"bucket":                req.Bucket,
+		"indexParallelism":      req.IndexParallelism,
+		"indexRetention":        req.IndexRetention,
+		"targetActiveIndex":     req.TargetActiveIndex,
+		"liveEventsParallelism": req.LiveEventsParallelism,
 	}
 
 	bodyAsBytes, err := json.Marshal(body)
