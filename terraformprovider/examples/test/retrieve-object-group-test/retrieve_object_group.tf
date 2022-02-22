@@ -21,28 +21,28 @@ provider "chaossearch" {
 
 
 #get object group by id
-data "chaossearch_object_group" "object-group" {
-  object_group_id="c-og-100197"
+data "chaossearch_retrieve_object_group" "object-group" {
+  bucket="c-og-100198"
 }
 
 output "object_group" {
-  value = data.chaossearch_object_group.object-group
+  value = data.chaossearch_retrieve_object_group.object-group
 }
-
+#
 #without object group id
-#data "chaossearch_object_group" "without-object-group-id" {
+#data "chaossearch_retrieve_object_group" "without-object-group-id" {
 #}
 #
 #output "without_object_group_id" {
-#  value = data.chaossearch_object_group.without-object-group-id
+#  value = data.chaossearch_retrieve_object_group.without-object-group-id
 #}
 
 
 #when object group id not exists
-#data "chaossearch_object_group" "object-group-not-found" {
-#  object_group_id="c-og-197"
+#data "chaossearch_retrieve_object_group" "object-group-not-found" {
+#  bucket="c-og-197"
 #}
 #
 #output "object_group_not_found" {
-#  value = data.chaossearch_object_group.object-group-not-found
+#  value = data.chaossearch_retrieve_object_group.object-group-not-found
 #}

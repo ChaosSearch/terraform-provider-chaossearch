@@ -9,11 +9,10 @@ func dataSourceView() *schema.Resource {
 		//ReadContext: dataSourceObjectGroupsRead,
 		ReadContext: resourceViewRead,
 		Schema: map[string]*schema.Schema{
-			"view_id": {
-				Type: schema.TypeString,
-				//Required: false,
+			"bucket": {
+				Type:     schema.TypeString,
+				Required: true,
 				ForceNew: false,
-				Optional: true,
 			},
 			"_cacheable": {
 				Type:     schema.TypeBool,
@@ -28,12 +27,6 @@ func dataSourceView() *schema.Resource {
 				Optional: true,
 			},
 			"_type": {
-				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
-				Optional: true,
-			},
-			"bucket": {
 				Type:     schema.TypeString,
 				Required: false,
 				ForceNew: false,

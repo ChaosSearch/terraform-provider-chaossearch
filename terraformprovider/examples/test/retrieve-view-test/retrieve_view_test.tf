@@ -20,30 +20,30 @@ provider "chaossearch" {
 }
 
 #get view group by id
-data "chaossearch_view" "retrieve-view" {
-  view_id="Chathura-view-10000tt"
+data "chaossearch_retrieve_view" "retrieve-view" {
+  bucket="Chathura-view-10000tt"
 }
 
 output "view" {
-  value = data.chaossearch_view.retrieve-view
+  value = data.chaossearch_retrieve_view.retrieve-view
 }
 
 
 #without view id
-data "chaossearch_view" "retrieve-view-without-id" {
-
-}
-
-output "view-without-id" {
-  value = data.chaossearch_view.retrieve-view-without-id
-}
+#data "chaossearch_retrieve_view" "retrieve-view-without-id" {
+#
+#}
+#
+#output "view-without-id" {
+#  value = data.chaossearch_retrieve_view.retrieve-view-without-id
+#}
 
 #when view id not exists
-data "chaossearch_view" "view-not-found" {
-  view_id="Chat"
-}
-
-output "view-not-found" {
-  value = data.chaossearch_view.view-not-found
-}
+#data "chaossearch_retrieve_view" "view-not-found" {
+#  bucket="Chat"
+#}
+#
+#output "view-not-found" {
+#  value = data.chaossearch_retrieve_view.view-not-found
+#}
 

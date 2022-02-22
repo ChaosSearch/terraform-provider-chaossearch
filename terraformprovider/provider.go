@@ -74,10 +74,10 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"chaossearch_object_groups": dataSourceObjectGroups(),
-			"chaossearch_object_group":  dataSourceObjectGroup(),
-			"chaossearch_views":         dataSourceViews(),
-			"chaossearch_view":          dataSourceView(),
+			"chaossearch_retrieve_object_groups": dataSourceObjectGroups(),
+			"chaossearch_retrieve_object_group":  dataSourceObjectGroup(),
+			"chaossearch_retrieve_views":         dataSourceViews(),
+			"chaossearch_retrieve_view":          dataSourceView(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

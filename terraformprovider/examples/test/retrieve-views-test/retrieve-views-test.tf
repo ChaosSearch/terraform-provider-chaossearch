@@ -21,10 +21,10 @@ provider "chaossearch" {
 
 
 #get all views
-data "chaossearch_views" "myview" {
+data "chaossearch_retrieve_views" "myview" {
 
 }
 
 output "views" {
-  value = data.chaossearch_views.myview
+  value = data.chaossearch_retrieve_views.myview
 }

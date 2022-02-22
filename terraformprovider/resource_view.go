@@ -15,7 +15,7 @@ func resourceView() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceViewCreate,
 		ReadContext:   resourceViewRead,
-		UpdateContext: resourceViewUpdate,
+		UpdateContext: resourceViewCreate,
 		DeleteContext: resourceViewDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -76,46 +76,46 @@ func resourceView() *schema.Resource {
 			"filter": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				ForceNew: true,
+				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"predicate": {
 							Type:     schema.TypeSet,
 							Required: true,
-							ForceNew: true,
+							ForceNew: false,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"pred": {
 										Type:     schema.TypeSet,
 										Required: true,
-										ForceNew: true,
+										ForceNew: false,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"field": {
 													Type:     schema.TypeString,
 													Optional: true,
-													ForceNew: true,
+													ForceNew: false,
 												},
 												"_type": {
 													Type:     schema.TypeString,
 													Optional: true,
-													ForceNew: true,
+													ForceNew: false,
 												},
 												"query": {
 													Type:     schema.TypeString,
 													Optional: true,
-													ForceNew: true,
+													ForceNew: false,
 												},
 												"state": {
 													Type:     schema.TypeSet,
 													Required: true,
-													ForceNew: true,
+													ForceNew: false,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"_type": {
 																Type:     schema.TypeString,
 																Optional: true,
-																ForceNew: true,
+																ForceNew: false,
 															},
 														},
 													},
@@ -126,7 +126,7 @@ func resourceView() *schema.Resource {
 									"_type": {
 										Type:     schema.TypeString,
 										Optional: true,
-										ForceNew: true,
+										ForceNew: false,
 									},
 								},
 							},
@@ -276,49 +276,27 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	log.Info("called READ")
-
-	log.Info("11111111111111111111")
+	//when call view_by_id view_id get from here
+	data.SetId(data.Get("bucket").(string))
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).CSClient
 
-	log.Info("22222222222222")
-
-	var viewReqId string
-	if data.Id() != "" {
-		viewReqId = data.Id()
-	} else if data.Get("view_id").(string) != "" {
-		viewReqId = data.Get("view_id").(string)
-	} else {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Unable to find id for view",
-			Detail:   "Unable to find id for view",
-		})
-		return diags
-
-	}
 	tokenValue := meta.(*ProviderMeta).token
 	req := &client.ReadViewRequest{
 		AuthToken: tokenValue,
-		ID:        viewReqId,
+		ID:        data.Id(),
 	}
 
-	log.Info("33333333333333")
-
-	log.Warn("req---->", req)
 	resp, err := c.ReadView(ctx, req)
 	if resp == nil {
 		return diag.Errorf("Couldn't find View: %s", err)
 	}
-	log.Info("4444444444444", resp)
 
 	if err != nil {
 		return diag.Errorf("Failed to read View: %s", err)
 	}
 
 	data.Set("name", data.Id())
-	data.SetId(resp.ID)
 	data.Set("view_id", resp.ID)
 	data.Set("_cacheable", resp.Cacheable)
 	data.Set("_case_insensitive", resp.CaseInsensitive)

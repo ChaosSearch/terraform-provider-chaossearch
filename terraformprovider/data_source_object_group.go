@@ -8,11 +8,10 @@ func dataSourceObjectGroup() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: resourceObjectGroupRead,
 		Schema: map[string]*schema.Schema{
-			"object_group_id": {
-				Type: schema.TypeString,
-				//Required: true,
+			"bucket": {
+				Type:     schema.TypeString,
+				Required: true,
 				ForceNew: false,
-				Optional: true,
 			},
 			"_public": {
 				Type:     schema.TypeBool,
@@ -27,12 +26,6 @@ func dataSourceObjectGroup() *schema.Resource {
 				Optional: true,
 			},
 			"_type": {
-				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
-				Optional: true,
-			},
-			"bucket": {
 				Type:     schema.TypeString,
 				Required: false,
 				ForceNew: false,

@@ -21,10 +21,10 @@ provider "chaossearch" {
 
 
 #get all object groups
-data "chaossearch_object_groups" "first" {
+data "chaossearch_retrieve_object_groups" "first" {
 
 }
 
 output "object_group" {
-  value = data.chaossearch_object_groups.first
+  value = data.chaossearch_retrieve_object_groups.first
 }
