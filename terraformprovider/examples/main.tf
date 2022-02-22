@@ -141,6 +141,7 @@ resource "chaossearch_object_group" "my-object-group" {
     ignore_irregular = true
   }
   realtime = false
+}
 #get all object groups
 #data "chaossearch_object_groups" "first" {
 #

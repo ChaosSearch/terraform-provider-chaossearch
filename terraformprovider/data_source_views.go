@@ -38,9 +38,9 @@ func dataSourceViews() *schema.Resource {
 func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// client := &http.Client{Timeout: 10 * time.Second}
 	log.Info("dataSourceObjectGroupsRead")
-	client := meta.(*ProviderMeta).Client
-
-	clientResponse, err := client.ListBuckets(ctx)
+	client := meta.(*ProviderMeta).CSClient
+	tokenValue := meta.(*ProviderMeta).token
+	clientResponse, err := client.ListBuckets(ctx, tokenValue)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -56,8 +56,8 @@ func (csClient *CSClient) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*h
 	// req.Header.Add("x-amz-security-token", sessionToken)
 
 	var sessionToken string
-	credentials := credentials.NewStaticCredentials(csClient.config.AccessKeyID, csClient.config.SecretAccessKey, sessionToken)
-	_, err := v4.NewSigner(credentials).Sign(req, bodyReader, csClient.config.AWSServiceName, csClient.config.Region, time.Now())
+	staticCredentials := credentials.NewStaticCredentials(csClient.config.AccessKeyID, csClient.config.SecretAccessKey, sessionToken)
+	_, err := v4.NewSigner(staticCredentials).Sign(req, bodyReader, csClient.config.AWSServiceName, csClient.config.Region, time.Now())
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to sign request: %s", err)

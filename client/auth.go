@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"io"
 
 	"encoding/json"
 	"fmt"
@@ -47,7 +48,12 @@ func (csClient *CSClient) Auth(ctx context.Context) (token string, err error) {
 		fmt.Println(err)
 		return
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(res.Body)
 	// TODO add a status call once successful login to ensure that the user is actually deployed
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {

@@ -19,7 +19,8 @@ type ReadObjectGroupRequest struct {
 }
 
 type ReadViewRequest struct {
-	ID string
+	AuthToken string
+	ID        string
 }
 type Metadata struct {
 	CreationDate int64 `json:"creationDate"`

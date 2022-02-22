@@ -59,7 +59,7 @@ func (csClient *CSClient) readAttributesFromDatasetEndpoint(ctx context.Context,
 	}(httpResp.Body)
 
 	var ReadObjectGroup ReadObjectGroupResponse
-	if err := client.unmarshalJSONBody(httpResp.Body, &ReadObjectGroup); err != nil {
+	if err := csClient.unmarshalJSONBody(httpResp.Body, &ReadObjectGroup); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON response body: %s", err)
 	}
 	resp.Format = ReadObjectGroup.Format
