@@ -5,13 +5,13 @@ import (
 	"context"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"net/http"
 )
 
-func (client *Client) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequest) error {
-	// TODO to be developed
+func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequest) error {
 	method := "POST"
-	url := fmt.Sprintf("%s/user/groups", client.config.URL)
+	url := fmt.Sprintf("%s/user/groups", csClient.config.URL)
 	log.Debug("Url-->", url)
 	log.Debug("req-->", req)
 	bodyAsBytes, err := marshalCreateUserGroupRequest(req)
@@ -28,21 +28,27 @@ func (client *Client) CreateUserGroup(ctx context.Context, req *CreateUserGroupR
 	log.Debug(" adding headers...")
 	httpReq.Header.Add("Content-Type", "text/plain")
 
-	// var sessionToken = req.AuthToken
+	var sessionToken = req.AuthToken
 	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
 
 	log.Warn("httpReq-->", httpReq)
-	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
+	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(httpResp.Body)
 
 	return nil
 }
 
 func marshalCreateUserGroupRequest(req *CreateUserGroupRequest) ([]byte, error) {
-	// TODO to be developed
+	// todo to be implemented
 	return nil, nil
 }

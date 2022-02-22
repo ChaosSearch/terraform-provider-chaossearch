@@ -5,12 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
-func (client *Client) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroupRequest) error {
+func (csClient *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroupRequest) error {
 	method := "POST"
-	url := fmt.Sprintf("%s/Bucket/updateObjectGroup", client.config.URL)
+	url := fmt.Sprintf("%s/Bucket/updateObjectGroup", csClient.config.URL)
 
 	bodyAsBytes, err := marshalUpdateObjectGroupRequest(req)
 	if err != nil {
@@ -21,12 +22,18 @@ func (client *Client) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGr
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
-
-	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
+	var sessionToken = req.AuthToken
+	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(httpResp.Body)
 
 	return nil
 }

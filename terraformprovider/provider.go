@@ -4,6 +4,7 @@ import (
 	"context"
 	"cs-tf-provider/client"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,8 +12,8 @@ import (
 )
 
 type ProviderMeta struct {
-	Client *client.Client
-	token  string
+	CSClient *client.CSClient
+	token    string
 }
 
 type AuthResponse struct {
@@ -61,13 +62,15 @@ func Provider() *schema.Provider {
 					},
 				},
 				Required:    true,
-				ForceNew:    false,
+				ForceNew:    true,
 				Description: "List of fields in logs to include or exclude from parsing. If nothing is specified, all fields will be parsed",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"chaossearch_object_group": resourceObjectGroup(),
-			"chaossearch_view":         resourceView(),
+			// "chaossearch_indexing_state": resourceIndexingState(),
+			"chaossearch_view": resourceView(),
+			//"chaossearch_user_group":resourceUserGroup(),
 		},
 
 		ConfigureContextFunc: providerConfigure,
@@ -129,11 +132,14 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	} else {
 		tokenData := AuthResponse{}
-		json.Unmarshal([]byte(authResponseString), &tokenData)
+
+		if err := json.Unmarshal([]byte(authResponseString), &tokenData); err != nil {
+			return fmt.Errorf("failed to unmarshal JSON: %s", err), nil
+		}
 
 		providerMeta := &ProviderMeta{
-			Client: csClient,
-			token:  tokenData.Token,
+			CSClient: csClient,
+			token:    tokenData.Token,
 		}
 		return providerMeta, nil
 

@@ -19,9 +19,10 @@ provider "chaossearch" {
 
 }
 
-
+#
 resource "chaossearch_view" "chaossearch-create-view" {
-  bucket = "nibras-view-a-002"
+bucket = "dinesh-view-09"
+
   case_insensitive = false
   index_pattern    = ".*"
   index_retention  = -1
@@ -42,12 +43,14 @@ resource "chaossearch_view" "chaossearch-create-view" {
       }
     }
   }
-}
-
-
+  depends_on = [
+    chaossearch_object_group.my-object-group
+  ]
+  }
+#
+#
 resource "chaossearch_object_group" "my-object-group" {
-
-  bucket = "dinesh-og-201"
+  bucket = "dinesh-og-09"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"

@@ -38,7 +38,14 @@ func resourceUserGroup() *schema.Resource {
 				Optional: false,
 				Required: true,
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{},
+					Schema: map[string]*schema.Schema{
+						"Effect": {
+							Type:     schema.TypeString,
+							Required: true,
+							ForceNew: false,
+							Computed: true,
+						},
+					},
 				},
 			},
 		},
@@ -47,16 +54,19 @@ func resourceUserGroup() *schema.Resource {
 
 func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Debug("creating groups")
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	log.Debug("token value------------>>>>", tokenValue)
 
 	createUserGroupRequest := &client.CreateUserGroupRequest{
-		Id:   data.Get("id").(string),
-		Name: data.Get("name").(string),
+		AuthToken: tokenValue,
+		Id:        data.Get("id").(string),
+		Name:      data.Get("name").(string),
 	}
 
-	//TODO to be developed
+	log.Debug("createUserGroupRequest.id-->", createUserGroupRequest.Id)
+	log.Debug("createUserGroupRequest.name-->", createUserGroupRequest.Name)
+
 	if err := c.CreateUserGroup(ctx, createUserGroupRequest); err != nil {
 		return diag.FromErr(err)
 	}
@@ -83,6 +93,7 @@ func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta in
 	//TODO to be developed
 	return nil
 }
+
 func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Debug("deleting groups")
 	// c := meta.(*ProviderMeta).Client

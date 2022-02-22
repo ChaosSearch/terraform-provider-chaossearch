@@ -3,25 +3,32 @@ package client
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 )
 
-func (client *Client) ListBuckets(ctx context.Context) (*ListBucketsResponse, error) {
-	url := fmt.Sprintf("%s/V1/", client.config.URL)
+func (csClient *CSClient) ListBuckets(ctx context.Context, authToken string) (*ListBucketsResponse, error) {
+	url := fmt.Sprintf("%s/V1/", csClient.config.URL)
 
 	httpReq, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	httpResp, err := client.signAndDo(httpReq, nil)
+	httpResp, err := csClient.signV2AndDo(authToken, httpReq, nil)
+	//httpResp, err := client.signV4AndDo(httpReq, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(httpResp.Body)
 
 	var resp ListBucketsResponse
-	if err := client.unmarshalXMLBody(httpResp.Body, &resp); err != nil {
+	if err := csClient.unmarshalXMLBody(httpResp.Body, &resp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal XML response body: %s", err)
 	}
 

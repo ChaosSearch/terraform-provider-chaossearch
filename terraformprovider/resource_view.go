@@ -175,10 +175,10 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	}
 
 	filter := &client.FilterPredicate{
-		&Predicate,
+		Predicate: &Predicate,
 	}
 
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value------------>>>>", tokenValue)
 
@@ -191,10 +191,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 	if sources_ != nil {
 		sourcesStrings = sources_.([]interface{})
-		log.Debug("sourcesStrings-->", sourcesStrings)
 	}
-
-	log.Debug("sourcesStrings-->", sourcesStrings)
 
 	transforms_, ok := data.GetOk("transforms")
 	if !ok {

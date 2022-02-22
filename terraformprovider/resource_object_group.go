@@ -5,6 +5,7 @@ import (
 	"cs-tf-provider/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	log "github.com/sirupsen/logrus"
 )
 
 func resourceObjectGroup() *schema.Resource {
@@ -176,7 +177,7 @@ func resourceObjectGroup() *schema.Resource {
 }
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 
 	formatColumnSelectionInterface := data.Get("format").(*schema.Set).List()[0].(map[string]interface{})
 	intervalColumnSelectionInterface := data.Get("interval").(*schema.Set).List()[0].(map[string]interface{})
@@ -237,8 +238,10 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		PrefixFilter: &prefixFilter,
 		RegexFilter:  &regexFilter,
 	}
-
+	tokenValue := meta.(*ProviderMeta).token
+	log.Warn("token value------------>>>>", tokenValue)
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
+		AuthToken:      tokenValue,
 		Bucket:         data.Get("bucket").(string),
 		Source:         data.Get("source").(string),
 		Format:         &format,
@@ -305,9 +308,10 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 }
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
-
+	c := meta.(*ProviderMeta).CSClient
+	tokenValue := meta.(*ProviderMeta).token
 	updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
+		AuthToken:      tokenValue,
 		Name:           data.Get("name").(string),
 		IndexRetention: data.Get("index_retention").(int),
 	}
@@ -320,10 +324,11 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
-
+	c := meta.(*ProviderMeta).CSClient
+	tokenValue := meta.(*ProviderMeta).token
 	deleteObjectGroupRequest := &client.DeleteObjectGroupRequest{
-		Name: data.Get("bucket").(string),
+		AuthToken: tokenValue,
+		Name:      data.Get("bucket").(string),
 	}
 
 	if err := c.DeleteObjectGroup(ctx, deleteObjectGroupRequest); err != nil {
