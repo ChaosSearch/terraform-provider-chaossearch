@@ -91,11 +91,11 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	claims := jwt.MapClaims{}
 	log.Debug("token-->>", tokenValue)
 
-	token, err := jwt.ParseWithClaims(tokenValue, claims, func(token *jwt.Token) (interface{}, error) {
+	_, err := jwt.ParseWithClaims(tokenValue, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte("<YOUR VERIFICATION KEY>"), nil
 	})
 
-	log.Debug("token,err---->", token, err)
+	log.Debug("token err---->", err)
 
 	accessKey := claims["AccessKeyId"].(string)
 	secretAccessKey := claims["SecretAccessKey"].(string)
@@ -135,15 +135,15 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 		log.Debug("Header -->", key, "  value -->", val)
 	}
 	log.Debug("req.GetBody-->", req.GetBody)
-	b, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		panic(err)
-	}
+	//b, err := ioutil.ReadAll(req.Body)
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	log.Debug("body--->>", b)
-	resp, err := csClient.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %s", err)
+	//log.Debug("body--->>", b)
+	resp, e := csClient.httpClient.Do(req)
+	if e != nil {
+		return nil, fmt.Errorf("failed to execute request: %s", e)
 	}
 
 	log.Warn("Got response:\nStatus code: %d", resp.StatusCode)

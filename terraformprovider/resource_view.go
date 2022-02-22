@@ -239,10 +239,12 @@ func resourceViewUpdate(ctx context.Context, data *schema.ResourceData, meta int
 }
 
 func resourceViewDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 
+	tokenValue := meta.(*ProviderMeta).token
 	deleteViewRequest := &client.DeleteViewRequest{
-		Name: data.Get("bucket").(string),
+		AuthToken: tokenValue,
+		Name:      data.Get("bucket").(string),
 	}
 
 	if err := c.DeleteView(ctx, deleteViewRequest); err != nil {
