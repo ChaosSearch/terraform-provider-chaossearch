@@ -270,7 +270,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	log.Info("called READ")
 
 	diags := diag.Diagnostics{}
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 
 	log.Info("keyyyyy====>", data.Get("objid"))
 	//data.Get("objid")

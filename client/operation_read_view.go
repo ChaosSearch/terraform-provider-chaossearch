@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"io"
 
 	//"encoding/json"
 	"fmt"
@@ -14,20 +15,14 @@ import (
 	//"github.com/aws/aws-sdk-go/service/s3"
 )
 
-//type appLogger struct{}
-
-//func (l appLogger) Log(args ...interface{}) {
-//	log.Printf("AWS: %+v", args...)
-//}
-
-func (client *Client) ReadView(ctx context.Context, req *ReadViewRequest) (*ReadViewResponse, error) {
+func (csClient *CSClient) ReadView(ctx context.Context, req *ReadViewRequest) (*ReadViewResponse, error) {
 	var resp ReadViewResponse
 
 	//if err := client.readViewAttributesFromBucketTagging(ctx, req, &resp); err != nil {
 	//	return nil, err
 	//}
 
-	if err := client.readViewAttributesFromDatasetEndpoint(ctx, req, &resp); err != nil {
+	if err := csClient.readViewAttributesFromDatasetEndpoint(ctx, req, &resp); err != nil {
 		return nil, err
 	}
 
@@ -36,24 +31,29 @@ func (client *Client) ReadView(ctx context.Context, req *ReadViewRequest) (*Read
 	return &resp, nil
 }
 
-func (client *Client) readViewAttributesFromDatasetEndpoint(ctx context.Context, req *ReadViewRequest, resp *ReadViewResponse) error {
+func (csClient *CSClient) readViewAttributesFromDatasetEndpoint(ctx context.Context, req *ReadViewRequest, resp *ReadViewResponse) error {
 	method := "GET"
-	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", client.config.URL, req.ID)
+	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", csClient.config.URL, req.ID)
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
-
-	httpResp, err := client.signAndDo(httpReq, nil)
+	authToken := req.AuthToken
+	httpResp, err := csClient.signV2AndDo(authToken, httpReq, nil)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(httpResp.Body)
 
 	var read ReadViewResponse
 
 	//var m ReadObjectGroupResponse
-	if err := client.unmarshalJSONBody(httpResp.Body, &read); err != nil {
+	if err := csClient.unmarshalJSONBody(httpResp.Body, &read); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON response body: %s", err)
 	}
 
@@ -73,12 +73,12 @@ func (client *Client) readViewAttributesFromDatasetEndpoint(ctx context.Context,
 	return nil
 }
 
-func (client *Client) readViewAttributesFromBucketTagging(ctx context.Context, req *ReadViewRequest, resp *ReadViewResponse) error {
+func (csClient *CSClient) readViewAttributesFromBucketTagging(ctx context.Context, req *ReadViewRequest, resp *ReadViewResponse) error {
 	log.Printf("readViewAttributesFromBucketTagging")
-	session, err := session.NewSession(&aws.Config{
-		Credentials:      credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, ""),
-		Endpoint:         aws.String(fmt.Sprintf("%s/V1", client.config.URL)),
-		Region:           aws.String(client.config.Region),
+	session_, err := session.NewSession(&aws.Config{
+		Credentials:      credentials.NewStaticCredentials(csClient.config.AccessKeyID, csClient.config.SecretAccessKey, ""),
+		Endpoint:         aws.String(fmt.Sprintf("%s/V1", csClient.config.URL)),
+		Region:           aws.String(csClient.config.Region),
 		S3ForcePathStyle: aws.Bool(true),
 		LogLevel:         aws.LogLevel(aws.LogOff),
 		Logger:           appLogger{},
@@ -87,7 +87,7 @@ func (client *Client) readViewAttributesFromBucketTagging(ctx context.Context, r
 		return fmt.Errorf("failed to create AWS session: %s", err)
 	}
 
-	svc := s3.New(session)
+	svc := s3.New(session_)
 	input := &s3.GetBucketTaggingInput{
 		Bucket: aws.String(req.ID),
 	}

@@ -194,7 +194,6 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	// 	Type_: predicateColumnSelectionInterface["_type"].(string),
 	// }
 
-	c := meta.(*ProviderMeta).Client
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value------------>>>>", tokenValue)
@@ -281,7 +280,7 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 
 	log.Info("11111111111111111111")
 	diags := diag.Diagnostics{}
-	c := meta.(*ProviderMeta).Client
+	c := meta.(*ProviderMeta).CSClient
 
 	log.Info("22222222222222")
 
@@ -299,9 +298,10 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 		return diags
 
 	}
-
+	tokenValue := meta.(*ProviderMeta).token
 	req := &client.ReadViewRequest{
-		ID: viewReqId,
+		AuthToken: tokenValue,
+		ID:        viewReqId,
 	}
 
 	log.Info("33333333333333")
