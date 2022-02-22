@@ -20,66 +20,106 @@ provider "chaossearch" {
 }
 
 
-resource "chaossearch_view" "chaossearch-create-view" {
-bucket = "dinesh-view-10012"
-
-  case_insensitive = false
-
-  index_pattern   = ".*"
-  index_retention = -1
-  overwrite       = true
-  sources         = []
-  time_field_name = "@timestamp"
-  transforms      = []
-  filter {
-    predicate {
-      _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
-      pred {
-        _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
-        field = "cs_partition_key_0"
-        query = "*bluebike*"
-        state {
-          _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
-        }
-      }
-    }
-  }
-  }
+#resource "chaossearch_view" "chaossearch-create-view" {
+#  bucket = "Chathura-view-1000ropoofl99hdfi"
+#  case_insensitive = false
+#  index_pattern   = ".*"
+#  index_retention = -1
+#  overwrite       = true
+#  sources         = []
+#  time_field_name = "@timestamp"
+#  transforms      = []
+#  filter {
+#    predicate {
+#      _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
+#      pred {
+#        _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+#        field = "cs_partition_key_0"
+#        query = "*bluebike*"
+#        state {
+#          _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+#        }
+#      }
+#    }
+#  }
+#}
 
 
-resource "chaossearch_object_group" "my-object-group" {
 
-  bucket = "dinesh-og-10012"
-  source = "chaos-test-data-aps1"
-  format {
-    _type            = "CSV"
-    column_delimiter = ","
-    row_delimiter    = "\n"
-    header_row       = true
-  }
-  interval {
-    mode   = 0
-    column = 0
-  }
-  index_retention {
-    for_partition = []
-    overall       = -1
-  }
-  filter {
-    obj1 {
-      field  = "key"
-      prefix = "bluebike"
-    }
-    obj2 {
-      field = "key"
-      regex = ".*"
-    }
-  }
-  options {
-    ignore_irregular = true
-  }
-  realtime = false
-}
+
+#resource "chaossearch_object_group" "my-object-group" {
+#
+#  bucket = "c-og-1005dqffffqllwdkkyl"
+#  source = "chaos-test-data-aps1"
+#  format {
+#    _type            = "CSV"
+#    column_delimiter = ","
+#    row_delimiter    = "\n"
+#    header_row       = true
+#  }
+#  interval {
+#    mode   = 0
+#    column = 0
+#  }
+#  index_retention {
+#    for_partition = []
+#    overall       = -1
+#  }
+#  filter {
+#    obj1 {
+#      field  = "key"
+#      prefix = "bluebike"
+#    }
+#    obj2 {
+#      field = "key"
+#      regex = ".*"
+#    }
+#  }
+#  options {
+#    ignore_irregular = true
+#  }
+#  realtime = false
+#}
+
+#get all object groups
+#data "chaossearch_object_groups" "first" {
+#
+#}
+#
+#output "object_group" {
+#  value = data.chaossearch_object_groups.first
+#}
+
+#get all views
+
+#data "chaossearch_views" "myview" {
+#
+#}
+#
+#output "views" {
+#  value = data.chaossearch_views.myview
+#}
+
+
+
+#get object group by id
+#data "chaossearch_object_group" "my-object-group" {
+#  object_group_id="c-og-100197"
+#}
+#
+#output "object_group" {
+#  value = data.chaossearch_object_group.my-object-group
+#}
+
+
+//get view group by id
+#data "chaossearch_view" "my-view" {
+#  view_id="Chathura-view-10000tt"
+#}
+#
+#output "object_group" {
+#  value = data.chaossearch_view.my-view
+#}
 
 # resource "chaossearch_indexing_state" "my-object-group" {
 #   object_group_name = chaossearch_object_group.my-object-group.name

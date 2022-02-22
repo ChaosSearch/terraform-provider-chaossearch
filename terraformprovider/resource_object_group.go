@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"cs-tf-provider/client"
-	"strings"
-
+	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	log "github.com/sirupsen/logrus"
+	"strings"
 )
 
 func resourceObjectGroup() *schema.Resource {
@@ -22,13 +22,15 @@ func resourceObjectGroup() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"bucket": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type: schema.TypeString,
+				//Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"source": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type: schema.TypeString,
+				//Required: true,
+				Optional: true,
 				ForceNew: true,
 			},
 			"format": {
@@ -84,8 +86,9 @@ func resourceObjectGroup() *schema.Resource {
 				},
 			},
 			"filter": {
-				Type:     schema.TypeSet,
-				Required: true,
+				Type: schema.TypeSet,
+				//Required: true,
+				Optional: true,
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -164,8 +167,9 @@ func resourceObjectGroup() *schema.Resource {
 				},
 			},
 			"realtime": {
-				Type:        schema.TypeBool,
-				Required:    true,
+				Type: schema.TypeBool,
+				//Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 				Description: "",
 			},
@@ -257,37 +261,134 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	data.SetId(data.Get("bucket").(string))
-	return nil
+	return resourceObjectGroupRead(ctx, data, meta)
+	//return nil
 }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Info("called READ")
 
-	log.Info("11111111111111111111")
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).Client
 
-	log.Info("22222222222222")
+	log.Info("keyyyyy====>", data.Get("objid"))
+	//data.Get("objid")
+	//bucketId := data.Get("objid").(string)
+	log.Info("data.Id()", data.Id())
 
-	req := &client.ReadObjectGroupRequest{
-		ID: data.Id(),
+	var resourceGroupReqId string
+	if data.Id() != "" {
+		resourceGroupReqId = data.Id()
+	} else if data.Get("object_group_id").(string) != "" {
+		resourceGroupReqId = data.Get("object_group_id").(string)
+	} else {
+		return diag.Errorf("Couldn't find Id", resourceGroupReqId)
 	}
+	//req := &client.ReadObjectGroupRequest{
+	//	ID: bucketId,
+	//}
 
 	log.Info("33333333333333")
-
+	req := &client.ReadObjectGroupRequest{
+		ID: resourceGroupReqId,
+	}
 	log.Warn("req---->", req)
 	resp, err := c.ReadObjectGroup(ctx, req)
-	log.Info("4444444444444")
-
+	log.Info("response Id===", resp)
+	if resp == nil {
+		return diag.Errorf("Couldn't find object group: %s", err)
+	}
+	data.SetId(resp.ID)
+	data.Set("object_group_id", resp.ID)
 	if err != nil {
 		return diag.Errorf("Failed to read object group: %s", err)
 	}
 
+	//do not change working fine
 	data.Set("name", data.Id())
+	data.Set("_public", resp.Public)
+	data.Set("_type", resp.Type)
+	data.Set("content_type", resp.ContentType)
+	data.Set("_realtime", resp.Realtime)
+	data.Set("bucket", resp.Bucket)
+
+	log.Info("ffffffffff====>", resp.Format)
+
+	type Format struct {
+		Type            string
+		RowDelimiter    string
+		HeaderRow       bool
+		ColumnDelimiter string
+	}
+	format := Format{
+		Type:            resp.Type,
+		RowDelimiter:    resp.Format.RowDelimiter,
+		HeaderRow:       resp.Format.HeaderRow,
+		ColumnDelimiter: resp.Format.ColumnDelimiter,
+	}
+	structs.Map(format)
+	//format := resp.Format
+
+	//type format struct {
+	//	Type        string `json:"_type"`
+	//	Bucket      string `json:"bucket"`
+	//	Bucket      string `json:"bucket"`
+	//	Bucket      string `json:"bucket"`
+	//	// contains filtered or unexported fields
+	//}
+
+	//TODO need to set format
+	//data.Set("format", resp.Format)
+
+	//data.Set("format.column_delimiter", resp.Format.HeaderRow)
+	//data.Set("format.header_row", resp.Format.RowDelimiter)
+
+	data.Set("Interval.Mode", resp.Interval.Mode)
+	data.Set("RegionAvailability", resp.RegionAvailability)
+	data.Set("Source", resp.Source)
+	data.Set("Options", resp.Options)
+	data.Set("Metadata.CreationDate", resp.Metadata.CreationDate)
+	data.Set("Format.ColumnDelimiter", resp.Format.ColumnDelimiter)
+	data.Set("Format.HeaderRow", resp.Format.HeaderRow)
+	data.Set("Format.RowDelimiter", resp.Format.RowDelimiter)
+
 	data.Set("filter_json", resp.FilterJSON)
-	data.Set("format", resp.Format)
+	//data.Set("format", resp.Format)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
-	data.Set("index_retention", resp.IndexRetention)
+
+	log.Info("live_events_sqs_arn", resp.LiveEventsSqsArn)
+	log.Info("index_retention", resp.IndexRetention)
+
+	log.Info("partition_by", resp.PartitionBy)
+	log.Info("pattern", resp.Pattern)
+	log.Info("source_bucket", resp.SourceBucket)
+
+	log.Info("column_selection", resp.ColumnSelection)
+
+	//data.Set("index_retention", resp.IndexRetention)
+	data.Set("partition_by", resp.PartitionBy)
+	data.Set("pattern", resp.Pattern)
+	data.Set("source_bucket", resp.SourceBucket)
+	data.Set("column_selection", resp.ColumnSelection)
+
+	log.Info("Type", resp.Type)
+	log.Info("ContentType", resp.ContentType)
+	log.Info("public=========>", resp.Public)
+	log.Info("RealTime", resp.Realtime)
+	log.Info("Type", resp.Type)
+	log.Info("Bucket", resp.Bucket)
+	log.Info("Interval.Column", resp.Interval.Column)
+	log.Info("Interval.Mode", resp.Interval.Mode)
+	log.Info("RegionAvailability", resp.RegionAvailability)
+	log.Info("Source", resp.Source)
+	log.Info("Options", resp.Options)
+	log.Info("Metadata.CreationDate", resp.Metadata.CreationDate)
+	log.Info("Format.ColumnDelimiter", resp.Format.ColumnDelimiter)
+	log.Info("Format.HeaderRow", resp.Format.HeaderRow)
+	log.Info("Format.RowDelimiter", resp.Format.RowDelimiter)
+	log.Info("Format.filter", resp.Filter)
+	log.Info("filter_json", resp.FilterJSON)
+	log.Info("format", resp.Format)
 
 	// When the object in an Object Group use no compression, you need to create it with
 	// `compression = ""`. However, when querying an Object Group whose object are not
@@ -297,17 +398,17 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	if strings.ToLower(compressionOrEmptyString) == "none" {
 		compressionOrEmptyString = ""
 	}
+	log.Info("compression", compressionOrEmptyString)
 	data.Set("compression", compressionOrEmptyString)
-
 	data.Set("partition_by", resp.PartitionBy)
 	data.Set("pattern", resp.Pattern)
 	data.Set("source_bucket", resp.SourceBucket)
 
 	data.Set("column_selection", resp.ColumnSelection)
 
-	// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
-	// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
-	// We represent "null" as an int pointer to nil in the code.
+	//"unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
+	//because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
+	//We represent "null" as an int pointer to nil in the code.
 	if resp.ArrayFlattenDepth == nil {
 		data.Set("array_flatten_depth", -1)
 	} else {

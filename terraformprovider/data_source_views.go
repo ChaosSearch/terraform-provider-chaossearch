@@ -4,13 +4,14 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
 )
 
-func dataSourceObjectGroups() *schema.Resource {
+func dataSourceViews() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceObjectGroupsRead,
+		ReadContext: dataSourceViewsRead,
 		Schema: map[string]*schema.Schema{
 			"object_groups": {
 				Type:     schema.TypeList,
@@ -34,9 +35,9 @@ func dataSourceObjectGroups() *schema.Resource {
 	}
 }
 
-func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// client := &http.Client{Timeout: 10 * time.Second}
-
+	log.Info("dataSourceObjectGroupsRead")
 	client := meta.(*ProviderMeta).Client
 
 	clientResponse, err := client.ListBuckets(ctx)

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"cs-tf-provider/client"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -251,7 +252,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	// state_value = predColumnSelectionInterface["state"].(*schema.Set)
 	_type_value = predColumnSelectionInterface["_type"].(string)
 
-	stateType=stateColumnSelectionInterface["_type"].(string)
+	stateType = stateColumnSelectionInterface["_type"].(string)
 
 	state := client.State{
 		Type_: stateType,
@@ -264,7 +265,6 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		Type_: _type_value,
 	}
 
-
 	Predicate := client.Predicate{
 		Type_: predicateType,
 		Pred:  pred,
@@ -274,9 +274,9 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		&Predicate,
 	}
 
-	// filter := client.Filter{
-	// 	Predicate: filterColumnSelectionInterface["predicate"].(*schema.Set),
-	// }
+	//filter := client.Filter{
+	//	Predicate: filterColumnSelectionInterface["predicate"].(*schema.Set),
+	//}
 
 	// predicate := client.Predicate{
 	// 	Field: predicateColumnSelectionInterface["field"].(string),
@@ -292,7 +292,6 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	c := meta.(*ProviderMeta).Client
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value------------>>>>", tokenValue)
-
 
 	// arrayFlattenTF := data.Get("array_flatten_depth").(int)
 	// log.Info("arrayFlattenTF-->",arrayFlattenTF)
@@ -341,11 +340,11 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		transforms = transforms_.([]interface{})
 	}
 
-	// patterns_, ok := data.GetOk("pattern")
-	// if !ok {
-	// 	log.Error(" sources not available")
-	// }
-	// patterns := patterns_.([]interface{})
+	//patterns_, ok := data.GetOk("pattern")
+	//if !ok {
+	//	log.Error(" sources not available")
+	//}
+	//patterns := patterns_.([]interface{})
 	createViewRequest := &client.CreateViewRequest{
 		AuthToken: tokenValue,
 
@@ -357,11 +356,10 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		IndexRetention:  data.Get("index_retention").(int),
 		TimeFieldName:   data.Get("time_field_name").(string),
 		Transforms:      transforms,
-		FilterPredicate:         filter,
+		FilterPredicate: filter,
 
 		// Cacheable:         data.Get("cachable").(bool),
-		// ArrayFlattenDepth: arrayFlattenCS,
-
+		//ArrayFlattenDepth: arrayFlattenCS,
 	}
 
 	log.Info("createViewRequest.Bucket--->", createViewRequest.Bucket)
@@ -376,12 +374,106 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 	data.SetId(data.Get("bucket").(string))
 
-	// return resourceObjectGroupRead(ctx, data, meta)
-	return nil
+	return resourceViewRead(ctx, data, meta)
+
 }
 
 func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+
+	log.Info("called READ")
+
+	log.Info("11111111111111111111")
+	diags := diag.Diagnostics{}
+	c := meta.(*ProviderMeta).Client
+
+	log.Info("22222222222222")
+
+	var viewReqId string
+	if data.Id() != "" {
+		viewReqId = data.Id()
+	} else if data.Get("view_id").(string) != "" {
+		viewReqId = data.Get("view_id").(string)
+	} else {
+		return diag.Errorf("Couldn't find view_Id", viewReqId)
+	}
+
+	req := &client.ReadViewRequest{
+		ID: viewReqId,
+	}
+
+	log.Info("33333333333333")
+
+	log.Warn("req---->", req)
+	resp, err := c.ReadView(ctx, req)
+	if resp == nil {
+		return diag.Errorf("Couldn't find View: %s", err)
+	}
+	log.Info("4444444444444", resp)
+
+	if err != nil {
+		return diag.Errorf("Failed to read View: %s", err)
+	}
+
+	data.Set("name", data.Id())
+	data.SetId(resp.ID)
+	data.Set("view_id", resp.ID)
+	data.Set("_cacheable", resp.Cacheable)
+	data.Set("_case_insensitive", resp.CaseInsensitive)
+	data.Set("_type", resp.Type)
+	data.Set("bucket", resp.Bucket)
+	data.Set("index_pattern", resp.IndexPattern)
+	data.Set("time_field_name", resp.TimeFieldName)
+
+	//data.Set("resp.Public", resp.Public)
+	//data.Set("resp.ContentType", resp.ContentType)
+	//data.Set("resp.Type", resp.Type)
+
+	//data.Set("Type", resp.Type)
+	//data.Set("ContentType", resp.ContentType)
+	//data.Set("Public", resp.Public)
+	//data.Set("RealTime", resp.Realtime)
+	//data.Set("Type", resp.Type)
+	//data.Set("Bucket", resp.Bucket)
+	//data.Set("Interval.Column", resp.Interval.Column)
+	//data.Set("Interval.Mode", resp.Interval.Mode)
+	//data.Set("RegionAvailability", resp.RegionAvailability)
+	//data.Set("Source", resp.Source)
+	//data.Set("Options", resp.Options)
+	//data.Set("Metadata.CreationDate", resp.Metadata.CreationDate)
+	//data.Set("Format.ColumnDelimiter", resp.Format.ColumnDelimiter)
+	//data.Set("Format.HeaderRow", resp.Format.HeaderRow)
+	//data.Set("Format.RowDelimiter", resp.Format.RowDelimiter)
+	//data.Set("filter_json", resp.FilterJSON)
+	//data.Set("format", resp.Format)
+	//data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
+	//data.Set("index_retention", resp.IndexRetention)
+
+	// When the object in an Object Group use no compression, you need to create it with
+	// `compression = ""`. However, when querying an Object Group whose object are not
+	// compressed, the API returns `compression = "none"`. We coerce the "none" value to
+	// an empty string in order not to confuse Terraform.
+	compressionOrEmptyString := resp.Compression
+	if strings.ToLower(compressionOrEmptyString) == "none" {
+		compressionOrEmptyString = ""
+	}
+	//data.Set("compression", compressionOrEmptyString)
+	//
+	//data.Set("partition_by", resp.PartitionBy)
+	//data.Set("pattern", resp.Pattern)
+	//data.Set("source_bucket", resp.SourceBucket)
+	//
+	//data.Set("column_selection", resp.ColumnSelection)
+	//
+	//// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
+	//// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
+	//// We represent "null" as an int pointer to nil in the code.
+	if resp.ArrayFlattenDepth == nil {
+		data.Set("array_flatten_depth", -1)
+	} else {
+		data.Set("array_flatten_depth", resp.ArrayFlattenDepth)
+	}
+	//
+	return diags
 }
 
 func resourceViewUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
