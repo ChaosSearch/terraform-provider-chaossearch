@@ -91,7 +91,8 @@ type DeleteObjectGroupRequest struct {
 }
 
 type DeleteViewRequest struct {
-	Name string
+	AuthToken string
+	Name      string
 }
 
 type UpdateObjectGroupRequest struct {
