@@ -394,7 +394,13 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 	} else if data.Get("view_id").(string) != "" {
 		viewReqId = data.Get("view_id").(string)
 	} else {
-		return diag.Errorf("Couldn't find view_Id", viewReqId)
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Unable to find id for view",
+			Detail:   "Unable to find id for view",
+		})
+		return diags
+
 	}
 
 	req := &client.ReadViewRequest{
@@ -422,6 +428,7 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 	data.Set("_type", resp.Type)
 	data.Set("bucket", resp.Bucket)
 	data.Set("index_pattern", resp.IndexPattern)
+	data.Set("time_field_name", resp.TimeFieldName)
 	data.Set("time_field_name", resp.TimeFieldName)
 
 	//data.Set("resp.Public", resp.Public)

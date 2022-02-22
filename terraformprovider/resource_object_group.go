@@ -282,7 +282,13 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	} else if data.Get("object_group_id").(string) != "" {
 		resourceGroupReqId = data.Get("object_group_id").(string)
 	} else {
-		return diag.Errorf("Couldn't find Id", resourceGroupReqId)
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Unable to find id for object group",
+			Detail:   "Unable to find id for object group",
+		})
+		return diags
+
 	}
 	//req := &client.ReadObjectGroupRequest{
 	//	ID: bucketId,

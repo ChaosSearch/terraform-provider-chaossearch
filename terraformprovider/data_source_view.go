@@ -10,8 +10,8 @@ func dataSourceView() *schema.Resource {
 		ReadContext: resourceViewRead,
 		Schema: map[string]*schema.Schema{
 			"view_id": {
-				Type:     schema.TypeString,
-				Required: false,
+				Type: schema.TypeString,
+				//Required: false,
 				ForceNew: false,
 				Optional: true,
 			},

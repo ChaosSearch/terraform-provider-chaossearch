@@ -114,12 +114,21 @@ provider "chaossearch" {
 
 //get view group by id
 #data "chaossearch_view" "my-view" {
-#  view_id="Chathura-view-10000tt"
+#
 #}
 #
 #output "object_group" {
 #  value = data.chaossearch_view.my-view
 #}
+
+
+#without object group id
+data "chaossearch_object_group" "without-object-group-id" {
+}
+
+output "without_object_group_id" {
+  value = data.chaossearch_object_group.without-object-group-id
+}
 
 # resource "chaossearch_indexing_state" "my-object-group" {
 #   object_group_name = chaossearch_object_group.my-object-group.name

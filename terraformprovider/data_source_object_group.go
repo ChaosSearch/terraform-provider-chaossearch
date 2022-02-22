@@ -9,8 +9,8 @@ func dataSourceObjectGroup() *schema.Resource {
 		ReadContext: resourceObjectGroupRead,
 		Schema: map[string]*schema.Schema{
 			"object_group_id": {
-				Type:     schema.TypeString,
-				Required: false,
+				Type: schema.TypeString,
+				//Required: true,
 				ForceNew: false,
 				Optional: true,
 			},
