@@ -128,11 +128,11 @@ type DeleteViewRequest struct {
 
 type UpdateObjectGroupRequest struct {
 	AuthToken             string
-	Bucket                string
-	IndexParallelism      int
-	IndexRetention        int
-	TargetActiveIndex     int
-	LiveEventsParallelism int
+	Bucket                string `json:"bucket"`
+	IndexParallelism      int    `json:"indexParallelism"`
+	IndexRetention        int    `json:"indexRetention"`
+	TargetActiveIndex     int    `json:"targetActiveIndex"`
+	LiveEventsParallelism int    `json:"liveEventsParallelism"`
 }
 
 type ReadIndexingStateRequest struct {
