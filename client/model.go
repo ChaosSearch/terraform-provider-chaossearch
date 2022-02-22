@@ -18,10 +18,39 @@ type ReadObjectGroupRequest struct {
 	ID        string
 }
 
+type ReadViewRequest struct {
+	AuthToken string
+	ID        string
+}
+type Metadata struct {
+	CreationDate int64 `json:"creationDate"`
+}
+
 type ReadObjectGroupResponse struct {
-	Compression       string
-	FilterJSON        string
-	Format            string
+	Public      bool   `json:"_public"`
+	Realtime    bool   `json:"_realtime"`
+	Type        string `json:"_type"`
+	Bucket      string `json:"bucket"`
+	ContentType string `json:"contentType"`
+	//Filter      struct {
+	//	And []struct {
+	//		Field  string `json:"field"`
+	//		Prefix string `json:"prefix,omitempty"`
+	//		Regex  string `json:"regex,omitempty"`
+	//	} `json:"AND"`
+	//} `json:"filter"`
+	Filter             *Filter
+	Format             *Format   `json:"format"`
+	ID                 string    `json:"id"`
+	Interval           *Interval `json:"interval"`
+	Metadata           *Metadata `json:"metadata"`
+	Options            *Options  `json:"options"`
+	RegionAvailability []string  `json:"regionAvailability"`
+	Source             string    `json:"source"`
+
+	Compression string
+	FilterJSON  string
+	//Format            string
 	Pattern           string
 	LiveEventsSqsArn  string
 	PartitionBy       string
@@ -30,7 +59,8 @@ type ReadObjectGroupResponse struct {
 	KeepOriginal      bool
 	ArrayFlattenDepth *int
 	ColumnRenames     map[string]string
-	ColumnSelection   []map[string]interface{}
+	ColumnSelection   []map[string]interface {
+	}
 }
 
 type CreateObjectGroupRequest struct {
@@ -45,11 +75,12 @@ type CreateObjectGroupRequest struct {
 	Realtime       bool
 }
 
+//TODO add json value
 type Format struct {
-	Type            string
-	ColumnDelimiter string
-	RowDelimiter    string
-	HeaderRow       bool
+	Type            string `json:"_type"`
+	ColumnDelimiter string `json:"columnDelimiter"`
+	RowDelimiter    string `json:"rowDelimiter"`
+	HeaderRow       bool   `json:"headerRow"`
 }
 
 type Interval struct {
@@ -120,8 +151,7 @@ type IndexingState struct {
 }
 
 type CreateViewRequest struct {
-	AuthToken string
-
+	AuthToken         string
 	Bucket            string
 	FilterPredicate   *FilterPredicate `json:"filter"`
 	TimeFieldName     string
@@ -135,6 +165,30 @@ type CreateViewRequest struct {
 	// Sources           map[string]string
 	Sources    []interface{}
 	Transforms []interface{}
+}
+
+type ReadViewResponse struct {
+	Type               string `json:"_type"`
+	Bucket             string
+	FilterPredicate    *FilterPredicate `json:"filter"`
+	TimeFieldName      string
+	IndexPattern       string
+	CaseInsensitive    bool
+	ArrayFlattenDepth  *int
+	IndexRetention     int `json:"overall"`
+	Cacheable          bool
+	Overwrite          bool
+	Sources            []interface{}
+	Transforms         []interface{}
+	ID                 string    `json:"id"`
+	MetaData           *Metadata `json:"metadata"`
+	RegionAvailability []string  `json:"regionAvailability"`
+	Compression        string
+	LiveEventsSqsArn   string
+	SourceBucket       string
+	FilterJSON         string
+	Pattern            string
+	KeepOriginal       bool
 }
 
 type RequestHeaders struct {

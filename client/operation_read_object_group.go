@@ -23,9 +23,9 @@ func (l appLogger) Log(args ...interface{}) {
 func (csClient *CSClient) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupRequest) (*ReadObjectGroupResponse, error) {
 	var resp ReadObjectGroupResponse
 
-	if err := csClient.readAttributesFromBucketTagging(ctx, req, &resp); err != nil {
-		return nil, err
-	}
+	//if err := client.readAttributesFromBucketTagging(ctx, req, &resp); err != nil {
+	//	return nil, err
+	//}
 
 	if err := csClient.readAttributesFromDatasetEndpoint(ctx, req, &resp); err != nil {
 		return nil, err
@@ -58,21 +58,29 @@ func (csClient *CSClient) readAttributesFromDatasetEndpoint(ctx context.Context,
 		}
 	}(httpResp.Body)
 
-	var getDatasetResp struct {
-		PartitionBy string `json:"partitionBy"`
-		Options     struct {
-			ColumnRenames   map[string]string        `json:"colRenames"`
-			ColumnSelection []map[string]interface{} `json:"colSelection"`
-		} `json:"options"`
-	}
-	if err := csClient.unmarshalJSONBody(httpResp.Body, &getDatasetResp); err != nil {
+	var ReadObjectGroup ReadObjectGroupResponse
+	if err := csClient.unmarshalJSONBody(httpResp.Body, &ReadObjectGroup); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON response body: %s", err)
 	}
-
-	resp.PartitionBy = getDatasetResp.PartitionBy
-	resp.ColumnRenames = getDatasetResp.Options.ColumnRenames
-	resp.ColumnSelection = getDatasetResp.Options.ColumnSelection
-
+	resp.Format = ReadObjectGroup.Format
+	resp.Filter = ReadObjectGroup.Filter
+	resp.Interval = ReadObjectGroup.Interval
+	resp.Metadata = ReadObjectGroup.Metadata
+	resp.Options = ReadObjectGroup.Options
+	resp.RegionAvailability = ReadObjectGroup.RegionAvailability
+	resp.Public = ReadObjectGroup.Public
+	resp.Realtime = ReadObjectGroup.Realtime
+	resp.Type = ReadObjectGroup.Type
+	resp.Bucket = ReadObjectGroup.Bucket
+	resp.ContentType = ReadObjectGroup.ContentType
+	resp.ID = ReadObjectGroup.ID
+	resp.Source = ReadObjectGroup.Source
+	//resp.IndexRetention = ReadObjectGroup.IndexRetention
+	resp.Compression = ReadObjectGroup.Compression
+	resp.PartitionBy = ReadObjectGroup.PartitionBy
+	resp.Pattern = ReadObjectGroup.Pattern
+	resp.SourceBucket = ReadObjectGroup.SourceBucket
+	resp.ColumnSelection = ReadObjectGroup.ColumnSelection
 	return nil
 }
 
@@ -128,7 +136,7 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	if err := readJSONTagValue(tagging, "cs3.dataset-format", &filterObject); err != nil {
 		return err
 	}
-	v.Format = filterObject.Type
+	//v.Format = filterObject.Type
 	v.Pattern = filterObject.Pattern
 	v.ArrayFlattenDepth = filterObject.ArrayFlattenDepth
 	v.KeepOriginal = filterObject.KeepOriginal
@@ -136,7 +144,6 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	if err := readStringTagValue(tagging, "cs3.predicate", &v.FilterJSON); err != nil {
 		return err
 	}
-
 	var retentionObject struct {
 		Overall int `json:"overall"`
 	}
@@ -144,7 +151,6 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 		return err
 	}
 	v.IndexRetention = retentionObject.Overall
-
 	return nil
 }
 
