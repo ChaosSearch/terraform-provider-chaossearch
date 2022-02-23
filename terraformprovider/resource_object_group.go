@@ -325,28 +325,19 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("bucket", resp.Bucket)
 
 	var prefixFilter interface{} = resp.ObjectFilter.And[0]
-
 	var prefixFilterResponse = map[string]string{}
 	for k, v := range prefixFilter.(map[string]interface{}) {
 		prefixFilterResponse[k] = v.(string)
 	}
 	prefixFilterField := prefixFilterResponse["field"]
 	prefixFilterPrefix := prefixFilterResponse["prefix"]
-	log.Info("field===", prefixFilterField)
-	log.Info("prefix===", prefixFilterPrefix)
-
 	var regexFilter interface{} = resp.ObjectFilter.And[1]
-
 	var regexFilterRes = map[string]string{}
 	for k, v := range regexFilter.(map[string]interface{}) {
 		regexFilterRes[k] = v.(string)
 	}
 	regexFilterField := regexFilterRes["field"]
 	regexFilterRegex := regexFilterRes["regex"]
-	log.Info("field===", regexFilterField)
-	log.Info("prefix===", regexFilterRegex)
-
-	filter := make([]interface{}, 2)
 
 	PrefixFilterObjectMap := make(map[string]interface{})
 	PrefixFilterObjectMap["field"] = prefixFilterField
@@ -356,15 +347,16 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	RegexFilterObjectMap["field"] = regexFilterField
 	RegexFilterObjectMap["regex"] = regexFilterRegex
 
-	filters := make(map[string]interface{})
-	filters["prefix_filter"] = PrefixFilterObjectMap
-	filters["regex_filter"] = RegexFilterObjectMap
-
-	filter[0] = filters
-	//filter[1] = RegexFilterObjectMap
-
-	log.Info("filter=======>", filter)
-	//data.Set("filter", filter)
+	filter := make([]interface{}, 1)
+	PrefixFilter := make([]interface{}, 1)
+	PrefixFilter[0] = PrefixFilterObjectMap
+	RegexFilter := make([]interface{}, 1)
+	RegexFilter[0] = RegexFilterObjectMap
+	formatObjectMap := make(map[string]interface{})
+	formatObjectMap["prefix_filter"] = PrefixFilter
+	formatObjectMap["regex_filter"] = RegexFilter
+	filter[0] = formatObjectMap
+	data.Set("filter", filter)
 
 	if resp.Format != nil {
 		format := make([]interface{}, 1)
