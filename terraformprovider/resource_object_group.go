@@ -24,40 +24,40 @@ func resourceObjectGroup() *schema.Resource {
 				Type: schema.TypeString,
 				//Required: true,
 				Optional: true,
-				ForceNew: true,
+				ForceNew: false,
 			},
 			"source": {
 				Type: schema.TypeString,
 				//Required: true,
 				Optional: true,
-				ForceNew: true,
+				ForceNew: false,
 			},
 			"format": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"_type": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
+							ForceNew: false,
 						},
 						"column_delimiter": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
+							ForceNew: false,
 						},
 						"header_row": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							ForceNew: true,
+							ForceNew: false,
 						},
 						"row_delimiter": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: true,
+							ForceNew: false,
 						},
 					},
 				},
@@ -65,7 +65,7 @@ func resourceObjectGroup() *schema.Resource {
 			"index_retention": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Description: "",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -79,7 +79,7 @@ func resourceObjectGroup() *schema.Resource {
 						"overall": {
 							Type:     schema.TypeInt,
 							Optional: true,
-							ForceNew: true,
+							ForceNew: false,
 						},
 					},
 				},
@@ -88,24 +88,24 @@ func resourceObjectGroup() *schema.Resource {
 				Type: schema.TypeSet,
 				//Required: true,
 				Optional: true,
-				ForceNew: true,
+				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"prefix_filter": {
 							Type:     schema.TypeSet,
 							Optional: true,
-							ForceNew: true,
+							ForceNew: false,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"field": {
 										Type:     schema.TypeString,
 										Required: true,
-										ForceNew: true,
+										ForceNew: false,
 									},
 									"prefix": {
 										Type:     schema.TypeString,
 										Optional: true,
-										ForceNew: true,
+										ForceNew: false,
 									},
 								},
 							},
@@ -113,18 +113,18 @@ func resourceObjectGroup() *schema.Resource {
 						"regex_filter": {
 							Type:     schema.TypeSet,
 							Optional: true,
-							ForceNew: true,
+							ForceNew: false,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"field": {
 										Type:     schema.TypeString,
 										Required: true,
-										ForceNew: true,
+										ForceNew: false,
 									},
 									"regex": {
 										Type:     schema.TypeString,
 										Optional: true,
-										ForceNew: true,
+										ForceNew: false,
 									},
 								},
 							},
@@ -135,18 +135,18 @@ func resourceObjectGroup() *schema.Resource {
 			"interval": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				ForceNew: true,
+				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"column": {
 							Type:     schema.TypeInt,
 							Required: true,
-							ForceNew: true,
+							ForceNew: false,
 						},
 						"mode": {
 							Type:     schema.TypeInt,
 							Optional: true,
-							ForceNew: true,
+							ForceNew: false,
 						},
 					},
 				},
@@ -154,13 +154,13 @@ func resourceObjectGroup() *schema.Resource {
 			"options": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				ForceNew: true,
+				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ignore_irregular": {
 							Type:     schema.TypeBool,
 							Required: true,
-							ForceNew: true,
+							ForceNew: false,
 						},
 					},
 				},
@@ -169,7 +169,31 @@ func resourceObjectGroup() *schema.Resource {
 				Type: schema.TypeBool,
 				//Required:    true,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
+				Description: "",
+			},
+			"index_parallelism": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "",
+			},
+			"index_retention_value": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "",
+			},
+			"target_active_index": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    false,
+				Description: "",
+			},
+			"live_events_parallelism": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    false,
 				Description: "",
 			},
 			"description": {
@@ -296,8 +320,10 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	//}
 
 	log.Info("33333333333333")
+	tokenValue := meta.(*ProviderMeta).token
 	req := &client.ReadObjectGroupRequest{
-		ID: resourceGroupReqId,
+		AuthToken: tokenValue,
+		ID:        resourceGroupReqId,
 	}
 	log.Warn("req---->", req)
 	resp, err := c.ReadObjectGroup(ctx, req)
@@ -305,7 +331,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	if resp == nil {
 		return diag.Errorf("Couldn't find object group: %s", err)
 	}
-	data.SetId(resp.ID)
+	//data.SetId(resp.ID)
 	data.Set("object_group_id", resp.ID)
 	if err != nil {
 		return diag.Errorf("Failed to read object group: %s", err)
@@ -429,9 +455,12 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
-		AuthToken:      tokenValue,
-		Name:           data.Get("name").(string),
-		IndexRetention: data.Get("index_retention").(int),
+		AuthToken:             tokenValue,
+		Bucket:                data.Get("bucket").(string),
+		IndexParallelism:      data.Get("index_parallelism").(int),
+		IndexRetention:        data.Get("index_retention_value").(int),
+		TargetActiveIndex:     data.Get("target_active_index").(int),
+		LiveEventsParallelism: data.Get("live_events_parallelism").(int),
 	}
 
 	if err := c.UpdateObjectGroup(ctx, updateObjectGroupRequest); err != nil {
