@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"io"
 
 	//log "github.com/sirupsen/logrus"
 
@@ -19,18 +20,14 @@ import (
 	"time"
 )
 
-//const url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/createView"
-
-const url = "https://ap-south-1-aeternum.chaossearch.io/user/createSubAccount"
-const method = "POST"
-
 /*
 Testing class for API end point
 need to remove this by end of initial developments
 */
-func main() {
 
-	/*	payload := strings.NewReader(`{
+func createViewPayload() (cotrol bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/createView"
+	return false, "POST", url, strings.NewReader(`{
 	   "bucket": "dinesh-view-name002",
 	   "sources": [],
 	   "indexPattern": ".*",
@@ -50,8 +47,12 @@ func main() {
 	               }
 	       }
 	   }
-	`)*/
-	payload := strings.NewReader(`{
+	`)
+
+}
+func createSubAccount() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/createSubAccount"
+	return true, "POST", url, strings.NewReader(`{
 	    "UserInfoBlock": {
 	        "Username": "dineshkj",
 	        "FullName": "dinesh k j",
@@ -65,6 +66,165 @@ func main() {
 	        "override.Services.worker.quota=50"
 	    ]
 	}`)
+}
+
+func retrieveUserGroups() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
+	return true, "GET", url, nil
+}
+
+func retrieveUserGroupByGroupId() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/group/default"
+	return true, "GET", url, nil
+}
+
+func deleteUserGroupByGroupId() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/group/123456"
+	return true, "DELETE", url, nil
+}
+
+func createUserGroup() (cotrol bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
+	return true, "POST", url, strings.NewReader(`[
+    {
+        "id": "7db91912-a3e9-4641-873c-3deccd07484c",
+        "name": "Foo",
+        "permissions": [
+            {
+                "Effect": "Allow",
+                "Action": "kibana:*",
+                "Resources": "crn:view:::foo-view",
+                "Condition": {
+                    "Condition": [
+                        {
+                            "StartsWith": {
+                                "chaos:document/attributes.title": "foo"
+                            }
+                        },
+                        {
+                            "Equals": {
+                                "chaos:document/attributes.title": "bar"
+                            }
+                        },
+                        {
+                            "NotEquals": {
+                                "chaos:document/attributes.title": "baz"
+                            }
+                        },
+                        {
+                            "Like": {
+                                "chaos:document/attributes.title": "foobar"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": "kibana:*",
+                "Resources": "crn:view:::foo-view",
+                "Condition": {
+                    "Condition": [
+                        {
+                            "StartsWith": {
+                                "chaos:document/attributes.title": "foo"
+                            }
+                        },
+                        {
+                            "Equals": {
+                                "chaos:document/attributes.title": "bar"
+                            }
+                        },
+                        {
+                            "NotEquals": {
+                                "chaos:document/attributes.title": "baz"
+                            }
+                        },
+                        {
+                            "Like": {
+                                "chaos:document/attributes.title": "foobar"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "id": "7db91912-a3e9-4641-873c-3deccd07484c",
+        "name": "Foo",
+        "permissions": [
+            {
+                "Effect": "Allow",
+                "Action": "kibana:*",
+                "Resources": "crn:view:::foo-view",
+                "Condition": {
+                    "Condition": [
+                        {
+                            "StartsWith": {
+                                "chaos:document/attributes.title": "foo"
+                            }
+                        },
+                        {
+                            "Equals": {
+                                "chaos:document/attributes.title": "bar"
+                            }
+                        },
+                        {
+                            "NotEquals": {
+                                "chaos:document/attributes.title": "baz"
+                            }
+                        },
+                        {
+                            "Like": {
+                                "chaos:document/attributes.title": "foobar"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": "kibana:*",
+                "Resources": "crn:view:::foo-view",
+                "Condition": {
+                    "Condition": [
+                        {
+                            "StartsWith": {
+                                "chaos:document/attributes.title": "foo"
+                            }
+                        },
+                        {
+                            "Equals": {
+                                "chaos:document/attributes.title": "bar"
+                            }
+                        },
+                        {
+                            "NotEquals": {
+                                "chaos:document/attributes.title": "baz"
+                            }
+                        },
+                        {
+                            "Like": {
+                                "chaos:document/attributes.title": "foobar"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+]`)
+
+}
+func main() {
+	//control, method, url, payload := createView()
+	//control, method, url, payload := createSubAccount()
+	//control, method, url, payload := createUserGroup()
+	//control, method, url, payload := retrieveUserGroups()
+	control, method, url, payload := retrieveUserGroupByGroupId()
+	//control, method, url, payload := deleteUserGroupByGroupId()
+
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
@@ -72,15 +232,23 @@ func main() {
 		return
 	}
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(payload)
 	authToken, err := Auth()
 	if err != nil {
 		return
 	}
 	fmt.Println("url-->", url)
 	fmt.Println("payload-->", payload)
-	httpResp, err := signV2AndDo(authToken, req, buf.Bytes())
+
+	var bodyBytes []byte
+	if method == "POST" || method == "PUT" {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(payload)
+		bodyBytes = buf.Bytes()
+	} else {
+		bodyBytes = nil
+	}
+
+	httpResp, err := signV2AndDo(control, authToken, req, bodyBytes)
 
 	if err != nil {
 		fmt.Println(err)
@@ -96,7 +264,7 @@ func main() {
 	fmt.Println(string(body))
 }
 
-func signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
+func signV2AndDo(control bool, tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
 	fmt.Println("------- AWS V2 Sign Starts------")
 	claims := jwt.MapClaims{}
 
@@ -115,15 +283,22 @@ func signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*htt
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("x-amz-security-token", tokenValue)
-	//req.Header.Add("x-amz-chaossumo-route-token", externalId)
-	req.Header.Add("x-amz-chaossumo-route-token", "login")
+
+	var routeToken string
+
+	if control {
+		routeToken = "login"
+	} else {
+		routeToken = externalId
+	}
+	req.Header.Add("x-amz-chaossumo-route-token", routeToken)
 
 	req.Header.Add("X-Amz-Date", dateTime)
 
 	msgLines := []string{
 		req.Method, "",
 		"application/json", "",
-		"x-amz-chaossumo-route-token:" + "login",
+		"x-amz-chaossumo-route-token:" + routeToken,
 		"x-amz-date:" + dateTime,
 		"x-amz-security-token:" + tokenValue,
 		req.URL.Path,
