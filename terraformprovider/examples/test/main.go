@@ -25,7 +25,7 @@ Testing class for API end point
 need to remove this by end of initial developments
 */
 
-func getCreateViewPayload() (cotrol bool, method string, url string, reader io.Reader) {
+func createView() (cotrol bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/createView"
 	return false, "POST", url, strings.NewReader(`{
 	   "bucket": "dinesh-view-name002",
@@ -50,7 +50,7 @@ func getCreateViewPayload() (cotrol bool, method string, url string, reader io.R
 	`)
 
 }
-func getCreateSubAccountPayload() (control bool, method string, url string, reader io.Reader) {
+func createSubAccount() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/createSubAccount"
 	return true, "POST", url, strings.NewReader(`{
 	    "UserInfoBlock": {
@@ -68,11 +68,22 @@ func getCreateSubAccountPayload() (control bool, method string, url string, read
 	}`)
 }
 
-func getRetrieveUserGroups() (control bool, method string, url string, reader io.Reader) {
+func retrieveUserGroups() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
 	return true, "GET", url, nil
 }
-func getCreateUserGroupPayload() (cotrol bool, method string, url string, reader io.Reader) {
+
+func retrieveUserGroupByGroupId() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/group/default"
+	return true, "GET", url, nil
+}
+
+func deleteUserGroupByGroupId() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/group/123456"
+	return true, "DELETE", url, nil
+}
+
+func createUserGroup() (cotrol bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
 	return true, "POST", url, strings.NewReader(`[
     {
@@ -207,10 +218,12 @@ func getCreateUserGroupPayload() (cotrol bool, method string, url string, reader
 
 }
 func main() {
-	//control, method, url, payload := getCreateViewPayload()
-	//control, method, url, payload := getCreateSubAccountPayload()
-	//control, method, url, payload := getRetrieveUserGroups()
-	control, method, url, payload := getCreateUserGroupPayload()
+	//control, method, url, payload := createView()
+	//control, method, url, payload := createSubAccount()
+	//control, method, url, payload := createUserGroup()
+	//control, method, url, payload := retrieveUserGroups()
+	control, method, url, payload := retrieveUserGroupByGroupId()
+	//control, method, url, payload := deleteUserGroupByGroupId()
 
 	req, err := http.NewRequest(method, url, payload)
 
