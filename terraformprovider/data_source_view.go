@@ -118,7 +118,7 @@ func dataSourceView() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"creation_date": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Required: true,
 							ForceNew: true,
 						},

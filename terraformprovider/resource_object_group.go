@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"cs-tf-provider/client"
-	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	log "github.com/sirupsen/logrus"
@@ -325,56 +324,92 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("_realtime", resp.Realtime)
 	data.Set("bucket", resp.Bucket)
 
-	type Format struct {
-		Type            string
-		RowDelimiter    string
-		HeaderRow       bool
-		ColumnDelimiter string
+	var prefixFilter interface{} = resp.ObjectFilter.And[0]
+
+	var prefixFilterResponse = map[string]string{}
+	for k, v := range prefixFilter.(map[string]interface{}) {
+		prefixFilterResponse[k] = v.(string)
 	}
-	format := Format{
-		Type:            resp.Type,
-		RowDelimiter:    resp.Format.RowDelimiter,
-		HeaderRow:       resp.Format.HeaderRow,
-		ColumnDelimiter: resp.Format.ColumnDelimiter,
+	prefixFilterField := prefixFilterResponse["field"]
+	prefixFilterPrefix := prefixFilterResponse["prefix"]
+	log.Info("field===", prefixFilterField)
+	log.Info("prefix===", prefixFilterPrefix)
+
+	var regexFilter interface{} = resp.ObjectFilter.And[1]
+
+	var regexFilterRes = map[string]string{}
+	for k, v := range regexFilter.(map[string]interface{}) {
+		regexFilterRes[k] = v.(string)
 	}
-	structs.Map(format)
-	//format := resp.Format
+	regexFilterField := regexFilterRes["field"]
+	regexFilterRegex := regexFilterRes["regex"]
+	log.Info("field===", regexFilterField)
+	log.Info("prefix===", regexFilterRegex)
 
-	//type format struct {
-	//	Type        string `json:"_type"`
-	//	Bucket      string `json:"bucket"`
-	//	Bucket      string `json:"bucket"`
-	//	Bucket      string `json:"bucket"`
-	//	// contains filtered or unexported fields
-	//}
+	filter := make([]interface{}, 2)
 
-	//TODO need to set format
-	//data.Set("format", resp.Format)
+	PrefixFilterObjectMap := make(map[string]interface{})
+	PrefixFilterObjectMap["field"] = prefixFilterField
+	PrefixFilterObjectMap["prefix"] = prefixFilterPrefix
 
-	//data.Set("format.column_delimiter", resp.Format.HeaderRow)
-	//data.Set("format.header_row", resp.Format.RowDelimiter)
+	RegexFilterObjectMap := make(map[string]interface{})
+	RegexFilterObjectMap["field"] = regexFilterField
+	RegexFilterObjectMap["regex"] = regexFilterRegex
 
-	data.Set("Interval.Mode", resp.Interval.Mode)
-	data.Set("RegionAvailability", resp.RegionAvailability)
-	data.Set("Source", resp.Source)
-	data.Set("Options", resp.Options)
-	data.Set("Metadata.CreationDate", resp.Metadata.CreationDate)
-	data.Set("Format.ColumnDelimiter", resp.Format.ColumnDelimiter)
-	data.Set("Format.HeaderRow", resp.Format.HeaderRow)
-	data.Set("Format.RowDelimiter", resp.Format.RowDelimiter)
+	filters := make(map[string]interface{})
+	filters["prefix_filter"] = PrefixFilterObjectMap
+	filters["regex_filter"] = RegexFilterObjectMap
 
+	filter[0] = filters
+	//filter[1] = RegexFilterObjectMap
+
+	log.Info("filter=======>", filter)
+	//data.Set("filter", filter)
+
+	if resp.Format != nil {
+		format := make([]interface{}, 1)
+		formatObjectMap := make(map[string]interface{})
+		formatObjectMap["_type"] = resp.Format.Type
+		formatObjectMap["header_row"] = resp.Format.HeaderRow
+		formatObjectMap["column_delimiter"] = resp.Format.ColumnDelimiter
+		formatObjectMap["row_delimiter"] = resp.Format.RowDelimiter
+		format[0] = formatObjectMap
+		data.Set("format", format)
+		log.Info("format====>", format)
+	}
+
+	if resp.Interval != nil {
+		interval := make([]interface{}, 1)
+		intervalObjectMap := make(map[string]interface{})
+		intervalObjectMap["column"] = resp.Interval.Mode
+		intervalObjectMap["mode"] = resp.Interval.Column
+		interval[0] = intervalObjectMap
+		data.Set("interval", interval)
+	}
+
+	if resp.Metadata != nil {
+		metadata := make([]interface{}, 1)
+		metadataObjectMap := make(map[string]interface{})
+		metadataObjectMap["creation_date"] = resp.Metadata.CreationDate
+		metadata[0] = metadataObjectMap
+		data.Set("metadata", metadata)
+	}
+
+	if resp.Options != nil {
+		options := make([]interface{}, 1)
+		optionsObjectMap := make(map[string]interface{})
+		optionsObjectMap["ignore_irregular"] = resp.Options.IgnoreIrregular
+		options[0] = optionsObjectMap
+		data.Set("options", options)
+	}
+
+	RegionAvailability := make([]interface{}, 1)
+	RegionAvailability[0] = resp.RegionAvailability
+	data.Set("region_availability", RegionAvailability[0])
+
+	data.Set("source", resp.Source)
 	data.Set("filter_json", resp.FilterJSON)
-	//data.Set("format", resp.Format)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
-
-	log.Info("live_events_sqs_arn", resp.LiveEventsSqsArn)
-	log.Info("index_retention", resp.IndexRetention)
-
-	log.Info("partition_by", resp.PartitionBy)
-	log.Info("pattern", resp.Pattern)
-	log.Info("source_bucket", resp.SourceBucket)
-
-	log.Info("column_selection", resp.ColumnSelection)
 
 	//data.Set("index_retention", resp.IndexRetention)
 	data.Set("partition_by", resp.PartitionBy)

@@ -304,7 +304,18 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 	data.Set("bucket", resp.Bucket)
 	data.Set("index_pattern", resp.IndexPattern)
 	data.Set("time_field_name", resp.TimeFieldName)
-	data.Set("time_field_name", resp.TimeFieldName)
+
+	RegionAvailability := make([]interface{}, 1)
+	RegionAvailability[0] = resp.RegionAvailability
+	data.Set("region_availability", RegionAvailability[0])
+
+	if resp.MetaData != nil {
+		metadata := make([]interface{}, 1)
+		metadataObjectMap := make(map[string]interface{})
+		metadataObjectMap["creation_date"] = resp.MetaData.CreationDate
+		metadata[0] = metadataObjectMap
+		data.Set("metadata", metadata)
+	}
 
 	//data.Set("resp.Public", resp.Public)
 	//data.Set("resp.ContentType", resp.ContentType)
