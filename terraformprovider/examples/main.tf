@@ -20,28 +20,39 @@ provider "chaossearch" {
 }
 
 #create view
-resource "chaossearch_view" "chaossearch-create-view" {
-  bucket = "Chathura-view-update-1"
-  case_insensitive = false
-  index_pattern   = ".*1112223344"
-  index_retention = -1
-  overwrite       = true
-  sources         = []
-  time_field_name = "@timestamp"
-  transforms      = []
-  filter {
-    predicate {
-      _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
-      pred {
-        _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
-        field = "cs_partition_key_0"
-        query = "*bluebike*"
-        state {
-          _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
-        }
-      }
-    }
+#resource "chaossearch_view" "chaossearch-create-view" {
+#  bucket = "Chathura-view-update-1"
+#  case_insensitive = false
+#  index_pattern   = ".*1112223344"
+#  index_retention = -1
+#  overwrite       = true
+#  sources         = []
+#  time_field_name = "@timestamp"
+#  transforms      = []
+#  filter {
+#    predicate {
+#      _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
+#      pred {
+#        _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+#        field = "cs_partition_key_0"
+#        query = "*bluebike*"
+#        state {
+#          _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+#        }
+#      }
+#    }
+#  }
+#}
+
+# Create Sub Account
+resource "chaossearch_sub_account" "sub-account" {
+  user_info_block {
+    username = "nibras"
+    full_name = "Nibras S"
+    email = "hello@test.com"
   }
+  group_ids = ["aaa", "bbb"]
+  password = "1234"
 }
 
 

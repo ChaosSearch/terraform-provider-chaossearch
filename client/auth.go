@@ -65,11 +65,18 @@ func (csClient *CSClient) Auth(ctx context.Context) (token string, err error) {
 }
 
 func marshalLoginRequest(req *Login) ([]byte, error) {
-
-	body := map[string]interface{}{
-		"Username":  req.Username,
-		"Password":  req.Password,
-		"ParentUid": req.ParentUserId,
+	var body map[string]interface{}
+	if len(req.ParentUserId) == 0 {
+		body = map[string]interface{}{
+			"Username": req.Username,
+			"Password": req.Password,
+		}
+	} else {
+		body = map[string]interface{}{
+			"Username":  req.Username,
+			"Password":  req.Password,
+			"ParentUid": req.ParentUserId,
+		}
 	}
 
 	bodyAsBytes, err := json.Marshal(body)

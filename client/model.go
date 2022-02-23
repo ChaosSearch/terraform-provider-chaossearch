@@ -220,3 +220,16 @@ type CreateUserGroupRequest struct {
 	Id        string
 	Name      string
 }
+
+type UserInfoBlock struct {
+	Username string `json:"Username"`
+	FullName string `json:"FullName"`
+	Email    string `json:"Email"`
+}
+
+type CreateSubAccountRequest struct {
+	AuthToken     string
+	UserInfoBlock UserInfoBlock `json:"UserInfoBlock"`
+	GroupIds      []interface{} `json:"GroupIds"`
+	Password      string
+}

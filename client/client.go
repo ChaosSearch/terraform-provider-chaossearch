@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"encoding/base64"
 	"encoding/json"
@@ -103,19 +104,38 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	dateTime := time.Now().UTC().String()
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("x-amz-security-token", tokenValue)
-	req.Header.Add("x-amz-chaossumo-route-token", externalId)
+	if strings.HasSuffix(req.URL.Path, "/createSubAccount") {
+		token, _ := Auth()
+		req.Header.Add("x-amz-security-token", token)
+		req.Header.Add("x-amz-chaossumo-route-token", "login")
+	} else {
+		req.Header.Add("x-amz-security-token", tokenValue)
+		req.Header.Add("x-amz-chaossumo-route-token", externalId)
+
+	}
 	req.Header.Add("X-Amz-Date", dateTime)
 
 	log.Debug("headers-->", req.Header)
 
-	msgLines := []string{
-		req.Method, "",
-		"application/json", "",
-		"x-amz-chaossumo-route-token:" + externalId,
-		"x-amz-date:" + dateTime,
-		"x-amz-security-token:" + tokenValue,
-		req.URL.Path,
+	var msgLines []string
+	if strings.HasSuffix(req.URL.Path, "createSubAccount") {
+		msgLines = []string{
+			req.Method, "",
+			"application/json", "",
+			"x-amz-chaossumo-route-token:" + "login",
+			"x-amz-date:" + dateTime,
+			"x-amz-security-token:" + tokenValue,
+			req.URL.Path,
+		}
+	} else {
+		msgLines = []string{
+			req.Method, "",
+			"application/json", "",
+			"x-amz-chaossumo-route-token:" + externalId,
+			"x-amz-date:" + dateTime,
+			"x-amz-security-token:" + tokenValue,
+			req.URL.Path,
+		}
 	}
 
 	msg := strings.Join(msgLines, "\n")
@@ -161,6 +181,69 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	return resp, nil
 }
 
+const loginUrl = "https://ap-south-1-aeternum.chaossearch.io/user/login"
+
+//const parentUserId = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
+const userName = "aeternum@chaossearch.com"
+const password = "ffpossgjjefjefojwfpjwgpwijaofnaconaonouf3n129091e901ie01292309r8jfcnsijvnsfini1j91e09ur0932hjsaakji"
+
+func Auth() (token string, err error) {
+	method := "POST"
+	login := Login{
+		Username: userName,
+		Password: password,
+		//ParentUserId: parentUserId,
+	}
+
+	bodyAsBytes, err := marshalLoginRequest(&login)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest(method, loginUrl, bytes.NewReader(bodyAsBytes))
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %s", err)
+	}
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	req.Header.Add("x-amz-chaossumo-route-token", "login")
+	req.Header.Add("Content-Type", "text/plain")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(resp.Body)
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	log.Debug("Jwt token when ParentUserId not passed --> ", string(body))
+
+	if err != nil {
+		diag.Errorf("Token generation fail..")
+		return "", nil
+	} else {
+		tokenData := AuthResponse{}
+		if err := json.Unmarshal(body, &tokenData); err != nil {
+			_ = fmt.Errorf("failed to unmarshal JSON: %s", err)
+		}
+		return tokenData.Token, nil
+	}
+}
+
 func generateSignature(secretToken string, payloadBody string) string {
 	keyForSign := []byte(secretToken)
 	h := hmac.New(sha1.New, keyForSign)
@@ -196,4 +279,8 @@ func (csClient *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{})
 	}
 
 	return nil
+}
+
+type AuthResponse struct {
+	Token string
 }
