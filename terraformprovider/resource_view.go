@@ -317,27 +317,41 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 		data.Set("metadata", metadata)
 	}
 
-	//data.Set("resp.Public", resp.Public)
-	//data.Set("resp.ContentType", resp.ContentType)
-	//data.Set("resp.Type", resp.Type)
+	if resp.FilterPredicate != nil {
 
-	//data.Set("Type", resp.Type)
-	//data.Set("ContentType", resp.ContentType)
+		filter := make([]interface{}, 1)
+		predicate := make([]interface{}, 1)
+		pred := make([]interface{}, 1)
+		state := make([]interface{}, 1)
+
+		predObjectMap := make(map[string]interface{})
+		if resp.FilterPredicate.Predicate != nil {
+			predObjectMap["field"] = resp.FilterPredicate.Predicate.Pred.Field
+			predObjectMap["_type"] = resp.FilterPredicate.Predicate.Pred.Type_
+			predObjectMap["query"] = resp.FilterPredicate.Predicate.Pred.Query
+
+			stateObjectMap := make(map[string]interface{})
+			stateObjectMap["_type"] = resp.FilterPredicate.Predicate.Pred.State.Type_
+			state[0] = stateObjectMap
+			predObjectMap["state"] = state
+			pred[0] = predObjectMap
+
+			predicatePredObjectMap := make(map[string]interface{})
+			predicatePredObjectMap["pred"] = pred
+			predicatePredObjectMap["_type"] = resp.FilterPredicate.Predicate.Type_
+			predicate[0] = predicatePredObjectMap
+
+			filterPredicateObjectMap := make(map[string]interface{})
+			filterPredicateObjectMap["predicate"] = predicate
+			filter[0] = filterPredicateObjectMap
+			data.Set("filter", filter)
+		}
+	}
+	//data.Set("resp.Public", resp.Public)
 	//data.Set("Public", resp.Public)
 	//data.Set("RealTime", resp.Realtime)
-	//data.Set("Type", resp.Type)
-	//data.Set("Bucket", resp.Bucket)
 	//data.Set("Interval.Column", resp.Interval.Column)
 	//data.Set("Interval.Mode", resp.Interval.Mode)
-	//data.Set("RegionAvailability", resp.RegionAvailability)
-	//data.Set("Source", resp.Source)
-	//data.Set("Options", resp.Options)
-	//data.Set("Metadata.CreationDate", resp.Metadata.CreationDate)
-	//data.Set("Format.ColumnDelimiter", resp.Format.ColumnDelimiter)
-	//data.Set("Format.HeaderRow", resp.Format.HeaderRow)
-	//data.Set("Format.RowDelimiter", resp.Format.RowDelimiter)
-	//data.Set("filter_json", resp.FilterJSON)
-	//data.Set("format", resp.Format)
 	//data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
 	//data.Set("index_retention", resp.IndexRetention)
 

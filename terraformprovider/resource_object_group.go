@@ -352,10 +352,10 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	PrefixFilter[0] = PrefixFilterObjectMap
 	RegexFilter := make([]interface{}, 1)
 	RegexFilter[0] = RegexFilterObjectMap
-	formatObjectMap := make(map[string]interface{})
-	formatObjectMap["prefix_filter"] = PrefixFilter
-	formatObjectMap["regex_filter"] = RegexFilter
-	filter[0] = formatObjectMap
+	filterObjectMap := make(map[string]interface{})
+	filterObjectMap["prefix_filter"] = PrefixFilter
+	filterObjectMap["regex_filter"] = RegexFilter
+	filter[0] = filterObjectMap
 	data.Set("filter", filter)
 
 	if resp.Format != nil {

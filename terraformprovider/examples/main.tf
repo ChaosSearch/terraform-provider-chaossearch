@@ -21,7 +21,7 @@ provider "chaossearch" {
 
 ##create view
 #resource "chaossearch_view" "chaossearch-create-view" {
-#  bucket = "Chathura-view-update-1"
+#  bucket = "Chathura-view-retrive-1"
 #  case_insensitive = false
 #  index_pattern   = ".*1112223344"
 #  index_retention = -1
@@ -167,18 +167,18 @@ provider "chaossearch" {
 
 
 #get object group by id
-data "chaossearch_retrieve_object_group" "my-object-group" {
-  bucket="c-og-100198"
-}
-
-output "object_group_retrieve_object_group" {
-  value = data.chaossearch_retrieve_object_group.my-object-group
-}
+#data "chaossearch_retrieve_object_group" "my-object-group" {
+#  bucket="c-og-100198"
+#}
+#
+#output "object_group_retrieve_object_group" {
+#  value = data.chaossearch_retrieve_object_group.my-object-group
+#}
 
 
 #get view  by id
 #data "chaossearch_retrieve_view" "my-view1" {
-#bucket="c-view-01"
+#bucket="Chathura-view-retrive-1"
 #}
 #
 #output "object_group_retrieve_view" {
