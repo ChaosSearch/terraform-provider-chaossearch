@@ -25,7 +25,7 @@ Testing class for API end point
 need to remove this by end of initial developments
 */
 
-func createViewPayload() (cotrol bool, method string, url string, reader io.Reader) {
+func createView() (cotrol bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/createView"
 	return false, "POST", url, strings.NewReader(`{
 	   "bucket": "dinesh-view-name002",
