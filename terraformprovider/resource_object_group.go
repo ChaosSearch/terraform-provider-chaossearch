@@ -291,47 +291,27 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Info("called READ")
 
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).CSClient
 
-	log.Info("keyyyyy====>", data.Get("objid"))
-	//data.Get("objid")
-	//bucketId := data.Get("objid").(string)
-	log.Info("data.Id()", data.Id())
+	data.SetId(data.Get("bucket").(string))
 
-	var resourceGroupReqId string
-	if data.Id() != "" {
-		resourceGroupReqId = data.Id()
-	} else if data.Get("object_group_id").(string) != "" {
-		resourceGroupReqId = data.Get("object_group_id").(string)
-	} else {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Unable to find id for object group",
-			Detail:   "Unable to find id for object group",
-		})
-		return diags
-
-	}
 	//req := &client.ReadObjectGroupRequest{
 	//	ID: bucketId,
 	//}
-
-	log.Info("33333333333333")
 	tokenValue := meta.(*ProviderMeta).token
 	req := &client.ReadObjectGroupRequest{
+		ID:        data.Id(),
 		AuthToken: tokenValue,
-		ID:        resourceGroupReqId,
 	}
-	log.Warn("req---->", req)
+
 	resp, err := c.ReadObjectGroup(ctx, req)
-	log.Info("response Id===", resp)
+
 	if resp == nil {
 		return diag.Errorf("Couldn't find object group: %s", err)
 	}
-	//data.SetId(resp.ID)
+
 	data.Set("object_group_id", resp.ID)
 	if err != nil {
 		return diag.Errorf("Failed to read object group: %s", err)
@@ -344,8 +324,6 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("content_type", resp.ContentType)
 	data.Set("_realtime", resp.Realtime)
 	data.Set("bucket", resp.Bucket)
-
-	log.Info("ffffffffff====>", resp.Format)
 
 	type Format struct {
 		Type            string
@@ -403,25 +381,6 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("pattern", resp.Pattern)
 	data.Set("source_bucket", resp.SourceBucket)
 	data.Set("column_selection", resp.ColumnSelection)
-
-	log.Info("Type", resp.Type)
-	log.Info("ContentType", resp.ContentType)
-	log.Info("public=========>", resp.Public)
-	log.Info("RealTime", resp.Realtime)
-	log.Info("Type", resp.Type)
-	log.Info("Bucket", resp.Bucket)
-	log.Info("Interval.Column", resp.Interval.Column)
-	log.Info("Interval.Mode", resp.Interval.Mode)
-	log.Info("RegionAvailability", resp.RegionAvailability)
-	log.Info("Source", resp.Source)
-	log.Info("Options", resp.Options)
-	log.Info("Metadata.CreationDate", resp.Metadata.CreationDate)
-	log.Info("Format.ColumnDelimiter", resp.Format.ColumnDelimiter)
-	log.Info("Format.HeaderRow", resp.Format.HeaderRow)
-	log.Info("Format.RowDelimiter", resp.Format.RowDelimiter)
-	log.Info("Format.filter", resp.Filter)
-	log.Info("filter_json", resp.FilterJSON)
-	log.Info("format", resp.Format)
 
 	// When the object in an Object Group use no compression, you need to create it with
 	// `compression = ""`. However, when querying an Object Group whose object are not
