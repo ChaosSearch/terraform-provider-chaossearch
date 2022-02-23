@@ -3,7 +3,7 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=chaossearch
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
-VERSION=0.1.2
+VERSION=0.1.7
 # OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 OS_ARCH=$(shell go env GOOS)_arm64
 
@@ -40,3 +40,6 @@ test:
 
 testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+
+testall:
+	cd examples/test && ./testall.sh
