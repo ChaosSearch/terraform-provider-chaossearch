@@ -181,38 +181,73 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 	set := data.Get("user_groups")
 	log.Info("user_groups===>", set)
 
-	if data.Get("user_groups").(*schema.Set).Len() > 0 {
-		policiesInterfaces := data.Get("user_groups").(*schema.Set).List()[0]
-		policiesInterface := policiesInterfaces.(map[string]interface{})
+	var id, name string
+	var permissionList []client.Permission
+	var conditionList []client.Condition
 
-		//get permission map as a list
-		objectList := policiesInterface["permissions"].(*schema.Set).List()
-		permissionObject := objectList[0]
-		log.Info("objectList====>", objectList)
-		permission := permissionObject.(map[string]interface{})
-		i := permission["permission"].(*schema.Set).List()
-		//log.Debug("index", index)
-		for index1, element1 := range i {
-			//get permission map one by one
-			permissionMap := element1.(map[string]interface{})
-			log.Info("policy1==>", permissionMap)
-			log.Debug("action====>", permissionMap["action"].(string))
-			log.Debug("resources====>", permissionMap["resources"].(string))
-			log.Debug("effect====>", permissionMap["effect"].(string))
-			log.Debug("conditions====>", permissionMap["conditions"].(*schema.Set).List()[index1])
-			log.Debug(index1, "index")
+	if data.Get("user_groups").(*schema.Set).Len() > 0 {
+		userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
+		id = userGroupInterface["id"].(string)
+		name = userGroupInterface["name"].(string)
+		permissions := userGroupInterface["permissions"].(*schema.Set).List()[0].(map[string]interface{})["permission"].(*schema.Set).List()
+		if len(permissions) > 0 {
+			for permissionsIndex, permissionsElement := range permissions {
+				//get permission map one by one
+				permissionMap := permissionsElement.(map[string]interface{})
+
+				log.Debug("action====>", permissionMap["action"].(string))
+				log.Debug("resources====>", permissionMap["resources"].(string))
+				log.Debug("effect====>", permissionMap["effect"].(string))
+				conditions := permissionMap["conditions"].(*schema.Set).List()[0].(map[string]interface{})["condition"].(*schema.Set).List()
+				conditionMap := conditions[0].(map[string]interface{})
+				equal := conditionMap["equals"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
+				startsWith := conditionMap["starts_with"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
+				notEquals := conditionMap["not_equals"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
+				like := conditionMap["like"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
+
+				equalObject := client.Equals{
+					ChaosDocumentAttributesTitle: equal,
+				}
+				likeObject := client.Like{
+					ChaosDocumentAttributesTitle: like,
+				}
+				notEqualsObject := client.NotEquals{
+					ChaosDocumentAttributesTitle: notEquals,
+				}
+				startsWithObject := client.StartsWith{
+					ChaosDocumentAttributesTitle: startsWith,
+				}
+				conditionList = append(
+					conditionList,
+					client.Condition{
+						Equals:     equalObject,
+						StartsWith: startsWithObject,
+						NotEquals:  notEqualsObject,
+						Like:       likeObject,
+					})
+
+				permissionList = append(
+					permissionList,
+					client.Permission{
+						Effect:    permissionMap["effect"].(string),
+						Action:    permissionMap["action"].(string),
+						Resources: permissionMap["resources"].(string),
+						Condition: conditionList,
+					})
+				log.Debug(permissionsIndex, "index")
+				//remove element from condition list after append
+				conditionList = nil
+			}
+			log.Info("permission array", permissionList)
 		}
-		//}
 	}
 
 	createUserGroupRequest := &client.CreateUserGroupRequest{
-		AuthToken: tokenValue,
-		Id:        data.Get("id").(string),
-		Name:      data.Get("name").(string),
+		AuthToken:  tokenValue,
+		Id:         id,
+		Name:       name,
+		Permission: permissionList,
 	}
-
-	log.Debug("createUserGroupRequest.id-->", createUserGroupRequest.Id)
-	log.Debug("createUserGroupRequest.name-->", createUserGroupRequest.Name)
 
 	if err := c.CreateUserGroup(ctx, createUserGroupRequest); err != nil {
 		return diag.FromErr(err)
