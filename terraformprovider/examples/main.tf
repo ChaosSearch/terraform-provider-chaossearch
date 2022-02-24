@@ -59,6 +59,7 @@ resource "chaossearch_sub_account" "sub-account" {
   }
   group_ids = ["aaa", "bbb"]
   password = "1234"
+  hocon = ["override.Services.worker.quota=50"]
 }
 
 
