@@ -239,3 +239,8 @@ type CreateSubAccountRequest struct {
 	Password      string
 	HoCon         []interface{} `json:"HoCon"`
 }
+
+type DeleteSubAccountRequest struct {
+	AuthToken string
+	Username  string
+}

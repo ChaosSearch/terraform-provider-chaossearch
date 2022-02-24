@@ -68,6 +68,11 @@ func createSubAccount() (control bool, method string, url string, reader io.Read
 	}`)
 }
 
+func deleteSubAccountByUser() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/deleteSubAccount"
+	return true, "POST", url, strings.NewReader(`{"Username": "nibras_41"}`)
+}
+
 func retrieveUserGroups() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
 	return true, "GET", url, nil
@@ -83,7 +88,7 @@ func deleteUserGroupByGroupId() (control bool, method string, url string, reader
 	return true, "DELETE", url, nil
 }
 
-func createUserGroup() (cotrol bool, method string, url string, reader io.Reader) {
+func createUserGroup() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
 	return true, "POST", url, strings.NewReader(`[
     {
@@ -222,7 +227,8 @@ func main() {
 	//control, method, url, payload := createSubAccount()
 	//control, method, url, payload := createUserGroup()
 	//control, method, url, payload := retrieveUserGroups()
-	control, method, url, payload := retrieveUserGroupByGroupId()
+	//control, method, url, payload := retrieveUserGroupByGroupId()
+	control, method, url, payload := deleteSubAccountByUser()
 	//control, method, url, payload := deleteUserGroupByGroupId()
 
 	req, err := http.NewRequest(method, url, payload)
