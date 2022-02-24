@@ -6,9 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 
-	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -28,9 +26,6 @@ func (csClient *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAc
 
 	var sessionToken = req.AuthToken
 	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
-
-	body, err := ioutil.ReadAll(httpResp.Body)
-	log.Info("create sub account response -->", string(body))
 
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
