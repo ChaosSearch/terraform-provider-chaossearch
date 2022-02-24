@@ -26,6 +26,9 @@ type Metadata struct {
 	CreationDate int64 `json:"creationDate"`
 }
 
+type ObjectFilter struct {
+	And []interface{} `json:"AND"`
+}
 type ReadObjectGroupResponse struct {
 	Public      bool   `json:"_public"`
 	Realtime    bool   `json:"_realtime"`
@@ -39,7 +42,9 @@ type ReadObjectGroupResponse struct {
 	//		Regex  string `json:"regex,omitempty"`
 	//	} `json:"AND"`
 	//} `json:"filter"`
-	Filter             *Filter
+
+	ObjectFilter ObjectFilter `json:"filter"`
+	//Filter             *Filter
 	Format             *Format   `json:"format"`
 	ID                 string    `json:"id"`
 	Interval           *Interval `json:"interval"`
