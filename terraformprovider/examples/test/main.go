@@ -25,7 +25,7 @@ Testing class for API end point
 need to remove this by end of initial developments
 */
 
-func createView() (cotrol bool, method string, url string, reader io.Reader) {
+func createView() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/createView"
 	return false, "POST", url, strings.NewReader(`{
 	   "bucket": "dinesh-view-name002",
@@ -50,6 +50,12 @@ func createView() (cotrol bool, method string, url string, reader io.Reader) {
 	`)
 
 }
+
+func deleteSubAccountByUser() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/deleteSubAccount"
+	return true, "POST", url, strings.NewReader(`{"Username": "dineshkj"}`)
+}
+
 func createSubAccount() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/createSubAccount"
 	return true, "POST", url, strings.NewReader(`{
@@ -68,18 +74,25 @@ func createSubAccount() (control bool, method string, url string, reader io.Read
 	}`)
 }
 
+func importBucket() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/importBucket"
+	return false, "POST", url, strings.NewReader(`{
+		"bucket":"chaos-tera-test-111",
+		"hideBucket":false
+}`)
+}
 func retrieveUserGroups() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
 	return true, "GET", url, nil
 }
 
 func retrieveUserGroupByGroupId() (control bool, method string, url string, reader io.Reader) {
-	url = "https://ap-south-1-aeternum.chaossearch.io/user/group/default"
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/group/9436aed9-e994-4dba-a25b-7d950d7f3623"
 	return true, "GET", url, nil
 }
 
 func deleteUserGroupByGroupId() (control bool, method string, url string, reader io.Reader) {
-	url = "https://ap-south-1-aeternum.chaossearch.io/user/group/123456"
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/group/f4da25ba-5e8e-4cba-b13a-c068bdfa07d7"
 	return true, "DELETE", url, nil
 }
 
@@ -87,143 +100,32 @@ func createUserGroup() (cotrol bool, method string, url string, reader io.Reader
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
 	return true, "POST", url, strings.NewReader(`[
     {
-        "id": "7db91912-a3e9-4641-873c-3deccd07484c",
-        "name": "Foo",
+        "id": "10002",
+        "name": "dinesh-jk",
         "permissions": [
             {
                 "Effect": "Allow",
-                "Action": "kibana:*",
-                "Resources": "crn:view:::foo-view",
-                "Condition": {
-                    "Condition": [
-                        {
-                            "StartsWith": {
-                                "chaos:document/attributes.title": "foo"
-                            }
-                        },
-                        {
-                            "Equals": {
-                                "chaos:document/attributes.title": "bar"
-                            }
-                        },
-                        {
-                            "NotEquals": {
-                                "chaos:document/attributes.title": "baz"
-                            }
-                        },
-                        {
-                            "Like": {
-                                "chaos:document/attributes.title": "foobar"
-                            }
-                        }
-                    ]
-                }
-            },
-            {
-                "Effect": "Allow",
-                "Action": "kibana:*",
-                "Resources": "crn:view:::foo-view",
-                "Condition": {
-                    "Condition": [
-                        {
-                            "StartsWith": {
-                                "chaos:document/attributes.title": "foo"
-                            }
-                        },
-                        {
-                            "Equals": {
-                                "chaos:document/attributes.title": "bar"
-                            }
-                        },
-                        {
-                            "NotEquals": {
-                                "chaos:document/attributes.title": "baz"
-                            }
-                        },
-                        {
-                            "Like": {
-                                "chaos:document/attributes.title": "foobar"
-                            }
-                        }
-                    ]
-                }
-            }
-        ]
-    },
-    {
-        "id": "7db91912-a3e9-4641-873c-3deccd07484c",
-        "name": "Foo",
-        "permissions": [
-            {
-                "Effect": "Allow",
-                "Action": "kibana:*",
-                "Resources": "crn:view:::foo-view",
-                "Condition": {
-                    "Condition": [
-                        {
-                            "StartsWith": {
-                                "chaos:document/attributes.title": "foo"
-                            }
-                        },
-                        {
-                            "Equals": {
-                                "chaos:document/attributes.title": "bar"
-                            }
-                        },
-                        {
-                            "NotEquals": {
-                                "chaos:document/attributes.title": "baz"
-                            }
-                        },
-                        {
-                            "Like": {
-                                "chaos:document/attributes.title": "foobar"
-                            }
-                        }
-                    ]
-                }
-            },
-            {
-                "Effect": "Allow",
-                "Action": "kibana:*",
-                "Resources": "crn:view:::foo-view",
-                "Condition": {
-                    "Condition": [
-                        {
-                            "StartsWith": {
-                                "chaos:document/attributes.title": "foo"
-                            }
-                        },
-                        {
-                            "Equals": {
-                                "chaos:document/attributes.title": "bar"
-                            }
-                        },
-                        {
-                            "NotEquals": {
-                                "chaos:document/attributes.title": "baz"
-                            }
-                        },
-                        {
-                            "Like": {
-                                "chaos:document/attributes.title": "foobar"
-                            }
-                        }
-                    ]
-                }
+                "Actions": ["*"],
+                "Resources": ["*"],"Version":"1.2"
             }
         ]
     }
+
 ]`)
 
 }
+
 func main() {
 	//control, method, url, payload := createView()
+
 	//control, method, url, payload := createSubAccount()
+	//control, method, url, payload := deleteSubAccountByUser()
+
 	//control, method, url, payload := createUserGroup()
 	//control, method, url, payload := retrieveUserGroups()
-	control, method, url, payload := retrieveUserGroupByGroupId()
+	//control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := deleteUserGroupByGroupId()
+	control, method, url, payload := importBucket()
 
 	req, err := http.NewRequest(method, url, payload)
 
