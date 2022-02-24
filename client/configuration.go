@@ -7,7 +7,7 @@ type Configuration struct {
 	SecretAccessKey string
 	AWSServiceName  string
 	Region          string
-	Login *Login
+	Login           *Login
 }
 
 // NewConfiguration creates a default Configuration struct
@@ -19,8 +19,8 @@ func NewConfiguration() *Configuration {
 	return cfg
 }
 
-type Login struct{
-	Username string
-	Password string
-	ParentUserId string
+type Login struct {
+	Username     string
+	Password     string
+	ParentUserId string `json:"ParentUserId,omitempty"`
 }

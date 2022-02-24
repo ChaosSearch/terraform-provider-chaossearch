@@ -12,9 +12,15 @@ provider "chaossearch" {
     secret_access_key = "r5MEYkYntYvXqRSBMK6SFLQfPw7hHRQ0v5cqlkIk"
     region            = "ap-south-1"
     login  {
-      user_name = "service_user@chaossearch.com"
-      password = "thisIsAnEx@mple1!"
-      parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
+
+      # Normal User Credentials
+#     user_name = "service_user@chaossearch.com"
+#     password = "thisIsAnEx@mple1!"
+#     parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
+
+      # ADMIN Credentials
+      user_name = "aeternum@chaossearch.com"
+      password = "ffpossgjjefjefojwfpjwgpwijaofnaconaonouf3n129091e901ie01292309r8jfcnsijvnsfini1j91e09ur0932hjsaakji"
     }
 
 }

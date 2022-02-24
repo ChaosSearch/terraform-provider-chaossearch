@@ -56,7 +56,7 @@ func Provider() *schema.Provider {
 							ForceNew: true,
 						}, "parent_user_id": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 							ForceNew: true,
 						},
 					},
@@ -99,8 +99,9 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
 		username_ = columnSelectionInterface["user_name"].(string)
 		password_ = columnSelectionInterface["password"].(string)
-		parentUserId_ = columnSelectionInterface["parent_user_id"].(string)
-
+		if columnSelectionInterface["parent_user_id"] != nil {
+			parentUserId_ = columnSelectionInterface["parent_user_id"].(string)
+		}
 	}
 
 	login_ := client.Login{

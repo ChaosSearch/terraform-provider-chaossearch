@@ -53,6 +53,7 @@ func marshalCreateSubAccountRequest(req *CreateSubAccountRequest) ([]byte, error
 		},
 		"GroupIds": req.GroupIds,
 		"Password": req.Password,
+		"Hocon":    req.HoCon,
 	}
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {

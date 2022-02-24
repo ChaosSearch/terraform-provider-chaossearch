@@ -232,4 +232,5 @@ type CreateSubAccountRequest struct {
 	UserInfoBlock UserInfoBlock `json:"UserInfoBlock"`
 	GroupIds      []interface{} `json:"GroupIds"`
 	Password      string
+	HoCon         []interface{} `json:"HoCon"`
 }

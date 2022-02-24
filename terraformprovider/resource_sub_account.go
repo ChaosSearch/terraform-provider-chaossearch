@@ -54,6 +54,14 @@ func resourceSubAccount() *schema.Resource {
 				Optional: true,
 				ForceNew: false,
 			},
+			"hocon": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: false,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -73,6 +81,7 @@ func resourceSubAccountCreate(ctx context.Context, data *schema.ResourceData, me
 		UserInfoBlock: userInfoBlock,
 		GroupIds:      data.Get("group_ids").([]interface{}),
 		Password:      data.Get("password").(string),
+		HoCon:         data.Get("hocon").([]interface{}),
 	}
 
 	if err := c.CreateSubAccount(ctx, createSubAccountRequest); err != nil {
