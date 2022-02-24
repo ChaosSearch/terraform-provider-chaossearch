@@ -69,8 +69,9 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"chaossearch_object_group": resourceObjectGroup(),
 			//	// "chaossearch_indexing_state": resourceIndexingState(),
-			"chaossearch_view":        resourceView(),
-			"chaossearch_sub_account": resourceSubAccount(),
+			"chaossearch_view":          resourceView(),
+			"chaossearch_sub_account":   resourceSubAccount(),
+			"chaossearch_import_bucket": resourceBucket(),
 			//	//"chaossearch_user_group":resourceUserGroup(),
 		},
 
