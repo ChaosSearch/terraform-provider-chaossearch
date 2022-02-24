@@ -19,37 +19,37 @@ provider "chaossearch" {
 
 }
 
-#create view
-resource "chaossearch_view" "chaossearch-create-view" {
-  bucket = "Chathura-view-update-1"
-  case_insensitive = false
-  index_pattern   = ".*1112223344"
-  index_retention = -1
-  overwrite       = true
-  sources         = []
-  time_field_name = "@timestamp"
-  transforms      = []
-  filter {
-    predicate {
-      _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
-      pred {
-        _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
-        field = "cs_partition_key_0"
-        query = "*bluebike*"
-        state {
-          _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
-        }
-      }
-    }
-  }
-}
+##create view
+#resource "chaossearch_view" "chaossearch-create-view" {
+#  bucket = "Chathura-view-retrive-1"
+#  case_insensitive = false
+#  index_pattern   = ".*1112223344"
+#  index_retention = -1
+#  overwrite       = true
+#  sources         = []
+#  time_field_name = "@timestamp"
+#  transforms      = []
+#  filter {
+#    predicate {
+#      _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
+#      pred {
+#        _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+#        field = "cs_partition_key_0"
+#        query = "*bluebike*"
+#        state {
+#          _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+#        }
+#      }
+#    }
+#  }
+#}
 
 
 
 #create object group
 #resource "chaossearch_object_group" "my-object-group" {
 #
-#  bucket = "Chathura-og-update-1"
+#  bucket = "Chathura-og-update-2"
 #  source = "chaos-test-data-aps1"
 #  format {
 #    _type            = "CSV"
@@ -167,18 +167,18 @@ resource "chaossearch_view" "chaossearch-create-view" {
 
 
 #get object group by id
-#data "chaossearch_retrieve_object_group" "my-object-group" {
-#  bucket="c-og-100198"
-#}
-#
-#output "object_group_retrieve_object_group" {
-#  value = data.chaossearch_retrieve_object_group.my-object-group
-#}
+data "chaossearch_retrieve_object_group" "my-object-group" {
+  bucket="c-og-100198"
+}
+
+output "object_group_retrieve_object_group" {
+  value = data.chaossearch_retrieve_object_group.my-object-group
+}
 
 
 #get view  by id
 #data "chaossearch_retrieve_view" "my-view1" {
-#bucket="c-view-01"
+#bucket="Chathura-view-retrive-1"
 #}
 #
 #output "object_group_retrieve_view" {

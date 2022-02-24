@@ -63,7 +63,13 @@ func (csClient *CSClient) readAttributesFromDatasetEndpoint(ctx context.Context,
 		return fmt.Errorf("failed to unmarshal JSON response body: %s", err)
 	}
 	resp.Format = ReadObjectGroup.Format
-	resp.Filter = ReadObjectGroup.Filter
+	//TODO need to set filter
+
+	log.Printf(" ReadObjectGroup.Filter==>", ReadObjectGroup.ObjectFilter)
+	//resp.Filter.RegexFilter = ReadObjectGroup.Filter.RegexFilter
+	//resp.Filter.PrefixFilter = ReadObjectGroup.Filter.PrefixFilter
+	resp.ObjectFilter = ReadObjectGroup.ObjectFilter
+	log.Printf("mmmmmmmfffmmm", ReadObjectGroup.ObjectFilter)
 	resp.Interval = ReadObjectGroup.Interval
 	resp.Metadata = ReadObjectGroup.Metadata
 	resp.Options = ReadObjectGroup.Options

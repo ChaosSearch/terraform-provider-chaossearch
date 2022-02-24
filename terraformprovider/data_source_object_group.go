@@ -81,7 +81,7 @@ func dataSourceObjectGroup() *schema.Resource {
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"obj1": {
+						"prefix_filter": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							ForceNew: true,
@@ -100,7 +100,7 @@ func dataSourceObjectGroup() *schema.Resource {
 								},
 							},
 						},
-						"obj2": {
+						"regex_filter": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							ForceNew: true,
@@ -162,7 +162,7 @@ func dataSourceObjectGroup() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"creation_date": {
-							Type:     schema.TypeString,
+							Type:     schema.TypeInt,
 							Required: true,
 							ForceNew: true,
 						},
