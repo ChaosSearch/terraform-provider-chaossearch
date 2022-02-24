@@ -49,7 +49,7 @@ provider "chaossearch" {
 #create object group
 #resource "chaossearch_object_group" "my-object-group" {
 #
-#  bucket = "Chathura-og-update-1"
+#  bucket = "Chathura-og-update-2"
 #  source = "chaos-test-data-aps1"
 #  format {
 #    _type            = "CSV"
@@ -167,13 +167,13 @@ provider "chaossearch" {
 
 
 #get object group by id
-#data "chaossearch_retrieve_object_group" "my-object-group" {
-#  bucket="c-og-100198"
-#}
-#
-#output "object_group_retrieve_object_group" {
-#  value = data.chaossearch_retrieve_object_group.my-object-group
-#}
+data "chaossearch_retrieve_object_group" "my-object-group" {
+  bucket="c-og-100198"
+}
+
+output "object_group_retrieve_object_group" {
+  value = data.chaossearch_retrieve_object_group.my-object-group
+}
 
 
 #get view  by id
