@@ -239,3 +239,9 @@ type CreateSubAccountRequest struct {
 	Password      string
 	HoCon         []interface{} `json:"HoCon"`
 }
+
+type ImportBucketRequest struct {
+	AuthToken  string
+	Bucket     string `json:"bucket"`
+	HideBucket bool   `json:"hideBucket"`
+}
