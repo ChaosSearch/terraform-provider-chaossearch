@@ -103,35 +103,27 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	dateTime := time.Now().UTC().String()
 
 	req.Header.Add("Content-Type", "application/json")
+	var routeToken string
+
 	if isAdminApi(req.URL.Path) {
-		req.Header.Add("x-amz-chaossumo-route-token", "login")
+		routeToken = "login"
 	} else {
-		req.Header.Add("x-amz-chaossumo-route-token", externalId)
+		routeToken = externalId
 	}
+	req.Header.Add("x-amz-chaossumo-route-token", routeToken)
+
 	req.Header.Add("x-amz-security-token", tokenValue)
 	req.Header.Add("X-Amz-Date", dateTime)
 
 	log.Debug("headers-->", req.Header)
 
-	var msgLines []string
-	if isAdminApi(req.URL.Path) {
-		msgLines = []string{
-			req.Method, "",
-			"application/json", "",
-			"x-amz-chaossumo-route-token:" + "login",
-			"x-amz-date:" + dateTime,
-			"x-amz-security-token:" + tokenValue,
-			req.URL.Path,
-		}
-	} else {
-		msgLines = []string{
-			req.Method, "",
-			"application/json", "",
-			"x-amz-chaossumo-route-token:" + externalId,
-			"x-amz-date:" + dateTime,
-			"x-amz-security-token:" + tokenValue,
-			req.URL.Path,
-		}
+	msgLines := []string{
+		req.Method, "",
+		"application/json", "",
+		"x-amz-chaossumo-route-token:" + routeToken,
+		"x-amz-date:" + dateTime,
+		"x-amz-security-token:" + tokenValue,
+		req.URL.Path,
 	}
 
 	msg := strings.Join(msgLines, "\n")
