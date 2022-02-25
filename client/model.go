@@ -220,10 +220,43 @@ type State struct {
 	Type_ string `json:"_type"`
 }
 
+//user group create related models
+
+type StartsWith struct {
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+}
+type Equals struct {
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+}
+type NotEquals struct {
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+}
+type Like struct {
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+}
+
+type Condition struct {
+	StartsWith StartsWith
+	Equals     Equals
+	NotEquals  NotEquals
+	Like       Like
+}
+type ConditionGroup struct {
+	Condition []Condition `json:"Condition"`
+}
+type Permission struct {
+	Effect         string
+	Version        string
+	Actions        []string
+	Resources      []string
+	ConditionGroup ConditionGroup `json:"Condition"`
+}
+
 type CreateUserGroupRequest struct {
-	AuthToken string
-	Id        string
-	Name      string
+	AuthToken  string
+	Id         string
+	Name       string
+	Permission []Permission `json:"GroupIds"`
 }
 
 type UserInfoBlock struct {
@@ -238,6 +271,17 @@ type CreateSubAccountRequest struct {
 	GroupIds      []interface{} `json:"GroupIds"`
 	Password      string
 	HoCon         []interface{} `json:"HoCon"`
+}
+
+type ImportBucketRequest struct {
+	AuthToken  string
+	Bucket     string `json:"bucket"`
+	HideBucket bool   `json:"hideBucket"`
+}
+
+type DeleteSubAccountRequest struct {
+	AuthToken string
+	Username  string
 }
 
 type ListUsersResponse struct {

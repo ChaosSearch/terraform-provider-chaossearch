@@ -5,28 +5,32 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
-
 	"net/http"
 )
 
-func (csClient *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRequest) error {
+func (csClient *CSClient) ImportBucket(ctx context.Context, req *ImportBucketRequest) error {
 	method := "POST"
-	url := fmt.Sprintf("%s/user/createSubAccount", csClient.config.URL)
+	url := fmt.Sprintf("%s/Bucket/importBucket", csClient.config.URL)
+	log.Debug("Url-->", url)
 
-	bodyAsBytes, err := marshalCreateSubAccountRequest(req)
+	bodyAsBytes, err := marshalImportBuketRequest(req)
 	if err != nil {
 		return err
 	}
+	log.Debug("method-->", method)
+	log.Debug("bodyAsBytes-->", bodyAsBytes)
 
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	var sessionToken = req.AuthToken
-	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	log.Warn("httpReq-->", httpReq)
+	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 
+	log.Warn("httpResp-->", httpResp)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
@@ -36,19 +40,15 @@ func (csClient *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAc
 			_ = fmt.Errorf("failed to Close response body  %s", err)
 		}
 	}(httpResp.Body)
+
 	return nil
 }
 
-func marshalCreateSubAccountRequest(req *CreateSubAccountRequest) ([]byte, error) {
+func marshalImportBuketRequest(req *ImportBucketRequest) ([]byte, error) {
 	body := map[string]interface{}{
-		"UserInfoBlock": map[string]interface{}{
-			"Username": req.UserInfoBlock.Username,
-			"FullName": req.UserInfoBlock.FullName,
-			"Email":    req.UserInfoBlock.Email,
-		},
-		"GroupIds": req.GroupIds,
-		"Password": req.Password,
-		"Hocon":    req.HoCon,
+
+		"bucket":     req.Bucket,
+		"hideBucket": req.HideBucket,
 	}
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {

@@ -45,6 +45,9 @@ func NewClient(config *Configuration, login *Login) *CSClient {
 	}
 }
 
+/*  AWS V4 Authentication
+Not using with current API implementations
+*/
 func (csClient *CSClient) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
 	var bodyReader io.ReadSeeker
 	if bodyAsBytes == nil {
@@ -52,8 +55,6 @@ func (csClient *CSClient) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*h
 	} else {
 		bodyReader = bytes.NewReader(bodyAsBytes)
 	}
-
-	// req.Header.Add("x-amz-security-token", sessionToken)
 
 	var sessionToken string
 	staticCredentials := credentials.NewStaticCredentials(csClient.config.AccessKeyID, csClient.config.SecretAccessKey, sessionToken)
@@ -143,15 +144,19 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 		log.Debug("Header -->", key, "  value -->", val)
 	}
 	log.Debug("req.GetBody-->", req.GetBody)
-	//b, err := ioutil.ReadAll(req.Body)
-	//if err != nil {
-	//	panic(err)
-	//}
 
-	//log.Debug("body--->>", b)
 	resp, e := csClient.httpClient.Do(req)
 	if e != nil {
 		return nil, fmt.Errorf("failed to execute request: %s", e)
+	}
+
+	if req != nil && req.Body != nil {
+		reqBody, _ := ioutil.ReadAll(req.Body)
+		log.Info("Request Body -->", string(reqBody))
+	}
+	if resp.Body != nil {
+		body, _ := ioutil.ReadAll(resp.Body)
+		log.Info("Response Body -->", string(body))
 	}
 
 	log.Warn("Got response:\nStatus code: %d", resp.StatusCode)
@@ -177,7 +182,10 @@ func generateSignature(secretToken string, payloadBody string) string {
 }
 
 func isAdminApi(url string) bool {
-	return strings.HasSuffix(url, "/createSubAccount") || strings.HasSuffix(url, "/deleteSubAccount")
+	return strings.HasSuffix(url, "/createSubAccount") ||
+		strings.HasSuffix(url, "/deleteSubAccount") ||
+		strings.HasSuffix(url, "/user/groups")
+
 }
 
 func (csClient *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {

@@ -11,7 +11,7 @@ func resourceSubAccount() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceSubAccountCreate,
 		ReadContext:   resourceSubAccountRead,
-		UpdateContext: resourceSubAccountUpdate,
+		UpdateContext: resourceSubAccountCreate,
 		DeleteContext: resourceSubAccountDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -68,12 +68,12 @@ func resourceSubAccount() *schema.Resource {
 
 func resourceSubAccountCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).CSClient
-	formatColumnSelectionInterface := data.Get("user_info_block").(*schema.Set).List()[0].(map[string]interface{})
+	columnSelectionInterface := data.Get("user_info_block").(*schema.Set).List()[0].(map[string]interface{})
 
 	userInfoBlock := client.UserInfoBlock{
-		Username: formatColumnSelectionInterface["username"].(string),
-		FullName: formatColumnSelectionInterface["full_name"].(string),
-		Email:    formatColumnSelectionInterface["email"].(string),
+		Username: columnSelectionInterface["username"].(string),
+		FullName: columnSelectionInterface["full_name"].(string),
+		Email:    columnSelectionInterface["email"].(string),
 	}
 
 	createSubAccountRequest := &client.CreateSubAccountRequest{
@@ -87,7 +87,7 @@ func resourceSubAccountCreate(ctx context.Context, data *schema.ResourceData, me
 	if err := c.CreateSubAccount(ctx, createSubAccountRequest); err != nil {
 		return diag.FromErr(err)
 	}
-	data.SetId(formatColumnSelectionInterface["username"].(string))
+	data.SetId(columnSelectionInterface["username"].(string))
 	return nil
 }
 
@@ -100,5 +100,17 @@ func resourceSubAccountUpdate(ctx context.Context, data *schema.ResourceData, me
 }
 
 func resourceSubAccountDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*ProviderMeta).CSClient
+	userInfoBlockData := data.Get("user_info_block").(*schema.Set).List()[0].(map[string]interface{})
+	deleteSubAccountRequest := &client.DeleteSubAccountRequest{
+		AuthToken: meta.(*ProviderMeta).token,
+		Username:  userInfoBlockData["username"].(string),
+	}
+
+	if err := c.DeleteSubAccount(ctx, deleteSubAccountRequest); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(userInfoBlockData["username"].(string))
 	return nil
 }

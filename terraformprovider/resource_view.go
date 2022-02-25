@@ -179,48 +179,9 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		Predicate: &Predicate,
 	}
 
-	//filter := client.Filter{
-	//	Predicate: filterColumnSelectionInterface["predicate"].(*schema.Set),
-	//}
-
-	// predicate := client.Predicate{
-	// 	Field: predicateColumnSelectionInterface["field"].(string),
-	// 	Query: predicateColumnSelectionInterface["query"].(string),
-	// 	State: predicateColumnSelectionInterface["state"].(*client.State),
-	// 	Type_: predicateColumnSelectionInterface["_type"].(string),
-	// }
-
-	// state := client.State{
-	// 	Type_: predicateColumnSelectionInterface["_type"].(string),
-	// }
-
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
-	log.Warn("token value------------>>>>", tokenValue)
 
-	// arrayFlattenTF := data.Get("array_flatten_depth").(int)
-	// log.Info("arrayFlattenTF-->",arrayFlattenTF)
-	// var arrayFlattenCS *int
-
-	// if arrayFlattenTF == -1 {
-	// -1 in terraform represents "null" in the ChaosSearch API call
-	// arrayFlattenCS = nil
-	// } else {
-	// any other value is passed as is
-	// arrayFlattenCS = &arrayFlattenTF
-	// }
-
-	// var indexRetention map[string]interface{}
-
-	// if data.Get("index_retention").(*schema.Set).Len() > 0 {
-	// 	columnSelectionInterfaces := data.Get("index_retention").(*schema.Set).List()[0]
-	// 	columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
-
-	// 	indexRetention = map[string]interface{}{
-	// 		"value": columnSelectionInterface["value"].(string),
-	// 	}
-	// }
-	// log.Debug("indexretention", indexRetention)
 	sources_, ok := data.GetOk("sources")
 	if !ok {
 		log.Error(" sources not available")
@@ -242,11 +203,6 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		transforms = transforms_.([]interface{})
 	}
 
-	//patterns_, ok := data.GetOk("pattern")
-	//if !ok {
-	//	log.Error(" sources not available")
-	//}
-	//patterns := patterns_.([]interface{})
 	createViewRequest := &client.CreateViewRequest{
 		AuthToken: tokenValue,
 
@@ -259,9 +215,6 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		TimeFieldName:   data.Get("time_field_name").(string),
 		Transforms:      transforms,
 		FilterPredicate: filter,
-
-		// Cacheable:         data.Get("cachable").(bool),
-		//ArrayFlattenDepth: arrayFlattenCS,
 	}
 
 	if err := c.CreateView(ctx, createViewRequest); err != nil {
@@ -347,39 +300,17 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 			data.Set("filter", filter)
 		}
 	}
-	//data.Set("resp.Public", resp.Public)
-	//data.Set("Public", resp.Public)
-	//data.Set("RealTime", resp.Realtime)
-	//data.Set("Interval.Column", resp.Interval.Column)
-	//data.Set("Interval.Mode", resp.Interval.Mode)
-	//data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
-	//data.Set("index_retention", resp.IndexRetention)
 
-	// When the object in an Object Group use no compression, you need to create it with
-	// `compression = ""`. However, when querying an Object Group whose object are not
-	// compressed, the API returns `compression = "none"`. We coerce the "none" value to
-	// an empty string in order not to confuse Terraform.
 	compressionOrEmptyString := resp.Compression
 	if strings.ToLower(compressionOrEmptyString) == "none" {
 		compressionOrEmptyString = ""
 	}
-	//data.Set("compression", compressionOrEmptyString)
-	//
-	//data.Set("partition_by", resp.PartitionBy)
-	//data.Set("pattern", resp.Pattern)
-	//data.Set("source_bucket", resp.SourceBucket)
-	//
-	//data.Set("column_selection", resp.ColumnSelection)
-	//
-	//// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
-	//// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
-	//// We represent "null" as an int pointer to nil in the code.
+
 	if resp.ArrayFlattenDepth == nil {
 		data.Set("array_flatten_depth", -1)
 	} else {
 		data.Set("array_flatten_depth", resp.ArrayFlattenDepth)
 	}
-	//
 	return diags
 }
 
