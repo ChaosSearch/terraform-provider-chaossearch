@@ -2,7 +2,7 @@ terraform {
   required_providers {
     chaossearch = {
       version = "~> 0.1.1"
-      source = "chaossearch/chaossearch"
+      source  = "chaossearch/chaossearch"
     }
   }
 }
@@ -11,15 +11,15 @@ provider "chaossearch" {
   access_key_id     = "LCE8T6HRFGJI3ZKBGMGD"
   secret_access_key = "r5MEYkYntYvXqRSBMK6SFLQfPw7hHRQ0v5cqlkIk"
   region            = "ap-south-1"
-  login  {
-    user_name = "service_user@chaossearch.com"
-    password = "thisIsAnEx@mple1!"
+  login {
+    user_name      = "service_user@chaossearch.com"
+    password       = "thisIsAnEx@mple1!"
     parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
   }
 }
-
+/*
 resource "chaossearch_object_group" "my-object-group-test-1" {
-  bucket = "object-group-001"
+  bucket = "dinesh-group-auto-1"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"
@@ -51,8 +51,9 @@ resource "chaossearch_object_group" "my-object-group-test-1" {
   realtime = false
 }
 
+
 resource "chaossearch_object_group" "my-object-group-test-2" {
-  bucket = "object-group-002"
+  bucket = "dinesh-group-auto-2"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"
@@ -82,10 +83,10 @@ resource "chaossearch_object_group" "my-object-group-test-2" {
     ignore_irregular = true
   }
   realtime = false
-}
+}*/
 
 resource "chaossearch_object_group" "my-object-group-test-3" {
-  bucket = "object-group-003"
+  bucket = "dinesh-group-auto-5"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"

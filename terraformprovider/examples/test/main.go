@@ -25,10 +25,47 @@ Testing class for API end point
 need to remove this by end of initial developments
 */
 
+func createObjectGroup() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/createObjectGroup"
+	return false, "POST", url, strings.NewReader(`{
+    "bucket": "dinesh-og-2143",
+    "source": "chaos-test-data-aps1",
+    "format": {
+        "_type": "CSV",
+        "columnDelimiter": ",",
+        "rowDelimiter": "\n",
+        "headerRow": true
+    },
+    "interval": {
+        "mode": 0,
+        "column": 0
+    },
+    "indexRetention": {
+        "overall": -1,
+        "forPartition": []
+    },
+    "filter": [
+        {
+            "field": "key",
+            "prefix": "bluebike"
+        },
+        {
+            "field": "key",
+            "regex": ".*"
+        }
+    ],
+    "options": {
+        "ignoreIrregular": true
+    },
+    "realtime": false
+}`)
+
+}
+
 func createView() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/createView"
 	return false, "POST", url, strings.NewReader(`{
-	   "bucket": "dinesh-view-name002",
+	   "bucket": "dinesh-view-name121",
 	   "sources": [],
 	   "indexPattern": ".*",
 	   "overwrite": true,
@@ -121,13 +158,14 @@ func createUserGroup() (control bool, method string, url string, reader io.Reade
 
 func main() {
 	//control, method, url, payload := createView()
+	control, method, url, payload := createObjectGroup()
 
 	//control, method, url, payload := createSubAccount()
 	//control, method, url, payload := deleteSubAccountByUser()
 
 	//control, method, url, payload := createUserGroup()
 	//control, method, url, payload := retrieveUserGroups()
-	control, method, url, payload := retrieveUserGroupByGroupId()
+	//control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := deleteSubAccountByUser()
 	//control, method, url, payload := deleteUserGroupByGroupId()
@@ -232,6 +270,14 @@ func signV2AndDo(control bool, tokenValue string, req *http.Request, bodyAsBytes
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %s", err)
+	}
+
+	if resp.Body != nil {
+		body, err1 := ioutil.ReadAll(resp.Body)
+		if err1 != nil {
+			return nil, fmt.Errorf("failed to read response body--->: %s", err1)
+		}
+		fmt.Println("Response Body -->", string(body))
 	}
 
 	fmt.Println("Got response:\nStatus code: %d", resp.StatusCode)

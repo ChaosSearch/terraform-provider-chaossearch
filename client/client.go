@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
-	"github.com/dgrijalva/jwt-go"
-
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -150,12 +149,18 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 		return nil, fmt.Errorf("failed to execute request: %s", e)
 	}
 
-	if req != nil && req.Body != nil {
-		reqBody, _ := ioutil.ReadAll(req.Body)
-		log.Info("Request Body -->", string(reqBody))
+	if req.Body != nil {
+		if req.Body == http.NoBody {
+			reqBody, _ := ioutil.ReadAll(req.Body)
+			log.Info("Request Body -->", string(reqBody))
+		}
 	}
-	if resp.Body != nil {
-		body, _ := ioutil.ReadAll(resp.Body)
+
+	if resp.Body == http.NoBody {
+		body, err1 := ioutil.ReadAll(resp.Body)
+		if err1 != nil {
+			return nil, fmt.Errorf("failed to read response body--->: %s", err1)
+		}
 		log.Info("Response Body -->", string(body))
 	}
 
@@ -189,11 +194,12 @@ func isAdminApi(url string) bool {
 }
 
 func (csClient *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
+	log.Printf("bodyReader 213-->", bodyReader)
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %s", err)
 	}
-	log.Printf("Unmarshalling JSON: %s\n", bodyAsBytes)
+	log.Printf("Unmarshalling JSON:-->%s<--", bodyAsBytes)
 	if err := json.Unmarshal(bodyAsBytes, v); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON: %s", err)
 	}
