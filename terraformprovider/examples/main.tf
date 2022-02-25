@@ -61,6 +61,10 @@ resource "chaossearch_sub_account" "sub-account" {
   password = "1234"
 }
 
+data "chaossearch_retrieve_users" "first" {
+
+}
+
 
 
 #create object group

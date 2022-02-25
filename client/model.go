@@ -239,3 +239,20 @@ type CreateSubAccountRequest struct {
 	Password      string
 	HoCon         []interface{} `json:"HoCon"`
 }
+
+type ListUsersResponse struct {
+	Users []User
+}
+
+type User struct {
+	SubAccounts []SubAccount
+}
+
+type SubAccount struct {
+	FullName  string
+	Hocon     string
+	Uid       string
+	Username  string
+	GroupIds  []interface{}
+	Activated bool
+}
