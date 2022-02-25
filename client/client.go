@@ -154,6 +154,12 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 		return nil, fmt.Errorf("failed to execute request: %s", e)
 	}
 
+	reqBody, _ := ioutil.ReadAll(req.Body)
+	log.Info("Request Body -->", string(reqBody))
+
+	body, err := ioutil.ReadAll(resp.Body)
+	log.Info("Response Body -->", string(body))
+
 	log.Warn("Got response:\nStatus code: %d", resp.StatusCode)
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {

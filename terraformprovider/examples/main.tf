@@ -14,9 +14,9 @@ provider "chaossearch" {
   login {
 
     # Normal User Credentials
-    #     user_name = "service_user@chaossearch.com"
-    #     password = "thisIsAnEx@mple1!"
-    #     parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
+    user_name      = "service_user@chaossearch.com"
+    password       = "thisIsAnEx@mple1!"
+    parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
 
     # ADMIN Credentials
     user_name = "aeternum@chaossearch.com"
@@ -105,16 +105,23 @@ resource "chaossearch_user_group" "chaossearch_user_group-crate" {
 #  }
 #}
 
+# Import Bucket
+resource "chaossearch_import_bucket" "import_bucket" {
+  bucket      = "chaos-tera-test-123"
+  hide_bucket = false
+}
+
 # Create Sub Account
-#resource "chaossearch_sub_account" "sub-account" {
-#  user_info_block {
-#    username  = "nibras"
-#    full_name = "Nibras S"
-#    email     = "hello@test.com"
-#  }
-#  group_ids = ["aaa", "bbb"]
-#  password  = "1234"
-#}
+resource "chaossearch_sub_account" "sub-account" {
+  user_info_block {
+    username = "nibras"
+    full_name = "Nibras S"
+    email = "hello@test.com"
+  }
+  group_ids = ["aaa", "bbb"]
+  password = "1234"
+}
+
 
 
 #create object group
