@@ -35,6 +35,7 @@ resource "chaossearch_user_group" "chaossearch_user_group-crate" {
         effect    = "Allow"
         action    = "*"
         resources = "*"
+        version="1.2"
       }
     }
   }

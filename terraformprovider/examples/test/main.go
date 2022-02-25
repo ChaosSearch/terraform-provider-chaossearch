@@ -106,6 +106,9 @@ func createUserGroup() (control bool, method string, url string, reader io.Reade
                 "Effect": "Allow",
                 "Actions": ["*"],
                 "Resources": ["*"]
+ 				"Condition": {
+                    "Condition": null
+                }
 				,"Version":"1.2"
             }
         ]

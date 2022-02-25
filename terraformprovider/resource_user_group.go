@@ -74,6 +74,13 @@ func resourceUserGroup() *schema.Resource {
 													Optional: true,
 													Computed: true,
 												},
+												"version": {
+													Type:     schema.TypeString,
+													Required: false,
+													ForceNew: false,
+													Optional: true,
+													Computed: true,
+												},
 												"conditions": {
 													Type:     schema.TypeSet,
 													Optional: true,
@@ -184,9 +191,12 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 	var id, name string
 	var permissionList []client.Permission
 	var conditionList []client.Condition
+	var actionsList []string
+	var resourcesList []string
 
 	if data.Get("user_groups").(*schema.Set).Len() > 0 {
 		userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
+		log.Info("userGroupInterface===>", userGroupInterface)
 		id = userGroupInterface["id"].(string)
 		name = userGroupInterface["name"].(string)
 		permissions := userGroupInterface["permissions"].(*schema.Set).List()[0].(map[string]interface{})["permission"].(*schema.Set).List()
@@ -234,12 +244,15 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 
 				}
 
+				actionsList = append(actionsList, permissionMap["action"].(string))
+				resourcesList = append(resourcesList, permissionMap["resources"].(string))
 				permissionList = append(
 					permissionList,
 					client.Permission{
 						Effect:         permissionMap["effect"].(string),
-						Action:         permissionMap["action"].(string),
-						Resources:      permissionMap["resources"].(string),
+						Action:         actionsList,
+						Resources:      resourcesList,
+						Version:        permissionMap["version"].(string),
 						ConditionGroup: ConditionGroup,
 					})
 				log.Debug(permissionsIndex, "index")
