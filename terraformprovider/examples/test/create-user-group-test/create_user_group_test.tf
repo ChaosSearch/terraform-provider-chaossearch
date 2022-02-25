@@ -27,15 +27,15 @@ provider "chaossearch" {
 
 resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
   user_groups {
-    id   = "1000001"
-    name = "chathura_hansika"
+    id   = "100221"
+    name = "dinesh-view-1"
     permissions {
       permission {
 
         effect    = "Allow"
         action    = "*"
         resources = "*"
-        version="1.2"
+        version   = "1.2"
       }
     }
   }
