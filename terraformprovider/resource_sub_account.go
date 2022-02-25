@@ -11,7 +11,7 @@ func resourceSubAccount() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceSubAccountCreate,
 		ReadContext:   resourceSubAccountRead,
-		UpdateContext: resourceSubAccountUpdate,
+		UpdateContext: resourceSubAccountCreate,
 		DeleteContext: resourceSubAccountDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
