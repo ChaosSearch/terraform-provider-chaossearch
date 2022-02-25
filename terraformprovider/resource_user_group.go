@@ -198,41 +198,49 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 				log.Debug("action====>", permissionMap["action"].(string))
 				log.Debug("resources====>", permissionMap["resources"].(string))
 				log.Debug("effect====>", permissionMap["effect"].(string))
-				conditions := permissionMap["conditions"].(*schema.Set).List()[0].(map[string]interface{})["condition"].(*schema.Set).List()
-				conditionMap := conditions[0].(map[string]interface{})
-				equal := conditionMap["equals"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
-				startsWith := conditionMap["starts_with"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
-				notEquals := conditionMap["not_equals"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
-				like := conditionMap["like"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
 
-				equalObject := client.Equals{
-					ChaosDocumentAttributesTitle: equal,
+				var ConditionGroup client.ConditionGroup
+				if len(permissionMap["conditions"].(*schema.Set).List()) > 0 {
+					conditions := permissionMap["conditions"].(*schema.Set).List()[0].(map[string]interface{})["condition"].(*schema.Set).List()
+					conditionMap := conditions[0].(map[string]interface{})
+					equal := conditionMap["equals"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
+					startsWith := conditionMap["starts_with"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
+					notEquals := conditionMap["not_equals"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
+					like := conditionMap["like"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
+
+					equalObject := client.Equals{
+						ChaosDocumentAttributesTitle: equal,
+					}
+					likeObject := client.Like{
+						ChaosDocumentAttributesTitle: like,
+					}
+					notEqualsObject := client.NotEquals{
+						ChaosDocumentAttributesTitle: notEquals,
+					}
+					startsWithObject := client.StartsWith{
+						ChaosDocumentAttributesTitle: startsWith,
+					}
+					conditionList = append(
+						conditionList,
+						client.Condition{
+							Equals:     equalObject,
+							StartsWith: startsWithObject,
+							NotEquals:  notEqualsObject,
+							Like:       likeObject,
+						})
+					ConditionGroup = client.ConditionGroup{
+						Condition: conditionList,
+					}
+
 				}
-				likeObject := client.Like{
-					ChaosDocumentAttributesTitle: like,
-				}
-				notEqualsObject := client.NotEquals{
-					ChaosDocumentAttributesTitle: notEquals,
-				}
-				startsWithObject := client.StartsWith{
-					ChaosDocumentAttributesTitle: startsWith,
-				}
-				conditionList = append(
-					conditionList,
-					client.Condition{
-						Equals:     equalObject,
-						StartsWith: startsWithObject,
-						NotEquals:  notEqualsObject,
-						Like:       likeObject,
-					})
 
 				permissionList = append(
 					permissionList,
 					client.Permission{
-						Effect:    permissionMap["effect"].(string),
-						Action:    permissionMap["action"].(string),
-						Resources: permissionMap["resources"].(string),
-						Condition: conditionList,
+						Effect:         permissionMap["effect"].(string),
+						Action:         permissionMap["action"].(string),
+						Resources:      permissionMap["resources"].(string),
+						ConditionGroup: ConditionGroup,
 					})
 				log.Debug(permissionsIndex, "index")
 				//remove element from condition list after append

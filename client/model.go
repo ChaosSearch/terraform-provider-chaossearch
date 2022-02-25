@@ -241,12 +241,15 @@ type Condition struct {
 	NotEquals  NotEquals
 	Like       Like
 }
-
+type ConditionGroup struct {
+	Condition []Condition `json:"Condition"`
+}
 type Permission struct {
 	Effect    string
 	Action    string
 	Resources string
-	Condition []Condition `json:"Condition"`
+
+	ConditionGroup ConditionGroup `json:"Condition"`
 }
 
 type CreateUserGroupRequest struct {

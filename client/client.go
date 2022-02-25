@@ -183,7 +183,10 @@ func generateSignature(secretToken string, payloadBody string) string {
 }
 
 func isAdminApi(url string) bool {
-	return strings.HasSuffix(url, "/createSubAccount") || strings.HasSuffix(url, "/deleteSubAccount")
+	return strings.HasSuffix(url, "/createSubAccount") ||
+		strings.HasSuffix(url, "/deleteSubAccount") ||
+		strings.HasSuffix(url, "/user/groups")
+
 }
 
 func (csClient *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {

@@ -100,12 +100,13 @@ func createUserGroup() (control bool, method string, url string, reader io.Reade
 	return true, "POST", url, strings.NewReader(`[
     {
         "id": "10002",
-        "name": "dinesh-jk",
+        "name": "dinesh-15",
         "permissions": [
             {
                 "Effect": "Allow",
                 "Actions": ["*"],
-                "Resources": ["*"],"Version":"1.2"
+                "Resources": ["*"]
+				,"Version":"1.2"
             }
         ]
     }
@@ -120,11 +121,11 @@ func main() {
 	//control, method, url, payload := createSubAccount()
 	//control, method, url, payload := deleteSubAccountByUser()
 
-	//control, method, url, payload := createUserGroup()
+	control, method, url, payload := createUserGroup()
 	//control, method, url, payload := retrieveUserGroups()
 	//control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := retrieveUserGroupByGroupId()
-	control, method, url, payload := deleteSubAccountByUser()
+	//control, method, url, payload := deleteSubAccountByUser()
 	//control, method, url, payload := deleteUserGroupByGroupId()
 	//control, method, url, payload := importBucket()
 

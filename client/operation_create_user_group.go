@@ -28,7 +28,7 @@ func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGr
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 	log.Debug(" adding headers...")
-	httpReq.Header.Add("Content-Type", "text/plain")
+	//httpReq.Header.Add("Content-Type", "text/plain")
 
 	var sessionToken = req.AuthToken
 	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
@@ -56,9 +56,7 @@ func marshalCreateUserGroupRequest(req *CreateUserGroupRequest) ([]byte, error) 
 			"id":   req.Id,
 			"name": req.Name,
 
-			"permissions": []interface{}{
-				req.Permission,
-			},
+			"permissions": req.Permission,
 		},
 	}
 	log.Info("marshalCreateUserGroupRequest===>", marshalCreateUserGroupRequest)

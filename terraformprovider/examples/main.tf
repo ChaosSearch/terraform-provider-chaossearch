@@ -14,9 +14,9 @@ provider "chaossearch" {
   login {
 
     # Normal User Credentials
-    user_name      = "service_user@chaossearch.com"
-    password       = "thisIsAnEx@mple1!"
-    parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
+    #    user_name      = "service_user@chaossearch.com"
+    #    password       = "thisIsAnEx@mple1!"
+    #    parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
 
     # ADMIN Credentials
     user_name = "aeternum@chaossearch.com"
@@ -25,6 +25,21 @@ provider "chaossearch" {
 
 }
 
+resource "chaossearch_user_group" "chaossearch_user_group-crate" {
+  user_groups {
+    id   = "10002"
+    name = "dinesh-jayasinghe"
+    permissions {
+      permission {
+
+        effect    = "Allow"
+        action    = "*"
+        resources = "*"
+      }
+    }
+  }
+}
+/*
 resource "chaossearch_user_group" "chaossearch_user_group-crate" {
   user_groups {
     id   = "7db91912-a3e9-4641-873c-3deccd07484c"
@@ -77,7 +92,7 @@ resource "chaossearch_user_group" "chaossearch_user_group-crate" {
     }
   }
 
-}
+}*/
 
 
 #create view
@@ -106,21 +121,21 @@ resource "chaossearch_user_group" "chaossearch_user_group-crate" {
 #}
 
 # Import Bucket
-resource "chaossearch_import_bucket" "import_bucket" {
-  bucket      = "chaos-tera-test-123"
-  hide_bucket = false
-}
+#resource "chaossearch_import_bucket" "import_bucket" {
+#  bucket      = "chaos-tera-test-123"
+#  hide_bucket = false
+#}
 
 # Create Sub Account
-resource "chaossearch_sub_account" "sub-account" {
-  user_info_block {
-    username = "nibras"
-    full_name = "Nibras S"
-    email = "hello@test.com"
-  }
-  group_ids = ["aaa", "bbb"]
-  password = "1234"
-}
+#resource "chaossearch_sub_account" "sub-account" {
+#  user_info_block {
+#    username = "nibras"
+#    full_name = "Nibras S"
+#    email = "hello@test.com"
+#  }
+#  group_ids = ["aaa", "bbb"]
+#  password = "1234"
+#}
 
 
 
