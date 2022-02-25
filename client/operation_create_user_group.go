@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"io"
@@ -11,6 +12,7 @@ import (
 
 func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequest) error {
 	method := "POST"
+
 	url := fmt.Sprintf("%s/user/groups", csClient.config.URL)
 	log.Debug("Url-->", url)
 	log.Debug("req-->", req)
@@ -26,7 +28,7 @@ func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGr
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 	log.Debug(" adding headers...")
-	httpReq.Header.Add("Content-Type", "text/plain")
+	//httpReq.Header.Add("Content-Type", "text/plain")
 
 	var sessionToken = req.AuthToken
 	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
@@ -49,6 +51,21 @@ func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGr
 }
 
 func marshalCreateUserGroupRequest(req *CreateUserGroupRequest) ([]byte, error) {
-	// todo to be implemented
-	return nil, nil
+	body := []interface{}{
+		map[string]interface{}{
+			"id":   req.Id,
+			"name": req.Name,
+
+			"permissions": req.Permission,
+		},
+	}
+	log.Info("marshalCreateUserGroupRequest===>", marshalCreateUserGroupRequest)
+
+	bodyAsBytes, err := json.Marshal(body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return bodyAsBytes, nil
 }

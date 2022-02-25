@@ -14,16 +14,87 @@ provider "chaossearch" {
   login {
 
     # Normal User Credentials
-#    user_name      = "service_user@chaossearch.com"
-#    password       = "thisIsAnEx@mple1!"
-#    parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
+    #    user_name      = "service_user@chaossearch.com"
+    #    password       = "thisIsAnEx@mple1!"
+    #    parent_user_id = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
 
     # ADMIN Credentials
-        user_name = "aeternum@chaossearch.com"
-        password = "ffpossgjjefjefojwfpjwgpwijaofnaconaonouf3n129091e901ie01292309r8jfcnsijvnsfini1j91e09ur0932hjsaakji"
+    user_name = "aeternum@chaossearch.com"
+    password  = "ffpossgjjefjefojwfpjwgpwijaofnaconaonouf3n129091e901ie01292309r8jfcnsijvnsfini1j91e09ur0932hjsaakji"
   }
 
 }
+
+resource "chaossearch_user_group" "chaossearch_user_group-crate" {
+  user_groups {
+    id   = "100044"
+    name = "dinesh-jayddasinghe"
+    permissions {
+      permission {
+
+        effect    = "Allow"
+        action    = "*"
+        resources = "*"
+        version="1.2"
+      }
+    }
+  }
+}
+/*
+resource "chaossearch_user_group" "chaossearch_user_group-crate" {
+  user_groups {
+    id   = "7db91912-a3e9-4641-873c-3deccd07484c"
+    name = "Foo"
+    permissions {
+      permission {
+        effect    = "Allow"
+        action    = "kibana:*"
+        resources = "crn:view:::foo-view"
+        conditions {
+          condition {
+            starts_with {
+              chaos_document_attributes_title = "foo"
+            }
+            equals {
+              chaos_document_attributes_title = "bar"
+            }
+            not_equals  {
+              chaos_document_attributes_title = "baz"
+            }
+            like  {
+              chaos_document_attributes_title = "foobar"
+            }
+
+          }
+        }
+      }
+      permission {
+        effect    = "Allow1"
+        action    = "kibana1:*"
+        resources = "crn:view:::foo-view1"
+        conditions {
+          condition {
+            starts_with {
+              chaos_document_attributes_title = "foo1"
+            }
+            equals {
+              chaos_document_attributes_title = "bar1"
+            }
+            not_equals  {
+              chaos_document_attributes_title = "baz1"
+            }
+            like  {
+              chaos_document_attributes_title = "foobar1"
+            }
+
+          }
+        }
+      }
+    }
+  }
+
+}*/
+
 
 #create view
 #resource "chaossearch_view" "chaossearch-create-view" {
@@ -57,16 +128,17 @@ provider "chaossearch" {
 #}
 
 # Create Sub Account
-resource "chaossearch_sub_account" "sub-account" {
-  user_info_block {
-    username = "user_004"
-    full_name = "user 0044"
-    email = "user@test.com"
-  }
-  group_ids = ["aaa", "bbb", "cccc", "dddd"]
-  password = "1234"
-  hocon = ["override.Services.worker.quota=500"]
-}
+#resource "chaossearch_sub_account" "sub-account" {
+#  user_info_block {
+#    username = "nibras"
+#    full_name = "Nibras S"
+#    email = "hello@test.com"
+#  }
+#  group_ids = ["aaa", "bbb"]
+#  password = "1234"
+#}
+
+
 
 #create object group
 #resource "chaossearch_object_group" "my-object-group" {
