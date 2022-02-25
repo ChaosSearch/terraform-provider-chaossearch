@@ -245,11 +245,10 @@ type ConditionGroup struct {
 	Condition []Condition `json:"Condition"`
 }
 type Permission struct {
-	Effect    string
-	Version   string
-	Action    []string
-	Resources []string
-
+	Effect         string
+	Version        string
+	Actions        []string
+	Resources      []string
 	ConditionGroup ConditionGroup `json:"Condition"`
 }
 

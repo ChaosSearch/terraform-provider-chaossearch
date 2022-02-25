@@ -99,17 +99,18 @@ func createUserGroup() (control bool, method string, url string, reader io.Reade
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
 	return true, "POST", url, strings.NewReader(`[
     {
-        "id": "10002",
-        "name": "dinesh-15",
+        "id": "100042",
+        "name": "dinesh-jayddasinsdghe",
         "permissions": [
             {
                 "Effect": "Allow",
-                "Actions": ["*"],
-                "Resources": ["*"]
- 				"Condition": {
-                    "Condition": null
-                }
-				,"Version":"1.2"
+                "Version": "1.2",
+                "Actions": [
+                    "*"
+                ],
+                "Resources": [
+                    "*"
+                ]
             }
         ]
     }
@@ -124,9 +125,9 @@ func main() {
 	//control, method, url, payload := createSubAccount()
 	//control, method, url, payload := deleteSubAccountByUser()
 
-	control, method, url, payload := createUserGroup()
+	//control, method, url, payload := createUserGroup()
 	//control, method, url, payload := retrieveUserGroups()
-	//control, method, url, payload := retrieveUserGroupByGroupId()
+	control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := deleteSubAccountByUser()
 	//control, method, url, payload := deleteUserGroupByGroupId()

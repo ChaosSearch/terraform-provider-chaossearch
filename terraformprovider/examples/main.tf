@@ -27,8 +27,8 @@ provider "chaossearch" {
 
 resource "chaossearch_user_group" "chaossearch_user_group-crate" {
   user_groups {
-    id   = "10002"
-    name = "dinesh-jayasinghe"
+    id   = "100044"
+    name = "dinesh-jayddasinghe"
     permissions {
       permission {
 
