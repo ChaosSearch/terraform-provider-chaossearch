@@ -81,7 +81,7 @@ func Provider() *schema.Provider {
 			"chaossearch_retrieve_object_group":  dataSourceObjectGroup(),
 			"chaossearch_retrieve_views":         dataSourceViews(),
 			"chaossearch_retrieve_view":          dataSourceView(),
-			"chaossearch_retrieve_users":         dataSourceSubAccounts(),
+			"chaossearch_retrieve_sub_accounts":  dataSourceSubAccounts(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

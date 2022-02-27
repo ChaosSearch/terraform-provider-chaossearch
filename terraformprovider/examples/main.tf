@@ -25,21 +25,21 @@ provider "chaossearch" {
 
 }
 
-resource "chaossearch_user_group" "chaossearch_user_group-crate" {
-  user_groups {
-    id   = "100044"
-    name = "dinesh-jayddasinghe"
-    permissions {
-      permission {
-
-        effect    = "Allow"
-        action    = "*"
-        resources = "*"
-        version="1.2"
-      }
-    }
-  }
-}
+#resource "chaossearch_user_group" "chaossearch_user_group-crate" {
+#  user_groups {
+#    id   = "100044"
+#    name = "dinesh-jayddasinghe"
+#    permissions {
+#      permission {
+#
+#        effect    = "Allow"
+#        action    = "*"
+#        resources = "*"
+#        version="1.2"
+#      }
+#    }
+#  }
+#}
 /*
 resource "chaossearch_user_group" "chaossearch_user_group-crate" {
   user_groups {
@@ -137,10 +137,6 @@ resource "chaossearch_user_group" "chaossearch_user_group-crate" {
 #  group_ids = ["aaa", "bbb"]
 #  password = "1234"
 #}
-
-data "chaossearch_retrieve_users" "first" {
-
-}
 
 
 
@@ -261,6 +257,15 @@ data "chaossearch_retrieve_users" "first" {
 #output "views" {
 #  value = data.chaossearch_retrieve_views.myview
 #}
+
+//get all sub accounts
+data "chaossearch_retrieve_sub_accounts" "first" {
+
+}
+
+output "object_group_retrieve_object_groups" {
+  value = data.chaossearch_retrieve_sub_accounts.first
+}
 
 
 

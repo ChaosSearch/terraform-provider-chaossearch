@@ -127,6 +127,11 @@ func retrieveUserGroupByGroupId() (control bool, method string, url string, read
 	return true, "GET", url, nil
 }
 
+func retrieveUsers() (control bool, method string, url string, reader io.Reader) {
+	url = "https://aeternum.chaossearch.io/user/manifest"
+	return true, "POST", url, nil
+}
+
 func deleteUserGroupByGroupId() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/group/f4da25ba-5e8e-4cba-b13a-c068bdfa07d7"
 	return true, "DELETE", url, nil
@@ -158,7 +163,7 @@ func createUserGroup() (control bool, method string, url string, reader io.Reade
 
 func main() {
 	//control, method, url, payload := createView()
-	control, method, url, payload := createObjectGroup()
+	//control, method, url, payload := createObjectGroup()
 
 	//control, method, url, payload := createSubAccount()
 	//control, method, url, payload := deleteSubAccountByUser()
@@ -170,6 +175,7 @@ func main() {
 	//control, method, url, payload := deleteSubAccountByUser()
 	//control, method, url, payload := deleteUserGroupByGroupId()
 	//control, method, url, payload := importBucket()
+	control, method, url, payload := retrieveUsers()
 
 	req, err := http.NewRequest(method, url, payload)
 
@@ -187,9 +193,10 @@ func main() {
 
 	var bodyBytes []byte
 	if method == "POST" || method == "PUT" {
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(payload)
-		bodyBytes = buf.Bytes()
+		bodyBytes = nil
+		//buf := new(bytes.Buffer)
+		//buf.ReadFrom(payload)
+		//bodyBytes = buf.Bytes()
 	} else {
 		bodyBytes = nil
 	}
