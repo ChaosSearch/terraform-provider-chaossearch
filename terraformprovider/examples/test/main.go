@@ -193,10 +193,9 @@ func main() {
 
 	var bodyBytes []byte
 	if method == "POST" || method == "PUT" {
-		bodyBytes = nil
-		//buf := new(bytes.Buffer)
-		//buf.ReadFrom(payload)
-		//bodyBytes = buf.Bytes()
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(payload)
+		bodyBytes = buf.Bytes()
 	} else {
 		bodyBytes = nil
 	}
