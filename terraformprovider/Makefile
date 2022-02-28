@@ -6,9 +6,6 @@ BINARY=terraform-provider-${NAME}
 VERSION=0.1.2
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 
-printx:
-	echo ${OS_ARCH}
-
 default: install
 
 build:
