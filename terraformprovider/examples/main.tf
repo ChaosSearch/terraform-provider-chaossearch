@@ -268,19 +268,31 @@ resource "chaossearch_user_group" "chaossearch_user_group-crate" {
 #}
 
 //get all user groups
-data "chaossearch_retrieve_groups" "user_groups" {
+#data "chaossearch_retrieve_groups" "user_groups" {
+#
+#}
+#
+#output "chaossearch_retrieve_groups" {
+#  value = data.chaossearch_retrieve_groups.user_groups
+#}
 
+##get user group by id
+data "chaossearch_retrieve_user_group" "my-user-group" {
+  id="9436aed9-e994-4dba-a25b-7d950d7f3623"
 }
 
-output "chaossearch_retrieve_groups" {
-  value = data.chaossearch_retrieve_groups.user_groups
+output "object_group_retrieve_user_group" {
+  value = data.chaossearch_retrieve_user_group.my-user-group
 }
+
+
 
 #get object group by id
 #data "chaossearch_retrieve_object_group" "my-object-group" {
 #  bucket="c-og-100198"
 #}
 #
+
 #output "object_group_retrieve_object_group" {
 #  value = data.chaossearch_retrieve_object_group.my-object-group
 #}

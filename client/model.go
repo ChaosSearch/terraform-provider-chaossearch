@@ -307,3 +307,8 @@ type Group struct {
 	Name        string       `json:"Name"`
 	Permissions []Permission `json:"permissions"`
 }
+
+type ReadUserGroupRequest struct {
+	AuthToken string
+	ID        string
+}

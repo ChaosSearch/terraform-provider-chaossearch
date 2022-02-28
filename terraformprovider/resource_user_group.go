@@ -274,12 +274,44 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 }
 
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Debug("reading groups")
-	// c := meta.(*ProviderMeta).Client
+	data.SetId(data.Get("id").(string))
+	diags := diag.Diagnostics{}
+	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
-	log.Warn("token value------------>>>>", tokenValue)
-	//TODO to be developed
-	return nil
+	req := &client.ReadUserGroupRequest{
+		AuthToken: tokenValue,
+		ID:        data.Id(),
+	}
+	resp, err := c.ReadUserGroup(ctx, req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if resp == nil {
+		return diag.Errorf("Couldn't find User Group: %s", err)
+	}
+	userGroupContent := make([]map[string]interface{}, 1)
+	permissionContent := make(map[string]interface{})
+	result := make([]map[string]interface{}, 1)
+	userGroupContentMap := make(map[string]interface{})
+	if resp.Permissions != nil && len(resp.Permissions) > 0 {
+		permissions := make([]interface{}, len(resp.Permissions))
+		for i := 0; i < len(resp.Permissions); i++ {
+			permissionContent["effect"] = resp.Permissions[i].Effect
+			permissionContent["actions"] = resp.Permissions[i].Actions
+			permissionContent["resources"] = resp.Permissions[i].Resources
+			permissionContent["version"] = resp.Permissions[i].Version
+			permissions[i] = permissionContent
+		}
+		userGroupContentMap["permissions"] = permissions
+	}
+	userGroupContentMap["id"] = resp.Id
+	userGroupContentMap["name"] = resp.Name
+	result[0] = userGroupContentMap
+	userGroupContent = result
+	if err := data.Set("user_group", userGroupContent); err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
 }
 
 func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
