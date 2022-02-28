@@ -28,9 +28,6 @@ func (client *Client) CreateUserGroup(ctx context.Context, req *CreateUserGroupR
 	log.Debug(" adding headers...")
 	httpReq.Header.Add("Content-Type", "text/plain")
 
-	// var sessionToken = req.AuthToken
-	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
-
 	log.Warn("httpReq-->", httpReq)
 	httpResp, err := client.signAndDo(httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)

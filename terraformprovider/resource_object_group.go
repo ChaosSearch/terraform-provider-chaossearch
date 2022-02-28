@@ -184,7 +184,6 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	intervalColumnSelectionInterface := data.Get("interval").(*schema.Set).List()[0].(map[string]interface{})
 	indexRetentionColumnSelectionInterface := data.Get("index_retention").(*schema.Set).List()[0].(map[string]interface{})
 	optionsColumnSelectionInterface := data.Get("options").(*schema.Set).List()[0].(map[string]interface{})
-	//filterColumnSelectionInterface := data.Get("filter").(*schema.Set).List()[0].(map[string]interface{})
 
 	format := client.Format{
 		Type:            formatColumnSelectionInterface["_type"].(string),
@@ -278,10 +277,6 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
 	data.Set("index_retention", resp.IndexRetention)
 
-	// When the object in an Object Group use no compression, you need to create it with
-	// `compression = ""`. However, when querying an Object Group whose object are not
-	// compressed, the API returns `compression = "none"`. We coerce the "none" value to
-	// an empty string in order not to confuse Terraform.
 	compressionOrEmptyString := resp.Compression
 	if strings.ToLower(compressionOrEmptyString) == "none" {
 		compressionOrEmptyString = ""
@@ -294,9 +289,6 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 
 	data.Set("column_selection", resp.ColumnSelection)
 
-	// "unlimited" flattening represented as "null" in the api, and as -1 in the terraform module
-	// because the terraform sdk doesn't support nil values in configs https://github.com/hashicorp/terraform-plugin-sdk/issues/261
-	// We represent "null" as an int pointer to nil in the code.
 	if resp.ArrayFlattenDepth == nil {
 		data.Set("array_flatten_depth", -1)
 	} else {
