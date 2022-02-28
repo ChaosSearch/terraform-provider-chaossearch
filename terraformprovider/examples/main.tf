@@ -259,15 +259,22 @@ resource "chaossearch_user_group" "chaossearch_user_group-crate" {
 #}
 
 //get all sub accounts
-data "chaossearch_retrieve_sub_accounts" "first" {
+#data "chaossearch_retrieve_sub_accounts" "first" {
+#
+#}
+#
+#output "object_group_retrieve_object_groups" {
+#  value = data.chaossearch_retrieve_sub_accounts.first
+#}
+
+//get all user groups
+data "chaossearch_retrieve_groups" "user_groups" {
 
 }
 
-output "object_group_retrieve_object_groups" {
-  value = data.chaossearch_retrieve_sub_accounts.first
+output "chaossearch_retrieve_groups" {
+  value = data.chaossearch_retrieve_groups.user_groups
 }
-
-
 
 #get object group by id
 #data "chaossearch_retrieve_object_group" "my-object-group" {

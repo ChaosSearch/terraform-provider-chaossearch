@@ -290,6 +290,7 @@ type ListUsersResponse struct {
 
 type User struct {
 	SubAccounts []SubAccount `json:"SubAccounts"`
+	Groups      []Group      `json:"Groups"`
 }
 
 type SubAccount struct {
@@ -299,4 +300,10 @@ type SubAccount struct {
 	Username  string        `json:"Username"`
 	GroupIds  []interface{} `json:"GroupIds"`
 	Activated bool          `json:"Activated"`
+}
+
+type Group struct {
+	Id          string       `json:"Id"`
+	Name        string       `json:"Name"`
+	Permissions []Permission `json:"permissions"`
 }
