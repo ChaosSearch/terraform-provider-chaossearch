@@ -283,3 +283,20 @@ type DeleteSubAccountRequest struct {
 	AuthToken string
 	Username  string
 }
+
+type ListUsersResponse struct {
+	Users []User `json:"Users"`
+}
+
+type User struct {
+	SubAccounts []SubAccount `json:"SubAccounts"`
+}
+
+type SubAccount struct {
+	FullName  string        `json:"FullName"`
+	Hocon     string        `json:"Hocon"`
+	Uid       string        `json:"Uid"`
+	Username  string        `json:"Username"`
+	GroupIds  []interface{} `json:"GroupIds"`
+	Activated bool          `json:"Activated"`
+}
