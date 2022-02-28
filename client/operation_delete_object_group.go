@@ -20,7 +20,7 @@ func (csClient *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObje
 
 	var sessionToken = req.AuthToken
 	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, nil)
-	//httpResp, err := client.signV4AndDo(httpReq, nil)
+
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, deleteUrl, err)
 	}

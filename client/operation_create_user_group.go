@@ -28,14 +28,9 @@ func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGr
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 	log.Debug(" adding headers...")
-	//httpReq.Header.Add("Content-Type", "text/plain")
-
-	var sessionToken = req.AuthToken
-	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
 
 	log.Warn("httpReq-->", httpReq)
-	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
-	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
+	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
@@ -53,13 +48,12 @@ func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGr
 func marshalCreateUserGroupRequest(req *CreateUserGroupRequest) ([]byte, error) {
 	body := []interface{}{
 		map[string]interface{}{
-			"id":   req.Id,
-			"name": req.Name,
-
+			"id":          req.Id,
+			"name":        req.Name,
 			"permissions": req.Permission,
 		},
 	}
-	log.Info("marshalCreateUserGroupRequest===>", marshalCreateUserGroupRequest)
+	log.Info("marshalCreateUserGroupRequest -->", marshalCreateUserGroupRequest)
 
 	bodyAsBytes, err := json.Marshal(body)
 

@@ -18,10 +18,6 @@ import (
 func (csClient *CSClient) ReadView(ctx context.Context, req *ReadViewRequest) (*ReadViewResponse, error) {
 	var resp ReadViewResponse
 
-	//if err := client.readViewAttributesFromBucketTagging(ctx, req, &resp); err != nil {
-	//	return nil, err
-	//}
-
 	if err := csClient.readViewAttributesFromDatasetEndpoint(ctx, req, &resp); err != nil {
 		return nil, err
 	}
@@ -38,8 +34,8 @@ func (csClient *CSClient) readViewAttributesFromDatasetEndpoint(ctx context.Cont
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
-	authToken := req.AuthToken
-	httpResp, err := csClient.signV2AndDo(authToken, httpReq, nil)
+
+	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, nil)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
@@ -52,7 +48,6 @@ func (csClient *CSClient) readViewAttributesFromDatasetEndpoint(ctx context.Cont
 
 	var read ReadViewResponse
 
-	//var m ReadObjectGroupResponse
 	if err := csClient.unmarshalJSONBody(httpResp.Body, &read); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON response body: %s", err)
 	}
@@ -123,7 +118,7 @@ func mapViewBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadV
 	if err := readJSONTagValue(tagging, "cs3.dataset-format", &filterObject); err != nil {
 		return err
 	}
-	//v.Format = filterObject.Type
+
 	v.Pattern = filterObject.Pattern
 	v.ArrayFlattenDepth = filterObject.ArrayFlattenDepth
 	v.KeepOriginal = filterObject.KeepOriginal

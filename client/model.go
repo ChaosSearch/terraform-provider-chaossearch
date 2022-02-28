@@ -30,41 +30,30 @@ type ObjectFilter struct {
 	And []interface{} `json:"AND"`
 }
 type ReadObjectGroupResponse struct {
-	Public      bool   `json:"_public"`
-	Realtime    bool   `json:"_realtime"`
-	Type        string `json:"_type"`
-	Bucket      string `json:"bucket"`
-	ContentType string `json:"contentType"`
-	//Filter      struct {
-	//	And []struct {
-	//		Field  string `json:"field"`
-	//		Prefix string `json:"prefix,omitempty"`
-	//		Regex  string `json:"regex,omitempty"`
-	//	} `json:"AND"`
-	//} `json:"filter"`
-
-	ObjectFilter ObjectFilter `json:"filter"`
-	//Filter             *Filter
-	Format             *Format   `json:"format"`
-	ID                 string    `json:"id"`
-	Interval           *Interval `json:"interval"`
-	Metadata           *Metadata `json:"metadata"`
-	Options            *Options  `json:"options"`
-	RegionAvailability []string  `json:"regionAvailability"`
-	Source             string    `json:"source"`
-
-	Compression string
-	FilterJSON  string
-	//Format            string
-	Pattern           string
-	LiveEventsSqsArn  string
-	PartitionBy       string
-	SourceBucket      string
-	IndexRetention    int
-	KeepOriginal      bool
-	ArrayFlattenDepth *int
-	ColumnRenames     map[string]string
-	ColumnSelection   []map[string]interface {
+	Public             bool         `json:"_public"`
+	Realtime           bool         `json:"_realtime"`
+	Type               string       `json:"_type"`
+	Bucket             string       `json:"bucket"`
+	ContentType        string       `json:"contentType"`
+	ObjectFilter       ObjectFilter `json:"filter"`
+	Format             *Format      `json:"format"`
+	ID                 string       `json:"id"`
+	Interval           *Interval    `json:"interval"`
+	Metadata           *Metadata    `json:"metadata"`
+	Options            *Options     `json:"options"`
+	RegionAvailability []string     `json:"regionAvailability"`
+	Source             string       `json:"source"`
+	Compression        string
+	FilterJSON         string
+	Pattern            string
+	LiveEventsSqsArn   string
+	PartitionBy        string
+	SourceBucket       string
+	IndexRetention     int
+	KeepOriginal       bool
+	ArrayFlattenDepth  *int
+	ColumnRenames      map[string]string
+	ColumnSelection    []map[string]interface {
 	}
 }
 
@@ -80,7 +69,6 @@ type CreateObjectGroupRequest struct {
 	Realtime       bool
 }
 
-//TODO add json value
 type Format struct {
 	Type            string `json:"_type"`
 	ColumnDelimiter string `json:"columnDelimiter"`
@@ -164,12 +152,10 @@ type CreateViewRequest struct {
 	CaseInsensitive   bool
 	ArrayFlattenDepth *int
 	IndexRetention    int
-	// IndexRetention    map[string]interface{}
-	Cacheable bool
-	Overwrite bool
-	// Sources           map[string]string
-	Sources    []interface{}
-	Transforms []interface{}
+	Cacheable         bool
+	Overwrite         bool
+	Sources           []interface{}
+	Transforms        []interface{}
 }
 
 type ReadViewResponse struct {

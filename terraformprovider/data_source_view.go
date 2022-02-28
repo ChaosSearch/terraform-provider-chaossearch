@@ -6,7 +6,6 @@ import (
 
 func dataSourceView() *schema.Resource {
 	return &schema.Resource{
-		//ReadContext: dataSourceObjectGroupsRead,
 		ReadContext: resourceViewRead,
 		Schema: map[string]*schema.Schema{
 			"bucket": {

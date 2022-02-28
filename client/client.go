@@ -64,7 +64,7 @@ func (csClient *CSClient) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*h
 	}
 
 	log.Warn("Sending request:\nMethod: %s\nURL: %s\nBody: %s", req.Method, req.URL, bodyAsBytes)
-	log.Warn("req--------->", req)
+	log.Warn("req-->", req)
 	resp, err := csClient.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %s", err)
@@ -89,13 +89,13 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	log.Debug("------- AWS V2 Sign Starts------")
 
 	claims := jwt.MapClaims{}
-	log.Debug("token-->>", tokenValue)
+	log.Debug("token-->", tokenValue)
 
 	_, err := jwt.ParseWithClaims(tokenValue, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte("<YOUR VERIFICATION KEY>"), nil
 	})
 
-	log.Debug("token err---->", err)
+	log.Debug("token err-->", err)
 
 	accessKey := claims["AccessKeyId"].(string)
 	secretAccessKey := claims["SecretAccessKey"].(string)
@@ -127,21 +127,15 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	}
 
 	msg := strings.Join(msgLines, "\n")
-	log.Debug("msg---->", msg)
+	log.Debug("msg-->", msg)
 
-	signature := generateSignature(secretAccessKey, msg)
-	log.Debug("signature---->", signature)
-
-	auth := "AWS " + accessKey + ":" + signature
-	log.Debug("auth---->", auth)
+	auth := "AWS " + accessKey + ":" + generateSignature(secretAccessKey, msg)
+	log.Debug("auth-->", auth)
 
 	req.Header.Add("Authorization", auth)
 	req.Header.Add("x-amz-cs3-authorization", auth)
 	log.Debug("req.Header-->", req.Header)
 
-	for key, val := range req.Header {
-		log.Debug("Header -->", key, "  value -->", val)
-	}
 	log.Debug("req.GetBody-->", req.GetBody)
 
 	resp, e := csClient.httpClient.Do(req)
@@ -194,7 +188,7 @@ func isAdminApi(url string) bool {
 }
 
 func (csClient *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
-	log.Printf("bodyReader 213-->", bodyReader)
+
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %s", err)

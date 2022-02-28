@@ -16,7 +16,7 @@ func (csClient *CSClient) ListBuckets(ctx context.Context, authToken string) (*L
 	}
 
 	httpResp, err := csClient.signV2AndDo(authToken, httpReq, nil)
-	//httpResp, err := client.signV4AndDo(httpReq, nil)
+
 	if err != nil {
 		return nil, err
 	}

@@ -22,11 +22,6 @@ func (l appLogger) Log(args ...interface{}) {
 
 func (csClient *CSClient) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupRequest) (*ReadObjectGroupResponse, error) {
 	var resp ReadObjectGroupResponse
-
-	//if err := client.readAttributesFromBucketTagging(ctx, req, &resp); err != nil {
-	//	return nil, err
-	//}
-
 	if err := csClient.readAttributesFromDatasetEndpoint(ctx, req, &resp); err != nil {
 		return nil, err
 	}
@@ -45,9 +40,8 @@ func (csClient *CSClient) readAttributesFromDatasetEndpoint(ctx context.Context,
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	var sessionToken = req.AuthToken
-	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, nil)
-	//httpResp, err := client.signV4AndDo(httpReq, nil)
+	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, nil)
+
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
@@ -63,13 +57,8 @@ func (csClient *CSClient) readAttributesFromDatasetEndpoint(ctx context.Context,
 		return fmt.Errorf("failed to unmarshal JSON response body: %s", err)
 	}
 	resp.Format = ReadObjectGroup.Format
-	//TODO need to set filter
 
-	log.Printf(" ReadObjectGroup.Filter==>", ReadObjectGroup.ObjectFilter)
-	//resp.Filter.RegexFilter = ReadObjectGroup.Filter.RegexFilter
-	//resp.Filter.PrefixFilter = ReadObjectGroup.Filter.PrefixFilter
 	resp.ObjectFilter = ReadObjectGroup.ObjectFilter
-	log.Printf("mmmmmmmfffmmm", ReadObjectGroup.ObjectFilter)
 	resp.Interval = ReadObjectGroup.Interval
 	resp.Metadata = ReadObjectGroup.Metadata
 	resp.Options = ReadObjectGroup.Options
@@ -81,7 +70,7 @@ func (csClient *CSClient) readAttributesFromDatasetEndpoint(ctx context.Context,
 	resp.ContentType = ReadObjectGroup.ContentType
 	resp.ID = ReadObjectGroup.ID
 	resp.Source = ReadObjectGroup.Source
-	//resp.IndexRetention = ReadObjectGroup.IndexRetention
+
 	resp.Compression = ReadObjectGroup.Compression
 	resp.PartitionBy = ReadObjectGroup.PartitionBy
 	resp.Pattern = ReadObjectGroup.Pattern
@@ -142,7 +131,6 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	if err := readJSONTagValue(tagging, "cs3.dataset-format", &filterObject); err != nil {
 		return err
 	}
-	//v.Format = filterObject.Type
 	v.Pattern = filterObject.Pattern
 	v.ArrayFlattenDepth = filterObject.ArrayFlattenDepth
 	v.KeepOriginal = filterObject.KeepOriginal

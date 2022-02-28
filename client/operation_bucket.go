@@ -46,7 +46,6 @@ func (csClient *CSClient) ImportBucket(ctx context.Context, req *ImportBucketReq
 
 func marshalImportBuketRequest(req *ImportBucketRequest) ([]byte, error) {
 	body := map[string]interface{}{
-
 		"bucket":     req.Bucket,
 		"hideBucket": req.HideBucket,
 	}

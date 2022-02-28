@@ -26,16 +26,10 @@ func (csClient *CSClient) CreateView(ctx context.Context, req *CreateViewRequest
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 	log.Debug(" adding headers...")
-	//httpReq.Header.Add("Content-Type", "text/plain")
-
-	var sessionToken = req.AuthToken
-	//httpReq.Header.Add("x-amz-security-token", req.AuthToken)
-
 	log.Warn("httpReq-->", httpReq)
 
-	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 
-	//httpResp, err := client.signV4AndDo(httpReq, bodyAsBytes)
 	log.Warn("httpResp-->", httpResp)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
@@ -51,7 +45,7 @@ func (csClient *CSClient) CreateView(ctx context.Context, req *CreateViewRequest
 }
 
 func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
-	log.Debug("req.Sources----", req.Sources)
+	log.Debug("req.Sources-->", req.Sources)
 	body := map[string]interface{}{
 		"bucket":          req.Bucket,
 		"sources":         req.Sources,
@@ -63,7 +57,7 @@ func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
 		"transforms":      req.Transforms,
 		"filter":          req.FilterPredicate,
 	}
-	log.Debug("body----", body)
+	log.Debug("body-->", body)
 
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {

@@ -75,8 +75,7 @@ func dataSourceObjectGroup() *schema.Resource {
 			},
 
 			"filter": {
-				Type: schema.TypeSet,
-				//Required: true,
+				Type:     schema.TypeSet,
 				Optional: true,
 				ForceNew: true,
 				Elem: &schema.Resource{

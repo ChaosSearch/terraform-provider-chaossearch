@@ -94,8 +94,7 @@ func resourceUserGroup() *schema.Resource {
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"starts_with": {
-																			Type: schema.TypeSet,
-																			//Required: true,
+																			Type:     schema.TypeSet,
 																			Optional: true,
 																			ForceNew: false,
 																			Elem: &schema.Resource{
@@ -111,8 +110,7 @@ func resourceUserGroup() *schema.Resource {
 																			},
 																		},
 																		"equals": {
-																			Type: schema.TypeSet,
-																			//Required: true,
+																			Type:     schema.TypeSet,
 																			Optional: true,
 																			ForceNew: false,
 																			Elem: &schema.Resource{
@@ -128,8 +126,7 @@ func resourceUserGroup() *schema.Resource {
 																			},
 																		},
 																		"not_equals": {
-																			Type: schema.TypeSet,
-																			//Required: true,
+																			Type:     schema.TypeSet,
 																			Optional: true,
 																			ForceNew: false,
 																			Elem: &schema.Resource{
@@ -145,8 +142,7 @@ func resourceUserGroup() *schema.Resource {
 																			},
 																		},
 																		"like": {
-																			Type: schema.TypeSet,
-																			//Required: true,
+																			Type:     schema.TypeSet,
 																			Optional: true,
 																			ForceNew: false,
 																			Elem: &schema.Resource{
@@ -184,9 +180,7 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 	log.Debug("creating groups")
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
-	log.Debug("token value------------>>>>", tokenValue)
-	set := data.Get("user_groups")
-	log.Info("user_groups===>", set)
+	log.Debug("token value-->", tokenValue)
 
 	var id, name string
 	var permissionList []client.Permission
@@ -201,7 +195,7 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 		permissions := userGroupInterface["permissions"].(*schema.Set).List()[0].(map[string]interface{})["permission"].(*schema.Set).List()
 		if len(permissions) > 0 {
 			for permissionsIndex, permissionsElement := range permissions {
-				//get permission map one by one
+
 				permissionMap := permissionsElement.(map[string]interface{})
 				var ConditionGroup client.ConditionGroup
 				if len(permissionMap["conditions"].(*schema.Set).List()) > 0 {
@@ -277,7 +271,7 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	log.Debug("reading groups")
 	// c := meta.(*ProviderMeta).Client
 	tokenValue := meta.(*ProviderMeta).token
-	log.Warn("token value------------>>>>", tokenValue)
+	log.Warn("token value-->", tokenValue)
 	//TODO to be developed
 	return nil
 }
@@ -286,7 +280,7 @@ func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta in
 	log.Debug("updating groups")
 	// c := meta.(*ProviderMeta).Client
 	tokenValue := meta.(*ProviderMeta).token
-	log.Warn("token value------------>>>>", tokenValue)
+	log.Warn("token value-->", tokenValue)
 	//TODO to be developed
 	return nil
 }
@@ -295,7 +289,7 @@ func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta in
 	log.Debug("deleting groups")
 	// c := meta.(*ProviderMeta).Client
 	tokenValue := meta.(*ProviderMeta).token
-	log.Warn("token value------------>>>>", tokenValue)
+	log.Warn("token value-->", tokenValue)
 	//TODO to be developed
 	return nil
 }

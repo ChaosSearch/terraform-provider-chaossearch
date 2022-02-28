@@ -24,8 +24,7 @@ func (csClient *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAc
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	var sessionToken = req.AuthToken
-	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, bodyAsBytes)
+	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)

@@ -20,14 +20,12 @@ func resourceObjectGroup() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"bucket": {
-				Type: schema.TypeString,
-				//Required: true,
+				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: false,
 			},
 			"source": {
-				Type: schema.TypeString,
-				//Required: true,
+				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: false,
 			},
@@ -84,8 +82,7 @@ func resourceObjectGroup() *schema.Resource {
 				},
 			},
 			"filter": {
-				Type: schema.TypeSet,
-				//Required: true,
+				Type:     schema.TypeSet,
 				Optional: true,
 				ForceNew: false,
 				Elem: &schema.Resource{
@@ -165,8 +162,7 @@ func resourceObjectGroup() *schema.Resource {
 				},
 			},
 			"realtime": {
-				Type: schema.TypeBool,
-				//Required:    true,
+				Type:        schema.TypeBool,
 				Optional:    true,
 				ForceNew:    false,
 				Description: "",
@@ -212,7 +208,6 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	intervalColumnSelectionInterface := data.Get("interval").(*schema.Set).List()[0].(map[string]interface{})
 	indexRetentionColumnSelectionInterface := data.Get("index_retention").(*schema.Set).List()[0].(map[string]interface{})
 	optionsColumnSelectionInterface := data.Get("options").(*schema.Set).List()[0].(map[string]interface{})
-	//filterColumnSelectionInterface := data.Get("filter").(*schema.Set).List()[0].(map[string]interface{})
 
 	format := client.Format{
 		Type:            formatColumnSelectionInterface["_type"].(string),
@@ -268,7 +263,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		RegexFilter:  &regexFilter,
 	}
 	tokenValue := meta.(*ProviderMeta).token
-	log.Warn("token value------------>>>>", tokenValue)
+	log.Warn("token value-->", tokenValue)
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
 		AuthToken:      tokenValue,
 		Bucket:         data.Get("bucket").(string),
@@ -286,7 +281,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	}
 	data.SetId(data.Get("bucket").(string))
 	return resourceObjectGroupRead(ctx, data, meta)
-	//return nil
+
 }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -296,9 +291,6 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 
 	data.SetId(data.Get("bucket").(string))
 
-	//req := &client.ReadObjectGroupRequest{
-	//	ID: bucketId,
-	//}
 	tokenValue := meta.(*ProviderMeta).token
 	req := &client.ReadObjectGroupRequest{
 		ID:        data.Id(),
@@ -316,7 +308,6 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		return diag.Errorf("Failed to read object group: %s", err)
 	}
 
-	//do not change working fine
 	data.Set("name", data.Id())
 	data.Set("_public", resp.Public)
 	data.Set("_type", resp.Type)
@@ -397,7 +388,6 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.Set("filter_json", resp.FilterJSON)
 	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
 
-	//data.Set("index_retention", resp.IndexRetention)
 	data.Set("partition_by", resp.PartitionBy)
 	data.Set("pattern", resp.Pattern)
 	data.Set("source_bucket", resp.SourceBucket)
