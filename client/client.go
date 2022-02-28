@@ -95,7 +95,9 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 		return []byte("<YOUR VERIFICATION KEY>"), nil
 	})
 
-	log.Debug("token err-->", err)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %s", err)
+	}
 
 	accessKey := claims["AccessKeyId"].(string)
 	secretAccessKey := claims["SecretAccessKey"].(string)
@@ -103,15 +105,15 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	dateTime := time.Now().UTC().String()
 
 	req.Header.Add("Content-Type", "application/json")
-	var routeToken string
 
+	var routeToken string
 	if isAdminApi(req.URL.Path) {
 		routeToken = "login"
 	} else {
 		routeToken = externalId
 	}
-	req.Header.Add("x-amz-chaossumo-route-token", routeToken)
 
+	req.Header.Add("x-amz-chaossumo-route-token", routeToken)
 	req.Header.Add("x-amz-security-token", tokenValue)
 	req.Header.Add("X-Amz-Date", dateTime)
 

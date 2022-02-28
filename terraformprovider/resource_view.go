@@ -145,33 +145,19 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	predColumnSelectionInterface := predicateColumnSelectionInterface["pred"].(*schema.Set).List()[0].(map[string]interface{})
 	stateColumnSelectionInterface := predColumnSelectionInterface["state"].(*schema.Set).List()[0].(map[string]interface{})
 
-	var predicateType string
-
-	var fieldValue string
-	var queryValue string
-	var typeValue string
-
-	var stateType string
-
-	predicateType = predicateColumnSelectionInterface["_type"].(string)
-	fieldValue = predColumnSelectionInterface["field"].(string)
-	queryValue = predColumnSelectionInterface["query"].(string)
-	typeValue = predColumnSelectionInterface["_type"].(string)
-	stateType = stateColumnSelectionInterface["_type"].(string)
-
 	state := client.State{
-		Type_: stateType,
+		Type_: stateColumnSelectionInterface["_type"].(string),
 	}
 
 	pred := client.Pred{
-		Field: fieldValue,
-		Query: queryValue,
+		Field: predColumnSelectionInterface["field"].(string),
+		Query: predColumnSelectionInterface["query"].(string),
 		State: state,
-		Type_: typeValue,
+		Type_: predColumnSelectionInterface["_type"].(string),
 	}
 
 	Predicate := client.Predicate{
-		Type_: predicateType,
+		Type_: predicateColumnSelectionInterface["_type"].(string),
 		Pred:  pred,
 	}
 

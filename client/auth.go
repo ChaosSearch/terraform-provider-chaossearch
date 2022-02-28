@@ -20,7 +20,6 @@ func (csClient *CSClient) Auth(ctx context.Context) (token string, err error) {
 	login_ := csClient.Login
 
 	log.Warn("url-->", url)
-
 	log.Warn("username-->", login_.Username)
 	log.Warn("parentuserid-->", login_.ParentUserId)
 
