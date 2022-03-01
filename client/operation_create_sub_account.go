@@ -6,14 +6,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+
 	"net/http"
 )
 
-func (csClient *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroupRequest) error {
+func (csClient *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRequest) error {
 	method := "POST"
-	url := fmt.Sprintf("%s/Bucket/updateObjectGroup", csClient.config.URL)
+	url := fmt.Sprintf("%s/user/createSubAccount", csClient.config.URL)
 
-	bodyAsBytes, err := marshalUpdateObjectGroupRequest(req)
+	bodyAsBytes, err := marshalCreateSubAccountRequest(req)
 	if err != nil {
 		return err
 	}
@@ -34,23 +35,23 @@ func (csClient *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObje
 			_ = fmt.Errorf("failed to Close response body  %s", err)
 		}
 	}(httpResp.Body)
-
 	return nil
 }
 
-func marshalUpdateObjectGroupRequest(req *UpdateObjectGroupRequest) ([]byte, error) {
+func marshalCreateSubAccountRequest(req *CreateSubAccountRequest) ([]byte, error) {
 	body := map[string]interface{}{
-		"bucket":                req.Bucket,
-		"indexParallelism":      req.IndexParallelism,
-		"indexRetention":        req.IndexRetention,
-		"targetActiveIndex":     req.TargetActiveIndex,
-		"liveEventsParallelism": req.LiveEventsParallelism,
+		"UserInfoBlock": map[string]interface{}{
+			"Username": req.UserInfoBlock.Username,
+			"FullName": req.UserInfoBlock.FullName,
+			"Email":    req.UserInfoBlock.Email,
+		},
+		"GroupIds": req.GroupIds,
+		"Password": req.Password,
+		"Hocon":    req.HoCon,
 	}
-
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
-
 	return bodyAsBytes, nil
 }

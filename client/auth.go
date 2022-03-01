@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"io"
 
 	"encoding/json"
 	"fmt"
@@ -12,15 +13,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (client *Client) Auth(ctx context.Context) (token string, err error) {
+func (csClient *CSClient) Auth(ctx context.Context) (token string, err error) {
 
-	url := fmt.Sprintf("%s/user/login", client.config.URL)
+	url := fmt.Sprintf("%s/user/login", csClient.config.URL)
 	method := "POST"
-	login_ := client.Login
+	login_ := csClient.Login
 
-	log.Warn("url--", url)
-	log.Warn("username--", login_.Username)
-	log.Warn("parentuserid--", login_.ParentUserId)
+	log.Warn("url-->", url)
+	log.Warn("username-->", login_.Username)
+	log.Warn("parentuserid-->", login_.ParentUserId)
 
 	bodyAsBytes, err := marshalLoginRequest(login_)
 	if err != nil {
@@ -40,15 +41,18 @@ func (client *Client) Auth(ctx context.Context) (token string, err error) {
 	req.Header.Add("x-amz-chaossumo-route-token", "login")
 	req.Header.Add("Content-Type", "text/plain")
 
-	res, err := client.httpClient.Do(req)
-	//TODO add a status call after successful login to ensure that the user is actually deployed
-	//	TODO API end point will be provided
+	res, err := csClient.httpClient.Do(req)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer res.Body.Close()
-
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(res.Body)
+	// TODO add a status call once successful login to ensure that the user is actually deployed
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
@@ -59,12 +63,18 @@ func (client *Client) Auth(ctx context.Context) (token string, err error) {
 }
 
 func marshalLoginRequest(req *Login) ([]byte, error) {
-	log.Warn("req.Sources----", req.Username)
-
-	body := map[string]interface{}{
-		"Username":  req.Username,
-		"Password":  req.Password,
-		"ParentUid": req.ParentUserId,
+	var body map[string]interface{}
+	if len(req.ParentUserId) == 0 {
+		body = map[string]interface{}{
+			"Username": req.Username,
+			"Password": req.Password,
+		}
+	} else {
+		body = map[string]interface{}{
+			"Username":  req.Username,
+			"Password":  req.Password,
+			"ParentUid": req.ParentUserId,
+		}
 	}
 
 	bodyAsBytes, err := json.Marshal(body)

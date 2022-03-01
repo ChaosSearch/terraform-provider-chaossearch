@@ -14,25 +14,51 @@ type ListBucketsResponse struct {
 }
 
 type ReadObjectGroupRequest struct {
-	ID string
+	AuthToken string
+	ID        string
 }
 
+type ReadViewRequest struct {
+	AuthToken string
+	ID        string
+}
+type Metadata struct {
+	CreationDate int64 `json:"creationDate"`
+}
+
+type ObjectFilter struct {
+	And []interface{} `json:"AND"`
+}
 type ReadObjectGroupResponse struct {
-	Compression       string
-	FilterJSON        string
-	Format            string
-	Pattern           string
-	LiveEventsSqsArn  string
-	PartitionBy       string
-	SourceBucket      string
-	IndexRetention    int
-	KeepOriginal      bool
-	ArrayFlattenDepth *int
-	ColumnRenames     map[string]string
-	ColumnSelection   []map[string]interface{}
+	Public             bool         `json:"_public"`
+	Realtime           bool         `json:"_realtime"`
+	Type               string       `json:"_type"`
+	Bucket             string       `json:"bucket"`
+	ContentType        string       `json:"contentType"`
+	ObjectFilter       ObjectFilter `json:"filter"`
+	Format             *Format      `json:"format"`
+	ID                 string       `json:"id"`
+	Interval           *Interval    `json:"interval"`
+	Metadata           *Metadata    `json:"metadata"`
+	Options            *Options     `json:"options"`
+	RegionAvailability []string     `json:"regionAvailability"`
+	Source             string       `json:"source"`
+	Compression        string
+	FilterJSON         string
+	Pattern            string
+	LiveEventsSqsArn   string
+	PartitionBy        string
+	SourceBucket       string
+	IndexRetention     int
+	KeepOriginal       bool
+	ArrayFlattenDepth  *int
+	ColumnRenames      map[string]string
+	ColumnSelection    []map[string]interface {
+	}
 }
 
 type CreateObjectGroupRequest struct {
+	AuthToken      string
 	Bucket         string
 	Source         string
 	Format         *Format
@@ -44,10 +70,10 @@ type CreateObjectGroupRequest struct {
 }
 
 type Format struct {
-	Type            string
-	ColumnDelimiter string
-	RowDelimiter    string
-	HeaderRow       bool
+	Type            string `json:"_type"`
+	ColumnDelimiter string `json:"columnDelimiter"`
+	RowDelimiter    string `json:"rowDelimiter"`
+	HeaderRow       bool   `json:"headerRow"`
 }
 
 type Interval struct {
@@ -84,12 +110,22 @@ type UpdateIndexingStateRequest struct {
 }
 
 type DeleteObjectGroupRequest struct {
-	Name string
+	AuthToken string
+	Name      string
+}
+
+type DeleteViewRequest struct {
+	AuthToken string
+	Name      string
 }
 
 type UpdateObjectGroupRequest struct {
-	Name           string
-	IndexRetention int
+	AuthToken             string
+	Bucket                string `json:"bucket"`
+	IndexParallelism      int    `json:"indexParallelism"`
+	IndexRetention        int    `json:"indexRetention"`
+	TargetActiveIndex     int    `json:"targetActiveIndex"`
+	LiveEventsParallelism int    `json:"liveEventsParallelism"`
 }
 
 type ReadIndexingStateRequest struct {
@@ -97,6 +133,7 @@ type ReadIndexingStateRequest struct {
 }
 
 type readBucketMetadataRequest struct {
+	AuthToken  string
 	BucketName string `json:"BucketName"`
 	Stats      bool   `json:"Stats"`
 }
@@ -107,8 +144,7 @@ type IndexingState struct {
 }
 
 type CreateViewRequest struct {
-	AuthToken string
-
+	AuthToken         string
 	Bucket            string
 	FilterPredicate   *FilterPredicate `json:"filter"`
 	TimeFieldName     string
@@ -116,12 +152,34 @@ type CreateViewRequest struct {
 	CaseInsensitive   bool
 	ArrayFlattenDepth *int
 	IndexRetention    int
-	// IndexRetention    map[string]interface{}
-	Cacheable bool
-	Overwrite bool
-	// Sources           map[string]string
-	Sources    []interface{}
-	Transforms []interface{}
+	Cacheable         bool
+	Overwrite         bool
+	Sources           []interface{}
+	Transforms        []interface{}
+}
+
+type ReadViewResponse struct {
+	Type               string `json:"_type"`
+	Bucket             string
+	FilterPredicate    *FilterPredicate `json:"filter"`
+	TimeFieldName      string
+	IndexPattern       string
+	CaseInsensitive    bool
+	ArrayFlattenDepth  *int
+	IndexRetention     int `json:"overall"`
+	Cacheable          bool
+	Overwrite          bool
+	Sources            []interface{}
+	Transforms         []interface{}
+	ID                 string    `json:"id"`
+	MetaData           *Metadata `json:"metadata"`
+	RegionAvailability []string  `json:"regionAvailability"`
+	Compression        string
+	LiveEventsSqsArn   string
+	SourceBucket       string
+	FilterJSON         string
+	Pattern            string
+	KeepOriginal       bool
 }
 
 type RequestHeaders struct {
@@ -148,7 +206,95 @@ type State struct {
 	Type_ string `json:"_type"`
 }
 
+//user group create related models
+
+type StartsWith struct {
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+}
+type Equals struct {
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+}
+type NotEquals struct {
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+}
+type Like struct {
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+}
+
+type Condition struct {
+	StartsWith StartsWith
+	Equals     Equals
+	NotEquals  NotEquals
+	Like       Like
+}
+type ConditionGroup struct {
+	Condition []Condition `json:"Condition"`
+}
+type Permission struct {
+	Effect         string
+	Version        string
+	Actions        []string
+	Resources      []string
+	ConditionGroup ConditionGroup `json:"Condition"`
+}
+
 type CreateUserGroupRequest struct {
-	Id   string
-	Name string
+	AuthToken  string
+	Id         string
+	Name       string
+	Permission []Permission `json:"GroupIds"`
+}
+
+type UserInfoBlock struct {
+	Username string `json:"Username"`
+	FullName string `json:"FullName"`
+	Email    string `json:"Email"`
+}
+
+type CreateSubAccountRequest struct {
+	AuthToken     string
+	UserInfoBlock UserInfoBlock `json:"UserInfoBlock"`
+	GroupIds      []interface{} `json:"GroupIds"`
+	Password      string
+	HoCon         []interface{} `json:"HoCon"`
+}
+
+type ImportBucketRequest struct {
+	AuthToken  string
+	Bucket     string `json:"bucket"`
+	HideBucket bool   `json:"hideBucket"`
+}
+
+type DeleteSubAccountRequest struct {
+	AuthToken string
+	Username  string
+}
+
+type ListUsersResponse struct {
+	Users []User `json:"Users"`
+}
+
+type User struct {
+	SubAccounts []SubAccount `json:"SubAccounts"`
+	Groups      []Group      `json:"Groups"`
+}
+
+type SubAccount struct {
+	FullName  string        `json:"FullName"`
+	Hocon     string        `json:"Hocon"`
+	Uid       string        `json:"Uid"`
+	Username  string        `json:"Username"`
+	GroupIds  []interface{} `json:"GroupIds"`
+	Activated bool          `json:"Activated"`
+}
+
+type Group struct {
+	Id          string       `json:"Id"`
+	Name        string       `json:"Name"`
+	Permissions []Permission `json:"permissions"`
+}
+
+type ReadUserGroupRequest struct {
+	AuthToken string
+	ID        string
 }

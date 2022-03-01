@@ -3,8 +3,9 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=chaossearch
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
-VERSION=0.1.2
+VERSION=0.1.3
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
+
 
 default: install
 
@@ -22,9 +23,6 @@ install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
-test:
-	go test -i $(TEST) || exit 1
-	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
-testacc:
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+testall:
+	cd examples/test && ./testall.sh

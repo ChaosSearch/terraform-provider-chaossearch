@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 
@@ -19,14 +20,9 @@ func (l appLogger) Log(args ...interface{}) {
 	log.Printf("AWS: %+v", args...)
 }
 
-func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupRequest) (*ReadObjectGroupResponse, error) {
+func (csClient *CSClient) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupRequest) (*ReadObjectGroupResponse, error) {
 	var resp ReadObjectGroupResponse
-
-	if err := client.readAttributesFromBucketTagging(ctx, req, &resp); err != nil {
-		return nil, err
-	}
-
-	if err := client.readAttributesFromDatasetEndpoint(ctx, req, &resp); err != nil {
+	if err := csClient.readAttributesFromDatasetEndpoint(ctx, req, &resp); err != nil {
 		return nil, err
 	}
 
@@ -35,44 +31,59 @@ func (client *Client) ReadObjectGroup(ctx context.Context, req *ReadObjectGroupR
 	return &resp, nil
 }
 
-func (client *Client) readAttributesFromDatasetEndpoint(ctx context.Context, req *ReadObjectGroupRequest, resp *ReadObjectGroupResponse) error {
+func (csClient *CSClient) readAttributesFromDatasetEndpoint(ctx context.Context, req *ReadObjectGroupRequest, resp *ReadObjectGroupResponse) error {
 	method := "GET"
-	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", client.config.URL, req.ID)
+	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", csClient.config.URL, req.ID)
 
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	httpResp, err := client.signAndDo(httpReq, nil)
+	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, nil)
+
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}
-	defer httpResp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			_ = fmt.Errorf("failed to Close response body  %s", err)
+		}
+	}(httpResp.Body)
 
-	var getDatasetResp struct {
-		PartitionBy string `json:"partitionBy"`
-		Options     struct {
-			ColumnRenames   map[string]string        `json:"colRenames"`
-			ColumnSelection []map[string]interface{} `json:"colSelection"`
-		} `json:"options"`
-	}
-	if err := client.unmarshalJSONBody(httpResp.Body, &getDatasetResp); err != nil {
+	var ReadObjectGroup ReadObjectGroupResponse
+	if err := csClient.unmarshalJSONBody(httpResp.Body, &ReadObjectGroup); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON response body: %s", err)
 	}
+	resp.Format = ReadObjectGroup.Format
 
-	resp.PartitionBy = getDatasetResp.PartitionBy
-	resp.ColumnRenames = getDatasetResp.Options.ColumnRenames
-	resp.ColumnSelection = getDatasetResp.Options.ColumnSelection
+	resp.ObjectFilter = ReadObjectGroup.ObjectFilter
+	resp.Interval = ReadObjectGroup.Interval
+	resp.Metadata = ReadObjectGroup.Metadata
+	resp.Options = ReadObjectGroup.Options
+	resp.RegionAvailability = ReadObjectGroup.RegionAvailability
+	resp.Public = ReadObjectGroup.Public
+	resp.Realtime = ReadObjectGroup.Realtime
+	resp.Type = ReadObjectGroup.Type
+	resp.Bucket = ReadObjectGroup.Bucket
+	resp.ContentType = ReadObjectGroup.ContentType
+	resp.ID = ReadObjectGroup.ID
+	resp.Source = ReadObjectGroup.Source
 
+	resp.Compression = ReadObjectGroup.Compression
+	resp.PartitionBy = ReadObjectGroup.PartitionBy
+	resp.Pattern = ReadObjectGroup.Pattern
+	resp.SourceBucket = ReadObjectGroup.SourceBucket
+	resp.ColumnSelection = ReadObjectGroup.ColumnSelection
 	return nil
 }
 
-func (client *Client) readAttributesFromBucketTagging(ctx context.Context, req *ReadObjectGroupRequest, resp *ReadObjectGroupResponse) error {
-	session, err := session.NewSession(&aws.Config{
-		Credentials:      credentials.NewStaticCredentials(client.config.AccessKeyID, client.config.SecretAccessKey, ""),
-		Endpoint:         aws.String(fmt.Sprintf("%s/V1", client.config.URL)),
-		Region:           aws.String(client.config.Region),
+func (csClient *CSClient) readAttributesFromBucketTagging(ctx context.Context, req *ReadObjectGroupRequest, resp *ReadObjectGroupResponse) error {
+	session_, err := session.NewSession(&aws.Config{
+		Credentials:      credentials.NewStaticCredentials(csClient.config.AccessKeyID, csClient.config.SecretAccessKey, ""),
+		Endpoint:         aws.String(fmt.Sprintf("%s/V1", csClient.config.URL)),
+		Region:           aws.String(csClient.config.Region),
 		S3ForcePathStyle: aws.Bool(true),
 		LogLevel:         aws.LogLevel(aws.LogOff),
 		Logger:           appLogger{},
@@ -81,7 +92,7 @@ func (client *Client) readAttributesFromBucketTagging(ctx context.Context, req *
 		return fmt.Errorf("failed to create AWS session: %s", err)
 	}
 
-	svc := s3.New(session)
+	svc := s3.New(session_)
 	input := &s3.GetBucketTaggingInput{
 		Bucket: aws.String(req.ID),
 	}
@@ -120,7 +131,6 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	if err := readJSONTagValue(tagging, "cs3.dataset-format", &filterObject); err != nil {
 		return err
 	}
-	v.Format = filterObject.Type
 	v.Pattern = filterObject.Pattern
 	v.ArrayFlattenDepth = filterObject.ArrayFlattenDepth
 	v.KeepOriginal = filterObject.KeepOriginal
@@ -128,7 +138,6 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 	if err := readStringTagValue(tagging, "cs3.predicate", &v.FilterJSON); err != nil {
 		return err
 	}
-
 	var retentionObject struct {
 		Overall int `json:"overall"`
 	}
@@ -136,7 +145,6 @@ func mapBucketTaggingToResponse(tagging *s3.GetBucketTaggingOutput, v *ReadObjec
 		return err
 	}
 	v.IndexRetention = retentionObject.Overall
-
 	return nil
 }
 

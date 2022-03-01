@@ -4,6 +4,7 @@ import (
 	"context"
 	"cs-tf-provider/client"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,8 +12,8 @@ import (
 )
 
 type ProviderMeta struct {
-	Client *client.Client
-	token  string
+	CSClient *client.CSClient
+	token    string
 }
 
 type AuthResponse struct {
@@ -55,21 +56,33 @@ func Provider() *schema.Provider {
 							ForceNew: true,
 						}, "parent_user_id": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 							ForceNew: true,
 						},
 					},
 				},
 				Required:    true,
-				ForceNew:    false,
+				ForceNew:    true,
 				Description: "List of fields in logs to include or exclude from parsing. If nothing is specified, all fields will be parsed",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"chaossearch_object_group": resourceObjectGroup(),
-			"chaossearch_view":         resourceView(),
+			"chaossearch_object_group":  resourceObjectGroup(),
+			"chaossearch_view":          resourceView(),
+			"chaossearch_sub_account":   resourceSubAccount(),
+			"chaossearch_user_group":    resourceUserGroup(),
+			"chaossearch_import_bucket": resourceBucket(),
 		},
 
+		DataSourcesMap: map[string]*schema.Resource{
+			"chaossearch_retrieve_object_groups": dataSourceObjectGroups(),
+			"chaossearch_retrieve_object_group":  dataSourceObjectGroup(),
+			"chaossearch_retrieve_views":         dataSourceViews(),
+			"chaossearch_retrieve_view":          dataSourceView(),
+			"chaossearch_retrieve_sub_accounts":  dataSourceSubAccounts(),
+			"chaossearch_retrieve_groups":        dataSourceUserGroups(),
+			"chaossearch_retrieve_user_group":    dataSourceUserGroup(),
+		},
 		ConfigureContextFunc: providerConfigure,
 	}
 }
@@ -89,8 +102,9 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
 		username_ = columnSelectionInterface["user_name"].(string)
 		password_ = columnSelectionInterface["password"].(string)
-		parentUserId_ = columnSelectionInterface["parent_user_id"].(string)
-
+		if columnSelectionInterface["parent_user_id"] != nil {
+			parentUserId_ = columnSelectionInterface["parent_user_id"].(string)
+		}
 	}
 
 	login_ := client.Login{
@@ -129,11 +143,14 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	} else {
 		tokenData := AuthResponse{}
-		json.Unmarshal([]byte(authResponseString), &tokenData)
+
+		if err := json.Unmarshal([]byte(authResponseString), &tokenData); err != nil {
+			return fmt.Errorf("failed to unmarshal JSON: %s", err), nil
+		}
 
 		providerMeta := &ProviderMeta{
-			Client: csClient,
-			token:  tokenData.Token,
+			CSClient: csClient,
+			token:    tokenData.Token,
 		}
 		return providerMeta, nil
 
