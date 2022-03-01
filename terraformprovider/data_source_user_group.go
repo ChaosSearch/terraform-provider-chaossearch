@@ -8,25 +8,22 @@ func dataSourceUserGroup() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: resourceGroupRead,
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeString,
+
+			"user_groups": {
+				Type:     schema.TypeSet,
 				Required: true,
-			},
-			"user_group": {
-				Type:     schema.TypeList,
-				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:     schema.TypeString,
-							Computed: true,
+							Required: true,
 						},
 						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"permissions": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeSet,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{

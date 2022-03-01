@@ -30,7 +30,6 @@ func resourceUserGroup() *schema.Resource {
 							Required: false,
 							ForceNew: false,
 							Optional: true,
-							Computed: true,
 						},
 						"name": {
 							Type:     schema.TypeString,
@@ -263,12 +262,13 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 	}
 
 	data.SetId(name)
+	return resourceGroupRead(ctx, data, meta)
 
-	return nil
 }
 
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	data.SetId(data.Get("id").(string))
+	userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
+	data.SetId(userGroupInterface["id"].(string))
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
@@ -302,7 +302,7 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	userGroupContentMap["name"] = resp.Name
 	result[0] = userGroupContentMap
 	userGroupContent = result
-	if err := data.Set("user_group", userGroupContent); err != nil {
+	if err := data.Set("user_groups", userGroupContent); err != nil {
 		return diag.FromErr(err)
 	}
 	return diags

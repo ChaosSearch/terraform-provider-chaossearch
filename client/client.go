@@ -91,9 +91,7 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	claims := jwt.MapClaims{}
 	log.Debug("token-->", tokenValue)
 
-	_, err := jwt.ParseWithClaims(tokenValue, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte("<YOUR VERIFICATION KEY>"), nil
-	})
+	_, _, err := new(jwt.Parser).ParseUnverified(tokenValue, claims)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %s", err)
