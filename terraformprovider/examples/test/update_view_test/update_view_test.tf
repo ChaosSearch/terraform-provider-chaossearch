@@ -29,9 +29,9 @@ provider "chaossearch" {
 
 #create view
 resource "chaossearch_view" "chaossearch-update-view-test" {
-  bucket           = "Nibras-123"
+  bucket           = "test-view-001"
   case_insensitive = false
-  index_pattern    = ".*11"
+  index_pattern    = ".*"
   index_retention  = -1
   overwrite        = true
   sources          = []

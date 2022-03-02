@@ -27,13 +27,13 @@ provider "chaossearch" {
 
 # Hide Bucket
 resource "chaossearch_import_bucket" "hide_bucket1" {
-  bucket      = "test-valid-bucket-name"
+  bucket      = "my-bucket"
   hide_bucket = true
 }
 
 
 # Hide Bucket
 resource "chaossearch_import_bucket" "hide_bucket2" {
-  bucket      = "test-invalid-bucket-name"
+  bucket      = "my-bucket"
   hide_bucket = true
 }

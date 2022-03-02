@@ -28,11 +28,11 @@ provider "chaossearch" {
 # Create Sub Account
 resource "chaossearch_sub_account" "sub-account" {
   user_info_block {
-    username  = "nibras1102"
-    full_name = "Nibras S"
-    email     = "hello@test.com"
+    username  = "test_user"
+    full_name = "Test User"
+    email     = "testusero@test.com"
   }
-  group_ids = ["aaa", "bbb"]
+  group_ids = ["100", "101"]
   password  = "1234"
   hocon     = ["override.Services.worker.quota=50"]
 }

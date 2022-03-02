@@ -29,7 +29,7 @@ provider "chaossearch" {
 
 
 resource "chaossearch_view" "chaossearch-create-view-test1" {
-  bucket           = "nibras-1-view-auto-011"
+  bucket           = "test_view_01"
   case_insensitive = false
   index_pattern    = ".*"
   index_retention  = -1

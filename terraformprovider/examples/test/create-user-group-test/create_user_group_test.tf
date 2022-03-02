@@ -28,7 +28,7 @@ provider "chaossearch" {
 resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
   user_groups {
     id   = "100221"
-    name = "nibras-group-11"
+    name = "user_group-1"
     permissions {
       permission {
 

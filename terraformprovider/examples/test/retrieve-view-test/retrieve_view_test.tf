@@ -29,29 +29,10 @@ provider "chaossearch" {
 
 #get view group by id
 data "chaossearch_retrieve_view" "retrieve-view" {
-  bucket = "Chathura-view-10000tt"
+  bucket = "test-view-01"
 }
 
 output "view" {
   value = data.chaossearch_retrieve_view.retrieve-view
 }
-
-
-#without view id
-#data "chaossearch_retrieve_view" "retrieve-view-without-id" {
-#
-#}
-#
-#output "view-without-id" {
-#  value = data.chaossearch_retrieve_view.retrieve-view-without-id
-#}
-
-#when view id not exists
-#data "chaossearch_retrieve_view" "view-not-found" {
-#  bucket="Chat"
-#}
-#
-#output "view-not-found" {
-#  value = data.chaossearch_retrieve_view.view-not-found
-#}
 

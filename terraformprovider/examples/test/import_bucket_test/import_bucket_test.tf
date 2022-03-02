@@ -27,13 +27,13 @@ provider "chaossearch" {
 
 # Import Bucket
 resource "chaossearch_import_bucket" "import_bucket1" {
-  bucket      = "test-valid-bucket-name"
+  bucket      = "my-bucket"
   hide_bucket = false
 }
 
 
 # Import Bucket
 resource "chaossearch_import_bucket" "import_bucket2" {
-  bucket      = "test-invalid-bucket-name"
+  bucket      = "my-bucket"
   hide_bucket = false
 }
