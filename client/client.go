@@ -115,7 +115,8 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	req.Header.Add("x-amz-security-token", tokenValue)
 	req.Header.Add("X-Amz-Date", dateTime)
 
-	log.Debug("headers-->", req.Header)
+	log.Debug("headers -->", req.Header)
+	log.Debug("req.URL.Path -->", req.URL.Path)
 
 	msgLines := []string{
 		req.Method, "",

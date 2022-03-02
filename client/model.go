@@ -233,8 +233,8 @@ type ConditionGroup struct {
 type Permission struct {
 	Effect         string
 	Version        string
-	Actions        []string
-	Resources      []string
+	Actions        []interface{}
+	Resources      []interface{}
 	ConditionGroup ConditionGroup `json:"Condition"`
 }
 
