@@ -12,7 +12,7 @@ import (
 
 func (csClient *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequest) (*Group, error) {
 	method := "PUT"
-
+	log.Debug("UpdateUserGroup.......")
 	url := fmt.Sprintf("%s/user/groups", csClient.config.URL)
 	log.Debug("Url-->", url)
 	log.Debug("req-->", req)

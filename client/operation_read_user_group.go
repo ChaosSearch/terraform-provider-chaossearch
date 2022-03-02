@@ -3,8 +3,8 @@ package client
 import (
 	"context"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -20,6 +20,7 @@ func (csClient *CSClient) ReadUserGroup(ctx context.Context, req *ReadUserGroupR
 func (csClient *CSClient) ReadUserGroupById(ctx context.Context, req *ReadUserGroupRequest, resp *Group) error {
 	method := "GET"
 	url := fmt.Sprintf("%s/user/group/%s", csClient.config.URL, req.ID)
+	log.Debug("ReadUserGroupById--->")
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)

@@ -26,13 +26,13 @@ provider "chaossearch" {
 }
 resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
   user_groups {
-    id   = "9b41fb1c-c476-437b-98a5-92387d659263"
-    name = "chathura-user-1f1"
+    id   = "12bdf713-f019-42c0-9185-fb1b16b001cf"
+    name = "dinesh-user-1007"
     permissions {
-        effect    = "Allow"
-        actions    = ["*112"]
-        resources = ["*1"]
-        version   = "1"
+      effect    = "Allow"
+      actions   = ["3.*"]
+      resources = ["3.*"]
+      version   = "1.2"
 
     }
   }

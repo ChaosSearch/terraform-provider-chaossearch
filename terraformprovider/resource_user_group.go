@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"cs-tf-provider/client"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -44,8 +45,9 @@ func resourceUserGroup() *schema.Resource {
 
 						"permissions": {
 							Type:     schema.TypeSet,
-							Optional: false,
-							Required: true,
+							Optional: true,
+							Required: false,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									//"permission": {
@@ -208,9 +210,10 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	log.Debug("resp.Id 11 -->", resp.Id)
 	data.SetId(resp.Id)
-	//return resourceGroupRead(ctx, data, meta)
-	return nil
+	return resourceGroupRead(ctx, data, meta)
+	//return nil
 
 }
 
@@ -282,8 +285,9 @@ func CreateUserGroupObject(data *schema.ResourceData, id string, name string, co
 }
 
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
-	data.SetId(userGroupInterface["id"].(string))
+	//userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
+
+	data.SetId(data.Id())
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
@@ -291,18 +295,23 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 		AuthToken: tokenValue,
 		ID:        data.Id(),
 	}
+	log.Debug("resourceGroupRead...")
 	resp, err := c.ReadUserGroup(ctx, req)
 	if err != nil {
-		return diag.FromErr(err)
+		fmt.Errorf("error re ---------", err)
+		//return diag.FromErr(err)
 	}
 	if resp == nil {
-		return diag.Errorf("Couldn't find User Group: %s", err)
+		fmt.Errorf("resp er=====")
+		//return diag.Errorf("Couldn't find User Group: %s", err)
 	}
 
 	userGroupContent := CreateUserGroupResponse(resp)
 	if err := data.Set("user_groups", userGroupContent); err != nil {
 		return diag.FromErr(err)
 	}
+	log.Debug("resp.Id-->", resp.Id)
+	//data.SetId(resp.Id)
 	return diags
 }
 
@@ -320,6 +329,7 @@ func CreateUserGroupResponse(resp *client.Group) []map[string]interface{} {
 			permissionContent["version"] = resp.Permissions[i].Version
 			permissions[i] = permissionContent
 		}
+		log.Debug("seting to permissions....")
 		userGroupContentMap["permissions"] = permissions
 	}
 	userGroupContentMap["id"] = resp.Id
@@ -363,6 +373,8 @@ func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta in
 func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Debug("deleting groups")
 	// c := meta.(*ProviderMeta).Client
+	deleteId := data.Id()
+	log.Debug("deleteId-->", deleteId)
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value-->", tokenValue)
 	//TODO to be developed
