@@ -10,8 +10,8 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequest) (*Group, error) {
-	method := "POST"
+func (csClient *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequest) (*Group, error) {
+	method := "PUT"
 
 	url := fmt.Sprintf("%s/user/groups", csClient.config.URL)
 	log.Debug("Url-->", url)
@@ -50,9 +50,10 @@ func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGr
 	log.Info("readUserGroupResp", readUserGroupResp[0].Id)
 
 	return &readUserGroupResp[0], err
+
 }
 
-func marshalCreateUserGroupRequest(req *CreateUserGroupRequest) ([]byte, error) {
+func marshalUpdateUserGroupRequest(req *CreateUserGroupRequest) ([]byte, error) {
 	body := []interface{}{
 		map[string]interface{}{
 			"id":          req.Id,

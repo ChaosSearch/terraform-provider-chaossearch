@@ -160,7 +160,12 @@ func createUserGroup() (control bool, method string, url string, reader io.Reade
 ]`)
 
 }
+func putUserGroup() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
+	return true, "PUT", url, strings.NewReader(`[{"id":"2cd19956-5299-4c3f-b8b7-0eba57970f01"
+,"name":"dinesh-view-1","permissions":[{"Version":"2.0","Effect":"Allow","Actions":["*"],"Resources":["*"],"Condition":null}]}]`)
 
+}
 func main() {
 	//control, method, url, payload := createView()
 	//control, method, url, payload := createObjectGroup()
@@ -169,13 +174,14 @@ func main() {
 	//control, method, url, payload := deleteSubAccountByUser()
 
 	//control, method, url, payload := createUserGroup()
+	control, method, url, payload := putUserGroup()
 	//control, method, url, payload := retrieveUserGroups()
 	//control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := deleteSubAccountByUser()
 	//control, method, url, payload := deleteUserGroupByGroupId()
 	//control, method, url, payload := importBucket()
-	control, method, url, payload := retrieveUsers()
+	//control, method, url, payload := retrieveUsers()
 
 	req, err := http.NewRequest(method, url, payload)
 

@@ -26,33 +26,31 @@ provider "chaossearch" {
 }
 resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
   user_groups {
-    id   = "1002215"
-    name = "dinesh-view-5"
+    id   = "45a48414-a502-43f6-9d38-02e3fc751523"
+    name = "chathura-view-update12"
     permissions {
-      permission {
-
         effect    = "Allow"
-        action    = "2.*"
-        resources = "*"
-        version   = "1.3"
-      }
+        action    = ["2*"]
+        resources = ["*"]
+        version   = "2"
+
     }
   }
 }
 
-data "chaossearch_retrieve_user_group" "my-user-group" {
-  user_groups {
-    id = "9436aed9-e994-4dba-a25b-7d950d7f3623"
-  }
-}
-##get user group by id
 #data "chaossearch_retrieve_user_group" "my-user-group" {
-#  id="9436aed9-e994-4dba-a25b-7d950d7f3623"
+#  user_groups {
+#    id = "38afab15-76e9-40ee-bdff-18fcd5480437"
+#  }
 #}
-##
-output "object_group_retrieve_user_group" {
-  value = data.chaossearch_retrieve_user_group.my-user-group
-}
+#get user group by id
+#data "chaossearch_retrieve_user_group" "my-user-group" {
+#  id="38afab15-76e9-40ee-bdff-18fcd5480437"
+#}
+#
+#output "object_group_retrieve_user_group" {
+#  value = data.chaossearch_retrieve_user_group.my-user-group
+#}
 
 
 
