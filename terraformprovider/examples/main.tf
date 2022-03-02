@@ -24,19 +24,19 @@ provider "chaossearch" {
     password  = var.admin_password
   }
 }
-#resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
-#  user_groups {
-#    id   = "98928445-865c-4606-a1cc-c2395a2fad13"
-#    name = "chathura-test-0003"
-#    permissions {
-#      effect    = "Allow"
-#      actions   = ["*1444"]
-#      resources = ["*1444"]
-#      version   = "1444"
-#
-#    }
-#  }
-#}
+resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
+  user_groups {
+    id   = "46b477fa-1bf8-49c8-8130-3ebe9e694421"
+    name = "chathura-delete-0005"
+    permissions {
+      effect    = "Allow"
+      actions   = ["*1"]
+      resources = ["*1"]
+      version   = "11"
+
+    }
+  }
+}
 
 #data "chaossearch_retrieve_user_group" "my-user-group" {
 #  user_groups {
