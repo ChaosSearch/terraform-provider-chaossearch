@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/fatih/structs v1.1.0
 	github.com/hashicorp/terraform-plugin-docs v0.5.1
+	github.com/hashicorp/terraform-plugin-framework v0.5.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
 	github.com/sirupsen/logrus v1.8.1
 )
@@ -69,7 +69,7 @@ require (
 	github.com/hashicorp/terraform-registry-address v0.0.0-20210412075316-9b2996cce896 // indirect
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
-	github.com/mattn/go-colorable v0.1.11
+	github.com/mattn/go-colorable v0.1.11 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect

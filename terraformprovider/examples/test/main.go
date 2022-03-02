@@ -62,6 +62,43 @@ func createObjectGroup() (control bool, method string, url string, reader io.Rea
 
 }
 
+func putObjectGroup() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/createObjectGroup"
+	return false, "PUT", url, strings.NewReader(`{
+    "bucket": "dinesh-og-2143",
+    "source": "chaos-test-data-aps1",
+    "format": {
+        "_type": "CSV",
+        "columnDelimiter": ",",
+        "rowDelimiter": "\n",
+        "headerRow": true
+    },
+    "interval": {
+        "mode": 0,
+        "column": 0
+    },
+    "indexRetention": {
+        "overall": -1,
+        "forPartition": []
+    },
+    "filter": [
+        {
+            "field": "key",
+            "prefix": "bluebike"
+        },
+        {
+            "field": "key",
+            "regex": ".*"
+        }
+    ],
+    "options": {
+        "ignoreIrregular": true
+    },
+    "realtime": false
+}`)
+
+}
+
 func createView() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/createView"
 	return false, "POST", url, strings.NewReader(`{
@@ -160,7 +197,12 @@ func createUserGroup() (control bool, method string, url string, reader io.Reade
 ]`)
 
 }
+func putUserGroup() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
+	return true, "PUT", url, strings.NewReader(`[{"id":"12bdf713-f019-42c0-9185-fb1b16b001cf"
+,"name":"dinesh-view-1","permissions":[{"Version":"2.0","Effect":"Allow","Actions":["*"],"Resources":["*"],"Condition":null}]}]`)
 
+}
 func main() {
 	//control, method, url, payload := createView()
 	//control, method, url, payload := createObjectGroup()
@@ -169,13 +211,14 @@ func main() {
 	//control, method, url, payload := deleteSubAccountByUser()
 
 	//control, method, url, payload := createUserGroup()
+	control, method, url, payload := putUserGroup()
 	//control, method, url, payload := retrieveUserGroups()
 	//control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := deleteSubAccountByUser()
 	//control, method, url, payload := deleteUserGroupByGroupId()
 	//control, method, url, payload := importBucket()
-	control, method, url, payload := retrieveUsers()
+	//control, method, url, payload := retrieveUsers()
 
 	req, err := http.NewRequest(method, url, payload)
 

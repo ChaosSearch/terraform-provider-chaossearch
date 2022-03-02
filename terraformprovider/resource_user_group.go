@@ -30,131 +30,120 @@ func resourceUserGroup() *schema.Resource {
 							Required: false,
 							ForceNew: false,
 							Optional: true,
+							Computed: true,
 						},
 						"name": {
 							Type:     schema.TypeString,
 							Required: false,
 							ForceNew: false,
 							Optional: true,
-							Computed: true,
 						},
 
 						"permissions": {
 							Type:     schema.TypeSet,
-							Optional: false,
-							Required: true,
+							Optional: true,
+							Required: false,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"permission": {
-										Type: schema.TypeSet,
-										//Required: true,
+									"actions": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+										Optional: true,
+									},
+									"effect": {
+										Type:     schema.TypeString,
+										Required: false,
+										ForceNew: false,
+										Optional: true,
+										//Computed: true,
+									},
+									"resources": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+										Optional: true,
+									},
+									"version": {
+										Type:     schema.TypeString,
+										Required: false,
+										ForceNew: false,
+										Optional: true,
+										//Computed: true,
+									},
+									"conditions": {
+										Type:     schema.TypeSet,
 										Optional: true,
 										ForceNew: false,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"effect": {
-													Type:     schema.TypeString,
-													Required: false,
-													ForceNew: false,
-													Optional: true,
-													Computed: true,
-												},
-												"action": {
-													Type:     schema.TypeString,
-													Required: false,
-													ForceNew: false,
-													Optional: true,
-													Computed: true,
-												},
-												"resources": {
-													Type:     schema.TypeString,
-													Required: false,
-													ForceNew: false,
-													Optional: true,
-													Computed: true,
-												},
-												"version": {
-													Type:     schema.TypeString,
-													Required: false,
-													ForceNew: false,
-													Optional: true,
-													Computed: true,
-												},
-												"conditions": {
+												"condition": {
 													Type:     schema.TypeSet,
 													Optional: true,
-													ForceNew: false,
+													Required: false,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"condition": {
+															"starts_with": {
 																Type:     schema.TypeSet,
-																Optional: false,
-																Required: true,
+																Optional: true,
+																ForceNew: false,
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
-																		"starts_with": {
-																			Type:     schema.TypeSet,
-																			Optional: true,
+																		"chaos_document_attributes_title": {
+																			Type:     schema.TypeString,
+																			Required: false,
 																			ForceNew: false,
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"chaos_document_attributes_title": {
-																						Type:     schema.TypeString,
-																						Required: false,
-																						ForceNew: false,
-																						Optional: true,
-																						Computed: true,
-																					},
-																				},
-																			},
+																			Optional: true,
 																		},
-																		"equals": {
-																			Type:     schema.TypeSet,
-																			Optional: true,
+																	},
+																},
+															},
+															"equals": {
+																Type:     schema.TypeSet,
+																Optional: true,
+																ForceNew: false,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"chaos_document_attributes_title": {
+																			Type:     schema.TypeString,
+																			Required: false,
 																			ForceNew: false,
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"chaos_document_attributes_title": {
-																						Type:     schema.TypeString,
-																						Required: false,
-																						ForceNew: false,
-																						Optional: true,
-																						Computed: true,
-																					},
-																				},
-																			},
+																			Optional: true,
 																		},
-																		"not_equals": {
-																			Type:     schema.TypeSet,
-																			Optional: true,
+																	},
+																},
+															},
+															"not_equals": {
+																Type:     schema.TypeSet,
+																Optional: true,
+																ForceNew: false,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"chaos_document_attributes_title": {
+																			Type:     schema.TypeString,
+																			Required: false,
 																			ForceNew: false,
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"chaos_document_attributes_title": {
-																						Type:     schema.TypeString,
-																						Required: false,
-																						ForceNew: false,
-																						Optional: true,
-																						Computed: true,
-																					},
-																				},
-																			},
+																			Optional: true,
 																		},
-																		"like": {
-																			Type:     schema.TypeSet,
-																			Optional: true,
+																	},
+																},
+															},
+															"like": {
+																Type:     schema.TypeSet,
+																Optional: true,
+																ForceNew: false,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"chaos_document_attributes_title": {
+																			Type:     schema.TypeString,
+																			Required: false,
 																			ForceNew: false,
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"chaos_document_attributes_title": {
-																						Type:     schema.TypeString,
-																						Required: false,
-																						ForceNew: false,
-																						Optional: true,
-																						Computed: true,
-																					},
-																				},
-																			},
+																			Optional: true,
 																		},
 																	},
 																},
@@ -176,7 +165,6 @@ func resourceUserGroup() *schema.Resource {
 }
 
 func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Debug("creating groups")
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	log.Debug("token value-->", tokenValue)
@@ -184,14 +172,33 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 	var id, name string
 	var permissionList []client.Permission
 	var conditionList []client.Condition
-	var actionsList []string
-	var resourcesList []string
+	var actionsList []interface{}
+	var resourcesList []interface{}
 
+	id, name, permissionList = CreateUserGroupObject(data, id, name, conditionList, actionsList, resourcesList,
+		permissionList)
+
+	createUserGroupRequest := &client.CreateUserGroupRequest{
+		AuthToken:  tokenValue,
+		Id:         id,
+		Name:       name,
+		Permission: permissionList,
+	}
+	resp, err := c.CreateUserGroup(ctx, createUserGroupRequest)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	data.SetId(resp.Id)
+	return resourceGroupRead(ctx, data, meta)
+
+}
+
+func CreateUserGroupObject(data *schema.ResourceData, id string, name string, conditionList []client.Condition, actionsList []interface{}, resourcesList []interface{}, permissionList []client.Permission) (string, string, []client.Permission) {
 	if data.Get("user_groups").(*schema.Set).Len() > 0 {
 		userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
 		id = userGroupInterface["id"].(string)
 		name = userGroupInterface["name"].(string)
-		permissions := userGroupInterface["permissions"].(*schema.Set).List()[0].(map[string]interface{})["permission"].(*schema.Set).List()
+		permissions := userGroupInterface["permissions"].(*schema.Set).List()
 		if len(permissions) > 0 {
 			for permissionsIndex, permissionsElement := range permissions {
 
@@ -231,8 +238,8 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 
 				}
 
-				actionsList = append(actionsList, permissionMap["action"].(string))
-				resourcesList = append(resourcesList, permissionMap["resources"].(string))
+				actionsList = permissionMap["actions"].([]interface{})
+				resourcesList = permissionMap["resources"].([]interface{})
 				permissionList = append(
 					permissionList,
 					client.Permission{
@@ -249,26 +256,11 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 			log.Info("permission array", permissionList)
 		}
 	}
-
-	createUserGroupRequest := &client.CreateUserGroupRequest{
-		AuthToken:  tokenValue,
-		Id:         id,
-		Name:       name,
-		Permission: permissionList,
-	}
-
-	if err := c.CreateUserGroup(ctx, createUserGroupRequest); err != nil {
-		return diag.FromErr(err)
-	}
-
-	data.SetId(name)
-	return resourceGroupRead(ctx, data, meta)
-
+	return id, name, permissionList
 }
 
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
-	data.SetId(userGroupInterface["id"].(string))
+	data.SetId(data.Id())
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
@@ -276,6 +268,7 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 		AuthToken: tokenValue,
 		ID:        data.Id(),
 	}
+	log.Debug("resourceGroupRead...")
 	resp, err := c.ReadUserGroup(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
@@ -283,6 +276,16 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	if resp == nil {
 		return diag.Errorf("Couldn't find User Group: %s", err)
 	}
+
+	userGroupContent := CreateUserGroupResponse(resp)
+	if err := data.Set("user_groups", userGroupContent); err != nil {
+		return diag.FromErr(err)
+	}
+	log.Debug("resp.Id-->", resp.Id)
+	return diags
+}
+
+func CreateUserGroupResponse(resp *client.Group) []map[string]interface{} {
 	userGroupContent := make([]map[string]interface{}, 1)
 	permissionContent := make(map[string]interface{})
 	result := make([]map[string]interface{}, 1)
@@ -302,24 +305,43 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	userGroupContentMap["name"] = resp.Name
 	result[0] = userGroupContentMap
 	userGroupContent = result
-	if err := data.Set("user_groups", userGroupContent); err != nil {
-		return diag.FromErr(err)
-	}
-	return diags
+	return userGroupContent
 }
 
 func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Debug("updating groups")
-	// c := meta.(*ProviderMeta).Client
+	log.Debug("creating groups")
+	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
-	log.Warn("token value-->", tokenValue)
-	//TODO to be developed
+	log.Debug("token value-->", tokenValue)
+	var id, name string
+	var permissionList []client.Permission
+	var conditionList []client.Condition
+	var actionsList []interface{}
+	var resourcesList []interface{}
+
+	id, name, permissionList = CreateUserGroupObject(data, id, name, conditionList, actionsList, resourcesList,
+		permissionList)
+
+	createUserGroupRequest := &client.CreateUserGroupRequest{
+		AuthToken:  tokenValue,
+		Id:         id,
+		Name:       name,
+		Permission: permissionList,
+	}
+
+	resp, err := c.UpdateUserGroup(ctx, createUserGroupRequest)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	data.SetId(resp.Id)
 	return nil
 }
 
 func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Debug("deleting groups")
 	// c := meta.(*ProviderMeta).Client
+	deleteId := data.Id()
+	log.Debug("deleteId-->", deleteId)
 	tokenValue := meta.(*ProviderMeta).token
 	log.Warn("token value-->", tokenValue)
 	//TODO to be developed

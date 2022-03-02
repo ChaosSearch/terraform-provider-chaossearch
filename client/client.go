@@ -19,7 +19,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	log "github.com/sirupsen/logrus"
-	// v2 "github.com/aws/aws-sdk-go/private/signer/v2"
 )
 
 type CSClient struct {
@@ -115,7 +114,8 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	req.Header.Add("x-amz-security-token", tokenValue)
 	req.Header.Add("X-Amz-Date", dateTime)
 
-	log.Debug("headers-->", req.Header)
+	log.Debug("headers -->", req.Header)
+	log.Debug("req.URL.Path -->", req.URL.Path)
 
 	msgLines := []string{
 		req.Method, "",
