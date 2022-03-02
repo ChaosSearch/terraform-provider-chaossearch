@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"cs-tf-provider/client"
-	"fmt"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	log "github.com/sirupsen/logrus"
@@ -184,9 +181,6 @@ func resourceUserGroup() *schema.Resource {
 }
 
 func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var resp1 tfsdk.CreateResourceResponse
-	Create(ctx, &resp1)
-	log.Debug("creating groups")
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	log.Debug("token value-->", tokenValue)
@@ -210,10 +204,8 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Debug("resp.Id 11 -->", resp.Id)
 	data.SetId(resp.Id)
 	return resourceGroupRead(ctx, data, meta)
-	//return nil
 
 }
 
@@ -222,7 +214,6 @@ func CreateUserGroupObject(data *schema.ResourceData, id string, name string, co
 		userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
 		id = userGroupInterface["id"].(string)
 		name = userGroupInterface["name"].(string)
-		//permissions := userGroupInterface["permissions"].(*schema.Set).List()[0].(map[string]interface{})["permission"].(*schema.Set).List()
 		permissions := userGroupInterface["permissions"].(*schema.Set).List()
 		if len(permissions) > 0 {
 			for permissionsIndex, permissionsElement := range permissions {
@@ -285,8 +276,6 @@ func CreateUserGroupObject(data *schema.ResourceData, id string, name string, co
 }
 
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	//userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
-
 	data.SetId(data.Id())
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).CSClient
@@ -298,12 +287,10 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	log.Debug("resourceGroupRead...")
 	resp, err := c.ReadUserGroup(ctx, req)
 	if err != nil {
-		fmt.Errorf("error re ---------", err)
-		//return diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 	if resp == nil {
-		fmt.Errorf("resp er=====")
-		//return diag.Errorf("Couldn't find User Group: %s", err)
+		return diag.Errorf("Couldn't find User Group: %s", err)
 	}
 
 	userGroupContent := CreateUserGroupResponse(resp)
@@ -311,7 +298,6 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 		return diag.FromErr(err)
 	}
 	log.Debug("resp.Id-->", resp.Id)
-	//data.SetId(resp.Id)
 	return diags
 }
 
@@ -344,7 +330,6 @@ func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta in
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	log.Debug("token value-->", tokenValue)
-
 	var id, name string
 	var permissionList []client.Permission
 	var conditionList []client.Condition
@@ -365,7 +350,6 @@ func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta in
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	log.Info("sdsdsds111111d====>", resp.Id)
 	data.SetId(resp.Id)
 	return nil
 }
@@ -379,28 +363,4 @@ func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta in
 	log.Warn("token value-->", tokenValue)
 	//TODO to be developed
 	return nil
-}
-
-type resourceData struct {
-	Name       types.String `tfsdk:"name"`
-	Age        types.Number `tfsdk:"age"`
-	Registered types.Bool   `tfsdk:"registered"`
-	Pets       types.List   `tfsdk:"pets"`
-	Tags       types.Map    `tfsdk:"tags"`
-	Address    types.Object `tfsdk:"address"`
-}
-
-func Create(ctx context.Context,
-	resp *tfsdk.CreateResourceResponse) {
-	var newState resourceData
-	// update newState by modifying each property as usual for Go values
-	newState.Name.Value = "J. Doe"
-
-	// persist the values to state
-	diags := resp.State.Set(ctx, &newState)
-	resp.Diagnostics.Append(diags...)
-	log.Info("sssssssss=>", diags)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }

@@ -24,33 +24,16 @@ provider "chaossearch" {
   }
 
 }
-#resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
-#  user_groups {
-#    id   = "98928445-865c-4606-a1cc-c2395a2fad13"
-#    name = "chathura-test-0003"
-#    permissions {
-#      effect    = "Allow"
-#      actions   = ["*1444"]
-#      resources = ["*1444"]
-#      version   = "1444"
-#
-#    }
-#  }
-#}
+resource "chaossearch_user_group" "chaossearch_user_group_update_test" {
+  user_groups {
+    id   = "4f20c1ac-538b-48ce-aa6e-1976a066551a"
+    name = "update-test"
+    permissions {
+      effect    = "Allow"
+      actions   = ["*."]
+      resources = ["*."]
+      version   = "1"
 
-#data "chaossearch_retrieve_user_group" "my-user-group" {
-#  user_groups {
-#    id = "98928445-865c-4606-a1cc-c2395a2fad13"
-#  }
-#}
-#get user group by id
-#data "chaossearch_retrieve_user_group" "my-user-group" {
-#  id="38afab15-76e9-40ee-bdff-18fcd5480437"
-#}
-#
-#output "object_group_retrieve_user_group" {
-#  value = data.chaossearch_retrieve_user_group.my-user-group
-#}
-
-
-
+    }
+  }
+}
