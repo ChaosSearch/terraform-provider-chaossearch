@@ -16,8 +16,8 @@ find * -prune -type d | while IFS= read -r d; do
 
     terraform init
     echo "-------------------------------Start Execution of $file -------------------------------";
-    terraform apply -auto-approve
-    terraform destroy -auto-approve
+    terraform apply -auto-approve -var-file ../../terraform-dev.tfvars
+    terraform destroy -auto-approve -var-file ../../terraform-dev.tfvars
 
 #    echo "-------------------------------End Execution of $file   -------------------------------";
   done
