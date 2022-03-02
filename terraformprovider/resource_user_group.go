@@ -37,7 +37,6 @@ func resourceUserGroup() *schema.Resource {
 							Required: false,
 							ForceNew: false,
 							Optional: true,
-							//Computed: true,
 						},
 
 						"permissions": {
@@ -47,14 +46,6 @@ func resourceUserGroup() *schema.Resource {
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									//"permission": {
-									//	Type: schema.TypeSet,
-									//	//Required: true,
-									//	Optional: true,
-									//	ForceNew: false,
-									//	Elem: &schema.Resource{
-									//		Schema: map[string]*schema.Schema{
-
 									"actions": {
 										Type:     schema.TypeList,
 										Computed: true,
@@ -108,7 +99,6 @@ func resourceUserGroup() *schema.Resource {
 																			Required: false,
 																			ForceNew: false,
 																			Optional: true,
-																			//Computed: true,
 																		},
 																	},
 																},
@@ -124,7 +114,6 @@ func resourceUserGroup() *schema.Resource {
 																			Required: false,
 																			ForceNew: false,
 																			Optional: true,
-																			//Computed: true,
 																		},
 																	},
 																},
@@ -140,7 +129,6 @@ func resourceUserGroup() *schema.Resource {
 																			Required: false,
 																			ForceNew: false,
 																			Optional: true,
-																			//Computed: true,
 																		},
 																	},
 																},
@@ -156,7 +144,6 @@ func resourceUserGroup() *schema.Resource {
 																			Required: false,
 																			ForceNew: false,
 																			Optional: true,
-																			//Computed: true,
 																		},
 																	},
 																},
@@ -167,9 +154,6 @@ func resourceUserGroup() *schema.Resource {
 											},
 										},
 									},
-									//},
-									//},
-									//},
 								},
 							},
 						},
@@ -315,7 +299,6 @@ func CreateUserGroupResponse(resp *client.Group) []map[string]interface{} {
 			permissionContent["version"] = resp.Permissions[i].Version
 			permissions[i] = permissionContent
 		}
-		log.Debug("seting to permissions....")
 		userGroupContentMap["permissions"] = permissions
 	}
 	userGroupContentMap["id"] = resp.Id

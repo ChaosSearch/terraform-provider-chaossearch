@@ -19,7 +19,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	log "github.com/sirupsen/logrus"
-	// v2 "github.com/aws/aws-sdk-go/private/signer/v2"
 )
 
 type CSClient struct {
