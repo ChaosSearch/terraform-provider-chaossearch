@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
+	"cs-tf-provider/client"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceUserGroup() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: resourceGroupRead,
+		ReadContext: dataSourceUserGroupRead,
 		Schema: map[string]*schema.Schema{
 
 			"user_groups": {
@@ -59,4 +62,28 @@ func dataSourceUserGroup() *schema.Resource {
 			},
 		},
 	}
+}
+
+func dataSourceUserGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
+	data.SetId(userGroupInterface["id"].(string))
+	diags := diag.Diagnostics{}
+	c := meta.(*ProviderMeta).CSClient
+	tokenValue := meta.(*ProviderMeta).token
+	req := &client.ReadUserGroupRequest{
+		AuthToken: tokenValue,
+		ID:        data.Id(),
+	}
+	resp, err := c.ReadUserGroup(ctx, req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if resp == nil {
+		return diag.Errorf("Couldn't find User Group: %s", err)
+	}
+	userGroupContent := CreateUserGroupResponse(resp)
+	if err := data.Set("user_groups", userGroupContent); err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
 }

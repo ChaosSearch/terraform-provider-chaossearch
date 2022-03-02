@@ -36,9 +36,10 @@ func (csClient *CSClient) ReadUserGroupById(ctx context.Context, req *ReadUserGr
 			_ = fmt.Errorf("failed to Close response body  %s", err)
 		}
 	}(httpResp.Body)
+
 	var readUserGroupResp Group
 	if err := csClient.unmarshalJSONBody(httpResp.Body, &readUserGroupResp); err != nil {
-		return fmt.Errorf("failed to unmarshal JSON response body sdjhskdhskdskdskdksdkskjd: %s", err)
+		return fmt.Errorf("failed to unmarshal JSON response body : %s", err)
 	}
 	resp.Id = readUserGroupResp.Id
 	resp.Name = readUserGroupResp.Name

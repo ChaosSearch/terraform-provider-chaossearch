@@ -26,13 +26,13 @@ provider "chaossearch" {
 }
 resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
   user_groups {
-    id   = "45a48414-a502-43f6-9d38-02e3fc751523"
-    name = "chathura-view-update12"
+    id   = "9b41fb1c-c476-437b-98a5-92387d659263"
+    name = "chathura-user-1f1"
     permissions {
         effect    = "Allow"
-        action    = ["2*"]
-        resources = ["*"]
-        version   = "2"
+        actions    = ["*112"]
+        resources = ["*1"]
+        version   = "1"
 
     }
   }
@@ -40,7 +40,7 @@ resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
 
 #data "chaossearch_retrieve_user_group" "my-user-group" {
 #  user_groups {
-#    id = "38afab15-76e9-40ee-bdff-18fcd5480437"
+#    id = "a90a200d-a2dc-49b3-9ff0-53aee739dca8"
 #  }
 #}
 #get user group by id

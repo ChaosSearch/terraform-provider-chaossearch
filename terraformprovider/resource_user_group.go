@@ -55,20 +55,21 @@ func resourceUserGroup() *schema.Resource {
 									//	ForceNew: false,
 									//	Elem: &schema.Resource{
 									//		Schema: map[string]*schema.Schema{
-									"effect": {
-										Type:     schema.TypeString,
-										Required: false,
-										ForceNew: false,
-										Optional: true,
-										//Computed: true,
-									},
-									"action": {
+
+									"actions": {
 										Type:     schema.TypeList,
 										Computed: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
 										Optional: true,
+									},
+									"effect": {
+										Type:     schema.TypeString,
+										Required: false,
+										ForceNew: false,
+										Optional: true,
+										//Computed: true,
 									},
 									"resources": {
 										Type:     schema.TypeList,
@@ -194,6 +195,26 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 	var actionsList []interface{}
 	var resourcesList []interface{}
 
+	id, name, permissionList = CreateUserGroupObject(data, id, name, conditionList, actionsList, resourcesList,
+		permissionList)
+
+	createUserGroupRequest := &client.CreateUserGroupRequest{
+		AuthToken:  tokenValue,
+		Id:         id,
+		Name:       name,
+		Permission: permissionList,
+	}
+	resp, err := c.CreateUserGroup(ctx, createUserGroupRequest)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	data.SetId(resp.Id)
+	//return resourceGroupRead(ctx, data, meta)
+	return nil
+
+}
+
+func CreateUserGroupObject(data *schema.ResourceData, id string, name string, conditionList []client.Condition, actionsList []interface{}, resourcesList []interface{}, permissionList []client.Permission) (string, string, []client.Permission) {
 	if data.Get("user_groups").(*schema.Set).Len() > 0 {
 		userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
 		id = userGroupInterface["id"].(string)
@@ -239,7 +260,7 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 
 				}
 
-				actionsList = permissionMap["action"].([]interface{})
+				actionsList = permissionMap["actions"].([]interface{})
 				resourcesList = permissionMap["resources"].([]interface{})
 				permissionList = append(
 					permissionList,
@@ -257,34 +278,12 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 			log.Info("permission array", permissionList)
 		}
 	}
-
-	createUserGroupRequest := &client.CreateUserGroupRequest{
-		AuthToken:  tokenValue,
-		Id:         id,
-		Name:       name,
-		Permission: permissionList,
-	}
-	//if resp,err := c.CreateUserGroup(ctx, createUserGroupRequest); err != nil {
-	//return diag.FromErr(err)
-	//}
-
-	resp, err := c.CreateUserGroup(ctx, createUserGroupRequest)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	log.Info("sdsdsds111111d====>", resp.Id)
-	data.SetId(resp.Id)
-	//return resourceGroupRead(ctx, data, meta)
-	return nil
-
+	return id, name, permissionList
 }
 
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	//TODO need to check
 	userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
-	log.Info("id==========>", userGroupInterface["id"])
 	data.SetId(userGroupInterface["id"].(string))
-	log.Info("resourceGroupRead called.....")
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
@@ -299,6 +298,15 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	if resp == nil {
 		return diag.Errorf("Couldn't find User Group: %s", err)
 	}
+
+	userGroupContent := CreateUserGroupResponse(resp)
+	if err := data.Set("user_groups", userGroupContent); err != nil {
+		return diag.FromErr(err)
+	}
+	return diags
+}
+
+func CreateUserGroupResponse(resp *client.Group) []map[string]interface{} {
 	userGroupContent := make([]map[string]interface{}, 1)
 	permissionContent := make(map[string]interface{})
 	result := make([]map[string]interface{}, 1)
@@ -318,10 +326,7 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	userGroupContentMap["name"] = resp.Name
 	result[0] = userGroupContentMap
 	userGroupContent = result
-	if err := data.Set("user_groups", userGroupContent); err != nil {
-		return diag.FromErr(err)
-	}
-	return diags
+	return userGroupContent
 }
 
 func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -336,69 +341,8 @@ func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta in
 	var actionsList []interface{}
 	var resourcesList []interface{}
 
-	if data.Get("user_groups").(*schema.Set).Len() > 0 {
-		userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
-		id = userGroupInterface["id"].(string)
-		name = userGroupInterface["name"].(string)
-		//permissions := userGroupInterface["permissions"].(*schema.Set).List()[0].(map[string]interface{})["permission"].(*schema.Set).List()
-		permissions := userGroupInterface["permissions"].(*schema.Set).List()
-		if len(permissions) > 0 {
-			for permissionsIndex, permissionsElement := range permissions {
-
-				permissionMap := permissionsElement.(map[string]interface{})
-				var ConditionGroup client.ConditionGroup
-				if len(permissionMap["conditions"].(*schema.Set).List()) > 0 {
-					conditions := permissionMap["conditions"].(*schema.Set).List()[0].(map[string]interface{})["condition"].(*schema.Set).List()
-					conditionMap := conditions[0].(map[string]interface{})
-					equal := conditionMap["equals"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
-					startsWith := conditionMap["starts_with"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
-					notEquals := conditionMap["not_equals"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
-					like := conditionMap["like"].(*schema.Set).List()[0].(map[string]interface{})["chaos_document_attributes_title"].(string)
-
-					equalObject := client.Equals{
-						ChaosDocumentAttributesTitle: equal,
-					}
-					likeObject := client.Like{
-						ChaosDocumentAttributesTitle: like,
-					}
-					notEqualsObject := client.NotEquals{
-						ChaosDocumentAttributesTitle: notEquals,
-					}
-					startsWithObject := client.StartsWith{
-						ChaosDocumentAttributesTitle: startsWith,
-					}
-					conditionList = append(
-						conditionList,
-						client.Condition{
-							Equals:     equalObject,
-							StartsWith: startsWithObject,
-							NotEquals:  notEqualsObject,
-							Like:       likeObject,
-						})
-					ConditionGroup = client.ConditionGroup{
-						Condition: conditionList,
-					}
-
-				}
-
-				actionsList = permissionMap["action"].([]interface{})
-				resourcesList = permissionMap["resources"].([]interface{})
-				permissionList = append(
-					permissionList,
-					client.Permission{
-						Effect:         permissionMap["effect"].(string),
-						Actions:        actionsList,
-						Resources:      resourcesList,
-						Version:        permissionMap["version"].(string),
-						ConditionGroup: ConditionGroup,
-					})
-				log.Debug(permissionsIndex, "index")
-				//remove element from condition list after append
-				conditionList = nil
-			}
-			log.Info("permission array", permissionList)
-		}
-	}
+	id, name, permissionList = CreateUserGroupObject(data, id, name, conditionList, actionsList, resourcesList,
+		permissionList)
 
 	createUserGroupRequest := &client.CreateUserGroupRequest{
 		AuthToken:  tokenValue,
