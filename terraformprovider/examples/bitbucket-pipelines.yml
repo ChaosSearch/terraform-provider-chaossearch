@@ -1,0 +1,10 @@
+pipelines:
+  branches:
+    master:
+      - step:
+          image: hashicorp/terraform:full
+          script:
+            - terraform init
+            - terraform plan
+            - terraform apply -auto-approve -var-file terraform-dev.tfvars
+            - terraform destroy -auto-approve -var-file terraform-dev.tfvars
