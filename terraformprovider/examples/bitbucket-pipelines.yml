@@ -1,6 +1,6 @@
 pipelines:
   branches:
-    master:
+    feature/CHAOS-6584-bitbucket-test-pipeline:
       - step:
           image: hashicorp/terraform:full
           script:
