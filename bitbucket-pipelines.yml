@@ -1,0 +1,23 @@
+image: chaossumo/tf-provider-pipeline-runner:2022-03-03
+
+clone:
+  depth: 1
+
+definitions:
+  services:
+    docker:
+      memory: 1024
+  steps:
+    - step: &DumpEnvironment
+        name: Dumps the container environment.
+        caches:
+          - pip
+        script:
+          - /bin/echo $PATH
+          - /usr/bin/env | sort
+          - terraform --version
+
+pipelines:
+  custom:
+    DumpContainerEnvironment:
+      - step: *DumpEnvironment
