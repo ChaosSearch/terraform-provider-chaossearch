@@ -1,0 +1,18 @@
+pipelines:
+  branches:
+    master:
+      - step:
+          image:
+            hashicorp/terraform:full
+          script:
+            - cd terraformprovider
+            - pwd
+            - apk add make
+            - make install
+            - echo Terraform provider install successful
+            - cd examples
+            - pwd
+            - terraform init -upgrade
+            - terraform plan
+            - terraform apply -auto-approve -var-file terraform-dev.tfvars
+            - echo main tf executed successful

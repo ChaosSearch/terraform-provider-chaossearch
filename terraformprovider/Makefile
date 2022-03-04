@@ -3,7 +3,7 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=chaossearch
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
-VERSION=0.1.3
+VERSION=0.1.4
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 
 
@@ -13,7 +13,7 @@ build:
 	go build -o ${BINARY}
 
 run: install
-	cd examples && rm -rf .terraform && terraform init && terraform apply
+	cd examples && rm -rf .terraform && terraform init && terraform apply -var-file ../examples/terraform-dev.tfvars
 
 release:
 	GOOS=darwin GOARCH=arm64 go build -o ./bin/${BINARY}_${VERSION}_${OS_ARCH}
