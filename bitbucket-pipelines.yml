@@ -1,0 +1,12 @@
+pipelines:
+  default:
+    - step:
+        image:
+          hashicorp/terraform:latest
+        script:
+          - apk add go
+          - apk add make
+          - cd terraformprovider
+          - make install
+          - cd examples/test
+          - ./testall.sh
