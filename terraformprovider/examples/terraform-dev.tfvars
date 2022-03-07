@@ -1,3 +1,6 @@
+//Note: Credentials are loaded from bitbucket environment variables. Uncomment the credentials When run the provider locally
+//Do not commit this file.
+
 //Admin User Credentials
 admin_user_name = "aeternum@chaossearch.com"
 admin_password  = "ffpossgjjefjefojwfpjwgpwijaofnaconaonouf3n129091e901ie01292309r8jfcnsijvnsfini1j91e09ur0932hjsaakji"
