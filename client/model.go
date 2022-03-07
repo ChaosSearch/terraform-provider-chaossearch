@@ -298,3 +298,8 @@ type ReadUserGroupRequest struct {
 	AuthToken string
 	ID        string
 }
+
+type DeleteUserGroupRequest struct {
+	AuthToken string
+	ID        string
+}

@@ -338,12 +338,16 @@ func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta in
 }
 
 func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Debug("deleting groups")
-	// c := meta.(*ProviderMeta).Client
-	deleteId := data.Id()
-	log.Debug("deleteId-->", deleteId)
+	c := meta.(*ProviderMeta).CSClient
+
 	tokenValue := meta.(*ProviderMeta).token
-	log.Warn("token value-->", tokenValue)
-	//TODO to be developed
+	deleteUserGroupRequest := &client.DeleteUserGroupRequest{
+		AuthToken: tokenValue,
+		ID:        data.Id(),
+	}
+	if err := c.DeleteUserGroup(ctx, deleteUserGroupRequest); err != nil {
+		return diag.FromErr(err)
+	}
+	data.SetId(data.Id())
 	return nil
 }

@@ -24,37 +24,18 @@ provider "chaossearch" {
     password  = var.admin_password
   }
 }
-resource "chaossearch_object_group" "my-object-group-test-3" {
-  bucket = "test-object-group-005"
-  source = "chaos-test-data-aps1"
-  format {
-    _type            = "CSV"
-    column_delimiter = ","
-    row_delimiter    = "\n"
-    header_row       = false
-  }
-  interval {
-    mode   = 0
-    column = 0
-  }
-  index_retention {
-    for_partition = []
-    overall       = 1
-  }
-  filter {
-    prefix_filter {
-      field  = "key"
-      prefix = "bluebike"
-    }
-    regex_filter {
-      field = "key"
-      regex = ".*"
+resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
+  user_groups {
+    id   = "46b477fa-1bf8-49c8-8130-3ebe9e694421"
+    name = "chathura-delete-0005"
+    permissions {
+      effect    = "Allow"
+      actions   = ["*1"]
+      resources = ["*1"]
+      version   = "11"
+
     }
   }
-  options {
-    ignore_irregular = true
-  }
-  realtime = true
 }
 
 #data "chaossearch_retrieve_user_group" "my-user-group" {
