@@ -14,7 +14,7 @@ func resourceView() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceViewCreate,
 		ReadContext:   resourceViewRead,
-		UpdateContext: resourceViewCreate,
+		UpdateContext: resourceViewUpdate,
 		DeleteContext: resourceViewDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -138,6 +138,34 @@ func resourceView() *schema.Resource {
 }
 
 func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+	filter, c, tokenValue, sourcesStrings, transforms := setViewRequest(data, meta)
+
+	createViewRequest := &client.CreateViewRequest{
+		AuthToken: tokenValue,
+
+		Bucket:          data.Get("bucket").(string),
+		Sources:         sourcesStrings,
+		IndexPattern:    data.Get("index_pattern").(string),
+		Overwrite:       data.Get("overwrite").(bool),
+		CaseInsensitive: data.Get("case_insensitive").(bool),
+		IndexRetention:  data.Get("index_retention").(int),
+		TimeFieldName:   data.Get("time_field_name").(string),
+		Transforms:      transforms,
+		FilterPredicate: filter,
+	}
+
+	if err := c.CreateView(ctx, createViewRequest); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(data.Get("bucket").(string))
+
+	return resourceViewRead(ctx, data, meta)
+
+}
+
+func setViewRequest(data *schema.ResourceData, meta interface{}) (*client.FilterPredicate, *client.CSClient, string, []interface{}, []interface{}) {
 	filterColumnSelectionInterface := data.Get("filter").(*schema.Set).List()[0].(map[string]interface{})
 	predicateColumnSelectionInterface := filterColumnSelectionInterface["predicate"].(*schema.Set).List()[0].(map[string]interface{})
 	predColumnSelectionInterface := predicateColumnSelectionInterface["pred"].(*schema.Set).List()[0].(map[string]interface{})
@@ -185,24 +213,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 	if transforms_ != nil {
 		transforms = transforms_.([]interface{})
 	}
-
-	createViewRequest := &client.CreateViewRequest{
-		AuthToken:       tokenValue,
-		Bucket:          data.Get("bucket").(string),
-		Sources:         sourcesStrings,
-		IndexPattern:    data.Get("index_pattern").(string),
-		Overwrite:       data.Get("overwrite").(bool),
-		CaseInsensitive: data.Get("case_insensitive").(bool),
-		IndexRetention:  data.Get("index_retention").(int),
-		TimeFieldName:   data.Get("time_field_name").(string),
-		Transforms:      transforms,
-		FilterPredicate: filter,
-	}
-	if err := c.CreateView(ctx, createViewRequest); err != nil {
-		return diag.FromErr(err)
-	}
-	data.SetId(data.Get("bucket").(string))
-	return resourceViewRead(ctx, data, meta)
+	return filter, c, tokenValue, sourcesStrings, transforms
 }
 
 func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -289,8 +300,29 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 }
 
 func resourceViewUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// TODO to be developed
-	return nil
+	filter, c, tokenValue, sourcesStrings, transforms := setViewRequest(data, meta)
+
+	createViewRequest := &client.CreateViewRequest{
+		AuthToken: tokenValue,
+
+		Bucket:          data.Get("bucket").(string),
+		Sources:         sourcesStrings,
+		IndexPattern:    data.Get("index_pattern").(string),
+		Overwrite:       true,
+		CaseInsensitive: data.Get("case_insensitive").(bool),
+		IndexRetention:  data.Get("index_retention").(int),
+		TimeFieldName:   data.Get("time_field_name").(string),
+		Transforms:      transforms,
+		FilterPredicate: filter,
+	}
+
+	if err := c.CreateView(ctx, createViewRequest); err != nil {
+		return diag.FromErr(err)
+	}
+
+	data.SetId(data.Get("bucket").(string))
+
+	return resourceViewRead(ctx, data, meta)
 }
 
 func resourceViewDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
