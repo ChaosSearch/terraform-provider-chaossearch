@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"cs-tf-provider/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
 )
@@ -36,7 +36,6 @@ func dataSourceViews() *schema.Resource {
 }
 
 func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Info("dataSourceObjectGroupsRead")
 	client := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 	clientResponse, err := client.ListBuckets(ctx, tokenValue)
@@ -44,13 +43,7 @@ func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	result := make([]map[string]interface{}, len(clientResponse.BucketsCollection.Buckets))
-	for i := 0; i < len(clientResponse.BucketsCollection.Buckets); i++ {
-		result[i] = map[string]interface{}{
-			"id":   clientResponse.BucketsCollection.Buckets[i].Name,
-			"name": clientResponse.BucketsCollection.Buckets[i].Name,
-		}
-	}
+	result := GetBucketData(clientResponse)
 	var diags diag.Diagnostics
 	objectGroups := result
 	if err := data.Set("object_groups", objectGroups); err != nil {
@@ -58,4 +51,15 @@ func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta in
 	}
 	data.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 	return diags
+}
+
+func GetBucketData(clientResponse *client.ListBucketsResponse) []map[string]interface{} {
+	result := make([]map[string]interface{}, len(clientResponse.BucketsCollection.Buckets))
+	for i := 0; i < len(clientResponse.BucketsCollection.Buckets); i++ {
+		result[i] = map[string]interface{}{
+			"name":          clientResponse.BucketsCollection.Buckets[i].Name,
+			"creation_date": clientResponse.BucketsCollection.Buckets[i].CreationDate,
+		}
+	}
+	return result
 }

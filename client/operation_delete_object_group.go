@@ -18,7 +18,7 @@ func (csClient *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObje
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	var sessionToken = req.AuthToken
+	sessionToken := req.AuthToken
 	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, nil)
 
 	if err != nil {
@@ -30,6 +30,5 @@ func (csClient *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObje
 			_ = fmt.Errorf("failed to Close response body  %s", err)
 		}
 	}(httpResp.Body)
-
 	return nil
 }

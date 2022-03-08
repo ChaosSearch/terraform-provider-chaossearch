@@ -32,7 +32,7 @@ resource "random_id" "id" {
 }
 
 resource "chaossearch_object_group" "my-object-group-test-3" {
-  bucket = "test-object-group-${random_id.id.hex}"
+  bucket = "test-object-group-1-${random_id.id.hex}"
   source = "chaos-test-data-aps1"
   format {
     _type            = "CSV"

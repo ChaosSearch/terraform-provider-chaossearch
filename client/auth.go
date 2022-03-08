@@ -3,14 +3,12 @@ package client
 import (
 	"bytes"
 	"context"
-	"io"
-
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"net/http"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (csClient *CSClient) Auth(ctx context.Context) (token string, err error) {
@@ -21,7 +19,7 @@ func (csClient *CSClient) Auth(ctx context.Context) (token string, err error) {
 
 	log.Warn("url-->", url)
 	log.Warn("username-->", login_.Username)
-	log.Warn("parentuserid-->", login_.ParentUserId)
+	log.Warn("parent user id-->", login_.ParentUserId)
 
 	bodyAsBytes, err := marshalLoginRequest(login_)
 	if err != nil {

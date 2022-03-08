@@ -40,7 +40,6 @@ func (csClient *CSClient) ImportBucket(ctx context.Context, req *ImportBucketReq
 			_ = fmt.Errorf("failed to Close response body  %s", err)
 		}
 	}(httpResp.Body)
-
 	return nil
 }
 

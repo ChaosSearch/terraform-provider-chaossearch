@@ -5,15 +5,11 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"io"
-
-	//log "github.com/sirupsen/logrus"
-
-	"encoding/json"
-	//log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -300,13 +296,8 @@ func signV2AndDo(control bool, tokenValue string, req *http.Request, bodyAsBytes
 	}
 
 	msg := strings.Join(msgLines, "\n")
-	//fmt.Println("msg---->", msg)
-
 	signature := generateSignature(secretAccessKey, msg)
-	//fmt.Println("signature---->", signature)
-
 	auth := "AWS " + accessKey + ":" + signature
-	//fmt.Println("auth---->", auth)
 
 	req.Header.Add("Authorization", auth)
 	req.Header.Add("x-amz-cs3-authorization", auth)
@@ -346,22 +337,16 @@ func signV2AndDo(control bool, tokenValue string, req *http.Request, bodyAsBytes
 
 const loginUrl = "https://ap-south-1-aeternum.chaossearch.io/user/login"
 
-//const userName = "service_user@chaossearch.com"
-//const password = "thisIsAnEx@mple1!"
-const parentUserId = "be4aeb53-21d5-4902-862c-9c9a17ad6675"
-const userName = "aeternum@chaossearch.com"
-const password = "ffpossgjjefjefojwfpjwgpwijaofnaconaonouf3n129091e901ie01292309r8jfcnsijvnsfini1j91e09ur0932hjsaakji"
+const userName = ""
+const password = ""
 
 func Auth() (token string, err error) {
 
 	method := "POST"
-	//fmt.Println("username--", userName)
-	//fmt.Println("parentuserid--", parentUserId)
 
 	login := Login{
 		Username: userName,
 		Password: password,
-		//ParentUserId: parentUserId,
 	}
 
 	bodyAsBytes, err := marshalLoginRequest(&login)
@@ -413,7 +398,6 @@ func marshalLoginRequest(req *Login) ([]byte, error) {
 	body := map[string]interface{}{
 		"Username": req.Username,
 		"Password": req.Password,
-		//"ParentUid": req.ParentUserId,
 	}
 
 	bodyAsBytes, err := json.Marshal(body)

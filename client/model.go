@@ -132,12 +132,6 @@ type ReadIndexingStateRequest struct {
 	ObjectGroupName string
 }
 
-type readBucketMetadataRequest struct {
-	AuthToken  string
-	BucketName string `json:"BucketName"`
-	Stats      bool   `json:"Stats"`
-}
-
 type IndexingState struct {
 	ObjectGroupName string
 	Active          bool
@@ -295,6 +289,11 @@ type Group struct {
 }
 
 type ReadUserGroupRequest struct {
+	AuthToken string
+	ID        string
+}
+
+type DeleteUserGroupRequest struct {
 	AuthToken string
 	ID        string
 }

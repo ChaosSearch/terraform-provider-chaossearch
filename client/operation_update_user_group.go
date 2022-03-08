@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 )
@@ -16,16 +15,11 @@ func (csClient *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGr
 	if err != nil {
 		return nil, err
 	}
-	log.Debug("method-->", method)
-	log.Debug("bodyAsBytes-->", bodyAsBytes)
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %s", err)
 	}
-	log.Debug(" adding headers...")
-	log.Warn("httpReq-->", httpReq)
 	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
-	log.Warn("httpResp-->", httpResp)
 	if err != nil {
 		return nil, fmt.Errorf("failed to %s to %s: %s", method, url, err)
 	}

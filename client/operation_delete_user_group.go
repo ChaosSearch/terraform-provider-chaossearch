@@ -8,12 +8,12 @@ import (
 	"net/url"
 )
 
-func (csClient *CSClient) DeleteView(ctx context.Context, req *DeleteViewRequest) error {
+func (csClient *CSClient) DeleteUserGroup(ctx context.Context, req *DeleteUserGroupRequest) error {
 	method := "DELETE"
-	safeViewName := url.PathEscape(req.Name)
-	deleteViewUrl := fmt.Sprintf("%s/V1/%s", csClient.config.URL, safeViewName)
+	deleteUserGroupId := url.PathEscape(req.ID)
+	deleteUserGroupUrl := fmt.Sprintf("%s/user/group/%s", csClient.config.URL, deleteUserGroupId)
 
-	httpReq, err := http.NewRequestWithContext(ctx, method, deleteViewUrl, nil)
+	httpReq, err := http.NewRequestWithContext(ctx, method, deleteUserGroupUrl, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
@@ -21,7 +21,7 @@ func (csClient *CSClient) DeleteView(ctx context.Context, req *DeleteViewRequest
 	sessionToken := req.AuthToken
 	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, nil)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", method, deleteViewUrl, err)
+		return fmt.Errorf("failed to %s to %s: %s", method, deleteUserGroupUrl, err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()

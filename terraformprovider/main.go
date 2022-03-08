@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-
 	plugin.Serve(&plugin.ServeOpts{
 		ProviderFunc: func() *schema.Provider {
 			return Provider()
@@ -20,10 +19,8 @@ func main() {
 func init() {
 	fileName, ok := os.LookupEnv("TF_LOG_PATH")
 	if ok {
-
 		f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 		Formatter := new(log.TextFormatter)
-
 		Formatter.TimestampFormat = "02-01-2006 15:04:05"
 		Formatter.FullTimestamp = true
 		log.SetFormatter(Formatter)
@@ -33,7 +30,6 @@ func init() {
 			log.SetOutput(f)
 		}
 		lvl, ok := os.LookupEnv("TF_LOG")
-
 		if !ok {
 			lvl = "warn"
 		}
@@ -44,5 +40,4 @@ func init() {
 		}
 		log.SetLevel(ll)
 	}
-
 }
