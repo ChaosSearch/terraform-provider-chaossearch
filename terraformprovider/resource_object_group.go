@@ -233,7 +233,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	var prefixFilterField string
 	var prefix string
 	var regexFilterField string
-	var regeX string
+	var regex string
 
 	if data.Get("filter").(*schema.Set).Len() > 0 {
 		filterColumnSelectionInterface := data.Get("filter").(*schema.Set).List()[0]
@@ -246,7 +246,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		prefix = prefixFilter["prefix"].(string)
 
 		regexFilterField = regexFilter["field"].(string)
-		regeX = regexFilter["regex"].(string)
+		regex = regexFilter["regex"].(string)
 	}
 
 	prefixFilter := client.PrefixFilter{
@@ -256,7 +256,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 
 	regexFilter := client.RegexFilter{
 		Field: regexFilterField,
-		Regex: regeX,
+		Regex: regex,
 	}
 	filter := &client.Filter{
 		PrefixFilter: &prefixFilter,

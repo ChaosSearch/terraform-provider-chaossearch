@@ -18,7 +18,7 @@ func (csClient *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObje
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	var sessionToken = req.AuthToken
+	sessionToken := req.AuthToken
 	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, nil)
 
 	if err != nil {

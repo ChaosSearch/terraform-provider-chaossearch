@@ -56,7 +56,6 @@ func resourceUserGroup() *schema.Resource {
 										Required: false,
 										ForceNew: false,
 										Optional: true,
-										//Computed: true,
 									},
 									"resources": {
 										Type:     schema.TypeList,
@@ -71,7 +70,6 @@ func resourceUserGroup() *schema.Resource {
 										Required: false,
 										ForceNew: false,
 										Optional: true,
-										//Computed: true,
 									},
 									"conditions": {
 										Type:     schema.TypeSet,

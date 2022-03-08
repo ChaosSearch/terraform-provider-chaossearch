@@ -23,7 +23,7 @@ func (csClient *CSClient) ReadUserGroupById(ctx context.Context, req *ReadUserGr
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	var sessionToken = req.AuthToken
+	sessionToken := req.AuthToken
 	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, nil)
 	if err != nil {
 		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
