@@ -14,13 +14,11 @@ find * -prune -type d | while IFS= read -r d; do
   rm terraform.txt
 
   for file in *.tf; do
-
     terraform init
     echo "-------------------------------Start Execution of $file -------------------------------";
-    terraform apply -auto-approve -var-file ../../terraform-dev.tfvars
+    terraform apply -auto-approve -var-file ../../terraform-dev.tfvars -compact-warnings
     terraform destroy -auto-approve -var-file ../../terraform-dev.tfvars
-
-#    echo "-------------------------------End Execution of $file   -------------------------------";
+    echo "-------------------------------End Execution of $file   -------------------------------";
   done
   cd ..
 done

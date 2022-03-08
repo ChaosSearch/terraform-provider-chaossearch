@@ -42,13 +42,7 @@ func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	result := make([]map[string]interface{}, len(clientResponse.BucketsCollection.Buckets))
-	for i := 0; i < len(clientResponse.BucketsCollection.Buckets); i++ {
-		result[i] = map[string]interface{}{
-			"id":   clientResponse.BucketsCollection.Buckets[i].Name,
-			"name": clientResponse.BucketsCollection.Buckets[i].Name,
-		}
-	}
+	result := GetBucketData(clientResponse)
 	var diags diag.Diagnostics
 	objectGroups := result
 	if err := data.Set("object_groups", objectGroups); err != nil {

@@ -3,14 +3,12 @@ package client
 import (
 	"bytes"
 	"context"
-	"io"
-
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"net/http"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (csClient *CSClient) Auth(ctx context.Context) (token string, err error) {

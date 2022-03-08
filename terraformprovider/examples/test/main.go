@@ -5,15 +5,11 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"io"
-
-	//log "github.com/sirupsen/logrus"
-
-	"encoding/json"
-	//log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -300,13 +296,8 @@ func signV2AndDo(control bool, tokenValue string, req *http.Request, bodyAsBytes
 	}
 
 	msg := strings.Join(msgLines, "\n")
-	//fmt.Println("msg---->", msg)
-
 	signature := generateSignature(secretAccessKey, msg)
-	//fmt.Println("signature---->", signature)
-
 	auth := "AWS " + accessKey + ":" + signature
-	//fmt.Println("auth---->", auth)
 
 	req.Header.Add("Authorization", auth)
 	req.Header.Add("x-amz-cs3-authorization", auth)

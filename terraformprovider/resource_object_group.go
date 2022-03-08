@@ -285,7 +285,6 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).CSClient
 

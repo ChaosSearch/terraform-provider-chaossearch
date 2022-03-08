@@ -42,7 +42,7 @@ resource "chaossearch_view" "chaossearch-update-view-test" {
       _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
       pred {
         _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
-        field = "cs_partition_key_0"
+        field = "cs_partition_key_0112"
         query = "*bluebike*"
         state {
           _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"

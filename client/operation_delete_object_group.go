@@ -30,6 +30,5 @@ func (csClient *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObje
 			_ = fmt.Errorf("failed to Close response body  %s", err)
 		}
 	}(httpResp.Body)
-
 	return nil
 }

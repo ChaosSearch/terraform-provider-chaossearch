@@ -26,8 +26,6 @@ func (csClient *CSClient) ReadObjectGroup(ctx context.Context, req *ReadObjectGr
 		return nil, err
 	}
 
-	log.Printf("ReadObjectGroupResponse: %+v", resp)
-
 	return &resp, nil
 }
 
@@ -163,7 +161,6 @@ func readJSONTagValue(tagging *s3.GetBucketTaggingOutput, key string, v interfac
 	if err != nil {
 		return nil
 	}
-
 	return json.Unmarshal([]byte(valueAsBytes), v)
 }
 
@@ -173,6 +170,5 @@ func findTagValue(tagging *s3.GetBucketTaggingOutput, key string) (string, error
 			return *tag.Value, nil
 		}
 	}
-
 	return "", fmt.Errorf("no tag found with key: %s", key)
 }

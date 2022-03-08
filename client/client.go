@@ -80,7 +80,6 @@ func (csClient *CSClient) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*h
 			"expected a 2xx status code, but got %d.\nMethod: %s\nURL: %s\nRequest body: %s\nResponse body: %s",
 			resp.StatusCode, req.Method, req.URL, bodyAsBytes, respAsBytes)
 	}
-
 	return resp, nil
 }
 
@@ -186,11 +185,9 @@ func isAdminApi(url string) bool {
 		strings.HasSuffix(url, "/user/manifest") ||
 		strings.HasSuffix(url, "/user/groups") ||
 		strings.Contains(url, "/user/group/")
-
 }
 
 func (csClient *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
-
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %s", err)

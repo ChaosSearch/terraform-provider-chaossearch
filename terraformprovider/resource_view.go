@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	// "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -199,7 +198,6 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) (*client.Filter
 	if !ok {
 		log.Error(" sources not available")
 	}
-	log.Debug("sources_-->", sources_)
 	var sourcesStrings []interface{}
 
 	if sources_ != nil {
@@ -219,8 +217,6 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) (*client.Filter
 }
 
 func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
-	//when call view_by_id view_id get from here
 	data.SetId(data.Get("bucket").(string))
 	diags := diag.Diagnostics{}
 	c := meta.(*ProviderMeta).CSClient
@@ -260,9 +256,7 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 		metadata[0] = metadataObjectMap
 		data.Set("metadata", metadata)
 	}
-
 	if resp.FilterPredicate != nil {
-
 		filter := make([]interface{}, 1)
 		predicate := make([]interface{}, 1)
 		pred := make([]interface{}, 1)
@@ -343,7 +337,6 @@ func resourceViewDelete(ctx context.Context, data *schema.ResourceData, meta int
 	if err := c.DeleteView(ctx, deleteViewRequest); err != nil {
 		return diag.FromErr(err)
 	}
-
 	data.SetId(data.Get("bucket").(string))
 	return nil
 }

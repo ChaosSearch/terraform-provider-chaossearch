@@ -5,8 +5,6 @@ import (
 	"cs-tf-provider/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func resourceBucket() *schema.Resource {
@@ -44,21 +42,16 @@ func resourceBucketDelete(ctx context.Context, data *schema.ResourceData, meta i
 	return nil
 }
 func resourceBucketImportOrHide(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Debug("Importing / hiding bucket")
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
-
 	importBucketRequest := &client.ImportBucketRequest{
 		AuthToken:  tokenValue,
 		Bucket:     data.Get("bucket").(string),
 		HideBucket: data.Get("hide_bucket").(bool),
 	}
-
 	if err := c.ImportBucket(ctx, importBucketRequest); err != nil {
 		return diag.FromErr(err)
 	}
-
 	data.SetId(data.Get("bucket").(string))
-
 	return nil
 }
