@@ -2,28 +2,20 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"io"
-
-	//"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
-	//"github.com/aws/aws-sdk-go/service/s3"
 )
 
 func (csClient *CSClient) ReadView(ctx context.Context, req *ReadViewRequest) (*ReadViewResponse, error) {
 	var resp ReadViewResponse
-
 	if err := csClient.readViewAttributesFromDatasetEndpoint(ctx, req, &resp); err != nil {
 		return nil, err
 	}
-
-	log.Printf("ReadViewResponse: %+v", resp)
-
 	return &resp, nil
 }
 
@@ -69,7 +61,6 @@ func (csClient *CSClient) readViewAttributesFromDatasetEndpoint(ctx context.Cont
 }
 
 func (csClient *CSClient) readViewAttributesFromBucketTagging(ctx context.Context, req *ReadViewRequest, resp *ReadViewResponse) error {
-	log.Printf("readViewAttributesFromBucketTagging")
 	session_, err := session.NewSession(&aws.Config{
 		Credentials:      credentials.NewStaticCredentials(csClient.config.AccessKeyID, csClient.config.SecretAccessKey, ""),
 		Endpoint:         aws.String(fmt.Sprintf("%s/V1", csClient.config.URL)),
@@ -93,7 +84,6 @@ func (csClient *CSClient) readViewAttributesFromBucketTagging(ctx context.Contex
 	if err := mapViewBucketTaggingToResponse(tagging, resp); err != nil {
 		return fmt.Errorf("failed to unmarshal XML response body: %s", err)
 	}
-
 	return nil
 }
 

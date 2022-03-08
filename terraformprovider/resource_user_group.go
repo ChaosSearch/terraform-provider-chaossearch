@@ -5,7 +5,6 @@ import (
 	"cs-tf-provider/client"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	log "github.com/sirupsen/logrus"
 )
 
 func resourceUserGroup() *schema.Resource {
@@ -24,7 +23,6 @@ func resourceUserGroup() *schema.Resource {
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-
 						"id": {
 							Type:     schema.TypeString,
 							Required: false,
@@ -38,7 +36,6 @@ func resourceUserGroup() *schema.Resource {
 							ForceNew: false,
 							Optional: true,
 						},
-
 						"permissions": {
 							Type:     schema.TypeSet,
 							Optional: true,
@@ -167,7 +164,6 @@ func resourceUserGroup() *schema.Resource {
 func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
-	log.Debug("token value-->", tokenValue)
 
 	var id, name string
 	var permissionList []client.Permission
@@ -190,7 +186,6 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 	}
 	data.SetId(resp.Id)
 	return resourceGroupRead(ctx, data, meta)
-
 }
 
 func CreateUserGroupObject(data *schema.ResourceData, id string, name string, conditionList []client.Condition, actionsList []interface{}, resourcesList []interface{}, permissionList []client.Permission) (string, string, []client.Permission) {
@@ -200,8 +195,7 @@ func CreateUserGroupObject(data *schema.ResourceData, id string, name string, co
 		name = userGroupInterface["name"].(string)
 		permissions := userGroupInterface["permissions"].(*schema.Set).List()
 		if len(permissions) > 0 {
-			for permissionsIndex, permissionsElement := range permissions {
-
+			for _, permissionsElement := range permissions {
 				permissionMap := permissionsElement.(map[string]interface{})
 				var ConditionGroup client.ConditionGroup
 				if len(permissionMap["conditions"].(*schema.Set).List()) > 0 {
@@ -235,7 +229,6 @@ func CreateUserGroupObject(data *schema.ResourceData, id string, name string, co
 					ConditionGroup = client.ConditionGroup{
 						Condition: conditionList,
 					}
-
 				}
 
 				actionsList = permissionMap["actions"].([]interface{})
@@ -249,11 +242,8 @@ func CreateUserGroupObject(data *schema.ResourceData, id string, name string, co
 						Version:        permissionMap["version"].(string),
 						ConditionGroup: ConditionGroup,
 					})
-				log.Debug(permissionsIndex, "index")
-				//remove element from condition list after append
 				conditionList = nil
 			}
-			log.Info("permission array", permissionList)
 		}
 	}
 	return id, name, permissionList
@@ -268,7 +258,6 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 		AuthToken: tokenValue,
 		ID:        data.Id(),
 	}
-	log.Debug("resourceGroupRead...")
 	resp, err := c.ReadUserGroup(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
@@ -281,7 +270,6 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	if err := data.Set("user_groups", userGroupContent); err != nil {
 		return diag.FromErr(err)
 	}
-	log.Debug("resp.Id-->", resp.Id)
 	return diags
 }
 
@@ -309,18 +297,15 @@ func CreateUserGroupResponse(resp *client.Group) []map[string]interface{} {
 }
 
 func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	log.Debug("creating groups")
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
-	log.Debug("token value-->", tokenValue)
 	var id, name string
 	var permissionList []client.Permission
 	var conditionList []client.Condition
 	var actionsList []interface{}
 	var resourcesList []interface{}
 
-	id, name, permissionList = CreateUserGroupObject(data, id, name, conditionList, actionsList, resourcesList,
-		permissionList)
+	id, name, permissionList = CreateUserGroupObject(data, id, name, conditionList, actionsList, resourcesList, permissionList)
 
 	createUserGroupRequest := &client.CreateUserGroupRequest{
 		AuthToken:  tokenValue,

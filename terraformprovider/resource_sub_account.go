@@ -83,7 +83,6 @@ func resourceSubAccountCreate(ctx context.Context, data *schema.ResourceData, me
 		Password:      data.Get("password").(string),
 		HoCon:         data.Get("hocon").([]interface{}),
 	}
-
 	if err := c.CreateSubAccount(ctx, createSubAccountRequest); err != nil {
 		return diag.FromErr(err)
 	}

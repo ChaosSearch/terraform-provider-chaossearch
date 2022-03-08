@@ -63,7 +63,7 @@ func Provider() *schema.Provider {
 				},
 				Required:    true,
 				ForceNew:    true,
-				Description: "List of fields in logs to include or exclude from parsing. If nothing is specified, all fields will be parsed",
+				Description: "",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -153,7 +153,6 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 			token:    tokenData.Token,
 		}
 		return providerMeta, nil
-
 	}
 
 }

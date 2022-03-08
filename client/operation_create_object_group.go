@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-
-	//log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -65,7 +63,6 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		},
 		"realtime": req.Realtime,
 	}
-
 	bodyAsBytes, err := json.Marshal(body)
 
 	if err != nil {

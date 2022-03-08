@@ -5,10 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (csClient *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error {
@@ -57,7 +56,6 @@ func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
 		"transforms":      req.Transforms,
 		"filter":          req.FilterPredicate,
 	}
-	log.Debug("body-->", body)
 
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
