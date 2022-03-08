@@ -24,19 +24,46 @@ provider "chaossearch" {
     password  = var.admin_password
   }
 }
-resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
-  user_groups {
-    id   = "46b477fa-1bf8-49c8-8130-3ebe9e694421"
-    name = "chathura-delete-0005"
-    permissions {
-      effect    = "Allow"
-      actions   = ["*1"]
-      resources = ["*1"]
-      version   = "11"
 
+resource "chaossearch_view" "chaossearch-update-view-test" {
+  bucket           = "test-view-check-2"
+  case_insensitive = false
+  index_pattern    = ".*"
+  index_retention  = -1
+  overwrite        = true
+  sources          = []
+  time_field_name  = "@timestamp"
+  transforms       = []
+  filter {
+    predicate {
+      _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
+      pred {
+        _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+        field = "cs_partition_key_0"
+        query = "*bluebike*"
+        state {
+          _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+        }
+      }
     }
   }
 }
+
+
+
+#resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
+#  user_groups {
+#    id   = "46b477fa-1bf8-49c8-8130-3ebe9e694421"
+#    name = "chathura-delete-0005"
+#    permissions {
+#      effect    = "Allow"
+#      actions   = ["*1"]
+#      resources = ["*1"]
+#      version   = "11"
+#
+#    }
+#  }
+#}
 
 #data "chaossearch_retrieve_user_group" "my-user-group" {
 #  user_groups {
@@ -53,4 +80,12 @@ resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
 #}
 
 
+#get view group by id
+#data "chaossearch_retrieve_object_group" "object-group" {
+#  bucket = "Chathura-og-jhjhjhj"
+#}
+#
+#output "object_group" {
+#  value = data.chaossearch_retrieve_object_group.object-group
+#}
 
