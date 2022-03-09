@@ -8,8 +8,11 @@ OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 
 default: install
 
-build:
-	go build -o ${BINARY}
+lint_provider:
+	golangci-lint run -c .golangci.yml
+
+build: lint_provider
+	 go build -o ${BINARY}
 
 run: install
 	cd examples && rm -rf .terraform && terraform init && terraform apply -var-file ../examples/terraform-dev.tfvars
