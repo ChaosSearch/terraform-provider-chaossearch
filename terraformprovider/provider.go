@@ -72,6 +72,7 @@ func Provider() *schema.Provider {
 			"chaossearch_sub_account":   resourceSubAccount(),
 			"chaossearch_user_group":    resourceUserGroup(),
 			"chaossearch_import_bucket": resourceBucket(),
+			"chaossearch_index_model":   resourceIndexModel(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
