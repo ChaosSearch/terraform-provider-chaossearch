@@ -4,6 +4,9 @@ terraform {
       version = "~> 0.1.1"
       source  = "chaossearch/chaossearch"
     }
+    aws = {
+      source = "hashicorp/aws"
+    }
   }
 }
 
@@ -18,15 +21,68 @@ provider "chaossearch" {
   }
 }
 
-resource "chaossearch_view" "chaossearch-create-view-test1" {
-  bucket           = "test_view_011"
+provider "aws" {
+  profile = var.profile
+  region  = var.region
+}
+
+resource "aws_s3_bucket" "bucket-creation" {
+  bucket = "my-tera-test-chaos1"
+}
+
+resource "aws_s3_bucket_object" "upload-file" {
+  bucket = aws_s3_bucket.bucket-creation.id
+  key    = "economic-survey-of-manufacturing-dec-2021.csv"
+  source = "economic-survey-of-manufacturing-dec-2021.csv"
+  etag = filemd5("economic-survey-of-manufacturing-dec-2021.csv")
+
+}
+
+
+resource "chaossearch_object_group" "create-object-group" {
+  bucket = "test-object-group-tera1"
+  source = "my-tera-test-chaos1"
+  format {
+    _type            = "CSV"
+    column_delimiter = ","
+    row_delimiter    = "\n"
+    header_row       = false
+  }
+  interval {
+    mode   = 0
+    column = 0
+  }
+  index_retention {
+    for_partition = []
+    overall       = 1
+  }
+  filter {
+    prefix_filter {
+      field  = "key"
+      prefix = "bluebike"
+    }
+    regex_filter {
+      field = "key"
+      regex = ".*"
+    }
+  }
+  options {
+    ignore_irregular = true
+  }
+  realtime = true
+  depends_on = [
+    aws_s3_bucket_object.upload-file
+  ]
+}
+
+resource "chaossearch_view" "chaossearch-create-view" {
+  bucket           = "test-view-tera1"
   case_insensitive = false
   index_pattern    = ".*"
   index_retention  = -1
   overwrite        = true
-  sources          = []
+  sources          = ["test-object-group-tera1"]
   time_field_name  = "@timestamp"
-  transforms       = []
   filter {
     predicate {
       _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
@@ -40,6 +96,7 @@ resource "chaossearch_view" "chaossearch-create-view-test1" {
       }
     }
   }
+  depends_on = [
+    chaossearch_object_group.create-object-group
+  ]
 }
-
-
