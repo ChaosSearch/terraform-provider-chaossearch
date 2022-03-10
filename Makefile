@@ -9,7 +9,7 @@ OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 default: install
 
 lint_provider:
-	golangci-lint run -c .golangci.yml
+	./bin/golangci-lint run -c .golangci.yml
 
 build: lint_provider
 	 go build -o ${BINARY}
