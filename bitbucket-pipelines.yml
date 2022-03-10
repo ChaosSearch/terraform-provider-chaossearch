@@ -7,7 +7,6 @@ pipelines:
           - apk add go
           - apk add make
           - wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.44.2
-#          - cd terraformprovider
           - make install
           - cd terraformprovider/examples/test
           - ./testall.sh

@@ -4,11 +4,9 @@ linters:
     - errcheck
     - goconst
     - gofmt
-    #    - golint
     #    - gosec
     - govet
     - ineffassign
-    #    - interfacer
     - lll
     - megacheck
     - misspell
