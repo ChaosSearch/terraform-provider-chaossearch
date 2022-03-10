@@ -6,7 +6,7 @@ pipelines:
         script:
           - apk add go
           - apk add make
-          - cd terraformprovider
+#          - cd terraformprovider
           - make install
-          - cd examples/test
+          - cd terraformprovider/examples/test
           - ./testall.sh
