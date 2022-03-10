@@ -6,6 +6,7 @@ pipelines:
         script:
           - apk add go
           - apk add make
+          - apk add golangci-lint
 #          - cd terraformprovider
           - make install
           - cd terraformprovider/examples/test
