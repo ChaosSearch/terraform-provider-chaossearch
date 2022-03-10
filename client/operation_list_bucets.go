@@ -7,15 +7,15 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) ListBuckets(ctx context.Context, authToken string) (*ListBucketsResponse, error) {
-	url := fmt.Sprintf("%s/V1/", csClient.config.URL)
+func (c *CSClient) ListBuckets(ctx context.Context, authToken string) (*ListBucketsResponse, error) {
+	url := fmt.Sprintf("%s/V1/", c.config.URL)
 
-	httpReq, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	httpReq, err := http.NewRequestWithContext(ctx, GET, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	httpResp, err := csClient.signV2AndDo(authToken, httpReq, nil)
+	httpResp, err := c.signV2AndDo(authToken, httpReq, nil)
 
 	if err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func (csClient *CSClient) ListBuckets(ctx context.Context, authToken string) (*L
 	}(httpResp.Body)
 
 	var resp ListBucketsResponse
-	if err := csClient.unmarshalXMLBody(httpResp.Body, &resp); err != nil {
+	if err := c.unmarshalXMLBody(httpResp.Body, &resp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal XML response body: %s", err)
 	}
 

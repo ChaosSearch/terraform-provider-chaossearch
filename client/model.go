@@ -13,7 +13,7 @@ type ListBucketsResponse struct {
 	BucketsCollection BucketCollection `xml:"Buckets"`
 }
 
-type ReadObjectGroupRequest struct {
+type ReadObjGroupReq struct {
 	AuthToken string
 	ID        string
 }
@@ -29,7 +29,7 @@ type Metadata struct {
 type ObjectFilter struct {
 	And []interface{} `json:"AND"`
 }
-type ReadObjectGroupResponse struct {
+type ReadObjGroupResp struct {
 	Public             bool         `json:"_public"`
 	Realtime           bool         `json:"_realtime"`
 	Type               string       `json:"_type"`
@@ -188,16 +188,16 @@ type Pred struct {
 	Field string `json:"field"`
 	Query string `json:"query"`
 	State State  `json:"state"`
-	Type_ string `json:"_type"`
+	Type  string `json:"_type"`
 }
 
 type Predicate struct {
-	Pred  Pred   `json:"pred"`
-	Type_ string `json:"_type"`
+	Pred Pred   `json:"pred"`
+	Type string `json:"_type"`
 }
 
 type State struct {
-	Type_ string `json:"_type"`
+	Type string `json:"_type"`
 }
 
 //user group create related models
@@ -234,7 +234,7 @@ type Permission struct {
 
 type CreateUserGroupRequest struct {
 	AuthToken  string
-	Id         string
+	ID         string
 	Name       string
 	Permission []Permission `json:"GroupIds"`
 }
@@ -276,14 +276,14 @@ type User struct {
 type SubAccount struct {
 	FullName  string        `json:"FullName"`
 	Hocon     string        `json:"Hocon"`
-	Uid       string        `json:"Uid"`
+	UID       string        `json:"Uid"`
 	Username  string        `json:"Username"`
 	GroupIds  []interface{} `json:"GroupIds"`
 	Activated bool          `json:"Activated"`
 }
 
 type Group struct {
-	Id          string       `json:"Id"`
+	ID          string       `json:"Id"`
 	Name        string       `json:"Name"`
 	Permissions []Permission `json:"permissions"`
 }

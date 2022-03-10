@@ -1,4 +1,4 @@
-package main
+package cs
 
 import (
 	"context"
@@ -87,7 +87,7 @@ func readAllUserGroups(ctx context.Context, data *schema.ResourceData, meta inte
 		permissionArr[0] = permissionMap
 
 		result[i] = map[string]interface{}{
-			"id":          group.Id,
+			"id":          group.ID,
 			"name":        group.Name,
 			"permissions": permissionArr,
 		}

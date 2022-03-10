@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
@@ -16,8 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,6 +24,13 @@ type CSClient struct {
 	userAgent  string
 	Login      *Login
 }
+
+const (
+	GET    string = "GET"
+	POST   string = "POST"
+	PUT    string = "PUT"
+	DELETE string = "DELETE"
+)
 
 func NewClient(config *Configuration, login *Login) *CSClient {
 	binaryName := os.Getenv("BINARY")
@@ -43,47 +47,7 @@ func NewClient(config *Configuration, login *Login) *CSClient {
 	}
 }
 
-/*  AWS V4 Authentication
-Not using with current API implementations
-*/
-func (csClient *CSClient) signV4AndDo(req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
-	var bodyReader io.ReadSeeker
-	if bodyAsBytes == nil {
-		bodyReader = nil
-	} else {
-		bodyReader = bytes.NewReader(bodyAsBytes)
-	}
-
-	var sessionToken string
-	staticCredentials := credentials.NewStaticCredentials(csClient.config.AccessKeyID, csClient.config.SecretAccessKey, sessionToken)
-	_, err := v4.NewSigner(staticCredentials).Sign(req, bodyReader, csClient.config.AWSServiceName, csClient.config.Region, time.Now())
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to sign request: %s", err)
-	}
-
-	log.Warn("Sending request:\nMethod: %s\nURL: %s\nBody: %s", req.Method, req.URL, bodyAsBytes)
-	log.Warn("req-->", req)
-	resp, err := csClient.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %s", err)
-	}
-
-	log.Warn("Got response:\nStatus code: %d", resp.StatusCode)
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		respAsBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read response body: %s", err)
-		}
-		return nil, fmt.Errorf(
-			"expected a 2xx status code, but got %d.\nMethod: %s\nURL: %s\nRequest body: %s\nResponse body: %s",
-			resp.StatusCode, req.Method, req.URL, bodyAsBytes, respAsBytes)
-	}
-	return resp, nil
-}
-
-func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
+func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
 	log.Debug("------- AWS V2 Sign Starts------")
 
 	claims := jwt.MapClaims{}
@@ -97,16 +61,16 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 
 	accessKey := claims["AccessKeyId"].(string)
 	secretAccessKey := claims["SecretAccessKey"].(string)
-	externalId := claims["external_id"].(string)
+	externalID := claims["external_id"].(string)
 	dateTime := time.Now().UTC().String()
 
 	req.Header.Add("Content-Type", "application/json")
 
 	var routeToken string
-	if isAdminApi(req.URL.Path) {
+	if isAdminAPI(req.URL.Path) {
 		routeToken = "login"
 	} else {
-		routeToken = externalId
+		routeToken = externalID
 	}
 
 	req.Header.Add("x-amz-chaossumo-route-token", routeToken)
@@ -135,9 +99,7 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 	req.Header.Add("x-amz-cs3-authorization", auth)
 	log.Debug("req.Header-->", req.Header)
 
-	log.Debug("req.GetBody-->", req.GetBody)
-
-	resp, e := csClient.httpClient.Do(req)
+	resp, e := c.httpClient.Do(req)
 	if e != nil {
 		return nil, fmt.Errorf("failed to execute request: %s", e)
 	}
@@ -157,7 +119,7 @@ func (csClient *CSClient) signV2AndDo(tokenValue string, req *http.Request, body
 		log.Info("Response Body -->", string(body))
 	}
 
-	log.Warn("Got response:\nStatus code: %d", resp.StatusCode)
+	log.Warn("Got response:Status code: ", resp.StatusCode)
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		respAsBytes, err := ioutil.ReadAll(resp.Body)
@@ -179,7 +141,7 @@ func generateSignature(secretToken string, payloadBody string) string {
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 
-func isAdminApi(url string) bool {
+func isAdminAPI(url string) bool {
 	return strings.HasSuffix(url, "/createSubAccount") ||
 		strings.HasSuffix(url, "/deleteSubAccount") ||
 		strings.HasSuffix(url, "/user/manifest") ||
@@ -187,7 +149,7 @@ func isAdminApi(url string) bool {
 		strings.Contains(url, "/user/group/")
 }
 
-func (csClient *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
+func (c *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %s", err)
@@ -199,12 +161,12 @@ func (csClient *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{})
 	return nil
 }
 
-func (csClient *CSClient) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
+func (c *CSClient) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %s", err)
 	}
-	log.Warn("Unmarshalling XML: %s\n", bodyAsBytes)
+	//log.Warn("Unmarshalling XML:", bodyAsBytes)
 	if err := xml.Unmarshal(bodyAsBytes, v); err != nil {
 		return fmt.Errorf("failed to unmarshal XML: %s", err)
 	}

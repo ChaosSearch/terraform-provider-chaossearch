@@ -24,7 +24,7 @@ need to remove this by end of initial developments
 func createObjectGroup() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/Bucket/createObjectGroup"
 	return false, "POST", url, strings.NewReader(`{
-    "bucket": "dinesh-og-2143",
+    "bucket": "dinesh-og-121",
     "source": "chaos-test-data-aps1",
     "format": {
         "_type": "CSV",
@@ -154,6 +154,10 @@ func retrieveUserGroups() (control bool, method string, url string, reader io.Re
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
 	return true, "GET", url, nil
 }
+func retrieveObjectGroups() (control bool, method string, url string, reader io.Reader) {
+	url = "https://ap-south-1-aeternum.chaossearch.io/V1/"
+	return false, "GET", url, nil
+}
 
 func retrieveUserGroupByGroupId() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/group/9436aed9-e994-4dba-a25b-7d950d7f3623"
@@ -193,12 +197,14 @@ func createUserGroup() (control bool, method string, url string, reader io.Reade
 ]`)
 
 }
+
 func putUserGroup() (control bool, method string, url string, reader io.Reader) {
 	url = "https://ap-south-1-aeternum.chaossearch.io/user/groups"
 	return true, "PUT", url, strings.NewReader(`[{"id":"12bdf713-f019-42c0-9185-fb1b16b001cf"
 ,"name":"dinesh-view-1","permissions":[{"Version":"2.0","Effect":"Allow","Actions":["*"],"Resources":["*"],"Condition":null}]}]`)
 
 }
+
 func main() {
 	//control, method, url, payload := createView()
 	//control, method, url, payload := createObjectGroup()
@@ -207,7 +213,7 @@ func main() {
 	//control, method, url, payload := deleteSubAccountByUser()
 
 	//control, method, url, payload := createUserGroup()
-	control, method, url, payload := putUserGroup()
+	//control, method, url, payload := putUserGroup()
 	//control, method, url, payload := retrieveUserGroups()
 	//control, method, url, payload := retrieveUserGroupByGroupId()
 	//control, method, url, payload := retrieveUserGroupByGroupId()
@@ -215,6 +221,7 @@ func main() {
 	//control, method, url, payload := deleteUserGroupByGroupId()
 	//control, method, url, payload := importBucket()
 	//control, method, url, payload := retrieveUsers()
+	control, method, url, payload := retrieveObjectGroups()
 
 	req, err := http.NewRequest(method, url, payload)
 
@@ -231,10 +238,14 @@ func main() {
 	fmt.Println("payload-->", payload)
 
 	var bodyBytes []byte
-	if method == "POST" || method == "PUT" {
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(payload)
-		bodyBytes = buf.Bytes()
+	if payload != nil {
+		if method == "POST" || method == "PUT" {
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(payload)
+			bodyBytes = buf.Bytes()
+		} else {
+			bodyBytes = nil
+		}
 	} else {
 		bodyBytes = nil
 	}
@@ -336,9 +347,8 @@ func signV2AndDo(control bool, tokenValue string, req *http.Request, bodyAsBytes
 }
 
 const loginUrl = "https://ap-south-1-aeternum.chaossearch.io/user/login"
-
-const userName = ""
-const password = ""
+const userName = "aeternum@chaossearch.com"
+const password = "ffpossgjjefjefojwfpjwgpwijaofnaconaonouf3n129091e901ie01292309r8jfcnsijvnsfini1j91e09ur0932hjsaakji"
 
 func Auth() (token string, err error) {
 

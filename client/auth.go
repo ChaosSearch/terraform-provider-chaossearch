@@ -11,22 +11,21 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) Auth(ctx context.Context) (token string, err error) {
+func (c *CSClient) Auth(ctx context.Context) (token string, err error) {
 
-	url := fmt.Sprintf("%s/user/login", csClient.config.URL)
-	method := "POST"
-	login_ := csClient.Login
+	url := fmt.Sprintf("%s/user/login", c.config.URL)
+	login := c.Login
 
 	log.Warn("url-->", url)
-	log.Warn("username-->", login_.Username)
-	log.Warn("parent user id-->", login_.ParentUserId)
+	log.Warn("username-->", login.Username)
+	log.Warn("parent user id-->", login.ParentUserID)
 
-	bodyAsBytes, err := marshalLoginRequest(login_)
+	bodyAsBytes, err := marshalLoginRequest(login)
 	if err != nil {
 		return "", err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
+	req, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %s", err)
 	}
@@ -39,7 +38,7 @@ func (csClient *CSClient) Auth(ctx context.Context) (token string, err error) {
 	req.Header.Add("x-amz-chaossumo-route-token", "login")
 	req.Header.Add("Content-Type", "text/plain")
 
-	res, err := csClient.httpClient.Do(req)
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -62,7 +61,7 @@ func (csClient *CSClient) Auth(ctx context.Context) (token string, err error) {
 
 func marshalLoginRequest(req *Login) ([]byte, error) {
 	var body map[string]interface{}
-	if len(req.ParentUserId) == 0 {
+	if len(req.ParentUserID) == 0 {
 		body = map[string]interface{}{
 			"Username": req.Username,
 			"Password": req.Password,
@@ -71,7 +70,7 @@ func marshalLoginRequest(req *Login) ([]byte, error) {
 		body = map[string]interface{}{
 			"Username":  req.Username,
 			"Password":  req.Password,
-			"ParentUid": req.ParentUserId,
+			"ParentUid": req.ParentUserID,
 		}
 	}
 

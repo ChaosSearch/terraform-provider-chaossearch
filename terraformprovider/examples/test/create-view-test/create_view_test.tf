@@ -29,7 +29,7 @@ provider "chaossearch" {
 
 
 resource "chaossearch_view" "chaossearch-create-view-test1" {
-  bucket           = "test_view_01"
+  bucket           = "test_view_411"
   case_insensitive = false
   index_pattern    = ".*"
   index_retention  = -1
@@ -53,7 +53,7 @@ resource "chaossearch_view" "chaossearch-create-view-test1" {
 }
 // test without transform parameter
 resource "chaossearch_view" "chaossearch-create-view-test2" {
-  bucket           = "dinesh-view-test-02"
+  bucket           = "dinesh-view-test-42"
   case_insensitive = false
   index_pattern    = ".*"
   index_retention  = -1
@@ -76,7 +76,7 @@ resource "chaossearch_view" "chaossearch-create-view-test2" {
 }
 // test without overwrite parameter
 resource "chaossearch_view" "chaossearch-create-view-test3" {
-  bucket           = "diesh-view-test-4"
+  bucket           = "diesh-view-test-43"
   case_insensitive = false
   index_pattern    = ".*"
   index_retention  = -1

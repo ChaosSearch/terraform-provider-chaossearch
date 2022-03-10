@@ -9,24 +9,24 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRequest) error {
-	method := "POST"
-	url := fmt.Sprintf("%s/user/createSubAccount", csClient.config.URL)
+func (c *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRequest) error {
+
+	url := fmt.Sprintf("%s/user/createSubAccount", c.config.URL)
 
 	bodyAsBytes, err := marshalCreateSubAccountRequest(req)
 	if err != nil {
 		return err
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
+	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
+		return fmt.Errorf("failed to %s to %s: %s", POST, url, err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()

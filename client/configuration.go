@@ -22,5 +22,5 @@ func NewConfiguration() *Configuration {
 type Login struct {
 	Username     string
 	Password     string
-	ParentUserId string `json:"ParentUserId,omitempty"`
+	ParentUserID string `json:"ParentUserID,omitempty"`
 }

@@ -30,13 +30,13 @@ resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
     id   = "100221"
     name = "user_group-1"
     permissions {
-      permission {
+      #      permission {
 
-        effect    = "Allow"
-        action    = "*"
-        resources = "*"
-        version   = "1.2"
-      }
+      effect    = "Allow"
+      actions   = ["*"]
+      resources = ["*"]
+      version   = "1.2"
     }
+    #    }
   }
 }

@@ -8,20 +8,20 @@ import (
 	"net/url"
 )
 
-func (csClient *CSClient) DeleteView(ctx context.Context, req *DeleteViewRequest) error {
-	method := "DELETE"
-	safeViewName := url.PathEscape(req.Name)
-	deleteViewUrl := fmt.Sprintf("%s/V1/%s", csClient.config.URL, safeViewName)
+func (c *CSClient) DeleteView(ctx context.Context, req *DeleteViewRequest) error {
 
-	httpReq, err := http.NewRequestWithContext(ctx, method, deleteViewUrl, nil)
+	safeViewName := url.PathEscape(req.Name)
+	deleteViewURL := fmt.Sprintf("%s/V1/%s", c.config.URL, safeViewName)
+
+	httpReq, err := http.NewRequestWithContext(ctx, DELETE, deleteViewURL, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
 	sessionToken := req.AuthToken
-	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, nil)
+	httpResp, err := c.signV2AndDo(sessionToken, httpReq, nil)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", method, deleteViewUrl, err)
+		return fmt.Errorf("failed to %s to %s: %s", POST, deleteViewURL, err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()

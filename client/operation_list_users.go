@@ -7,15 +7,15 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) ListUsers(ctx context.Context, authToken string) (*ListUsersResponse, error) {
-	url := fmt.Sprintf("%s/user/manifest", csClient.config.URL)
+func (c *CSClient) ListUsers(ctx context.Context, authToken string) (*ListUsersResponse, error) {
+	url := fmt.Sprintf("%s/user/manifest", c.config.URL)
 
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", url, nil)
+	httpReq, err := http.NewRequestWithContext(ctx, POST, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	httpResp, err := csClient.signV2AndDo(authToken, httpReq, nil)
+	httpResp, err := c.signV2AndDo(authToken, httpReq, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (csClient *CSClient) ListUsers(ctx context.Context, authToken string) (*Lis
 	}(httpResp.Body)
 
 	var resp ListUsersResponse
-	if err := csClient.unmarshalJSONBody(httpResp.Body, &resp); err != nil {
+	if err := c.unmarshalJSONBody(httpResp.Body, &resp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal json response body: %s", err)
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	cs "cs-tf-provider/terraformprovider"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
@@ -11,7 +12,7 @@ import (
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
 		ProviderFunc: func() *schema.Provider {
-			return Provider()
+			return cs.Provider()
 		},
 	})
 }

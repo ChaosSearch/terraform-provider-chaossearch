@@ -8,20 +8,20 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequest) (*Group, error) {
-	method := "PUT"
-	url := fmt.Sprintf("%s/user/groups", csClient.config.URL)
+func (c *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequest) (*Group, error) {
+
+	url := fmt.Sprintf("%s/user/groups", c.config.URL)
 	bodyAsBytes, err := marshalCreateUserGroupRequest(req)
 	if err != nil {
 		return nil, err
 	}
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
+	httpReq, err := http.NewRequestWithContext(ctx, PUT, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %s", err)
 	}
-	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to %s to %s: %s", method, url, err)
+		return nil, fmt.Errorf("failed to %s to %s: %s", POST, url, err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -31,7 +31,7 @@ func (csClient *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGr
 	}(httpResp.Body)
 
 	var readUserGroupResp []Group
-	if err := csClient.unmarshalJSONBody(httpResp.Body, &readUserGroupResp); err != nil {
+	if err := c.unmarshalJSONBody(httpResp.Body, &readUserGroupResp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON response body sdjhskdhskdskdskdksdkskjd: %s", err)
 	}
 	return &readUserGroupResp[0], err
