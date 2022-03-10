@@ -297,3 +297,14 @@ type DeleteUserGroupRequest struct {
 	AuthToken string
 	ID        string
 }
+
+type IndexModelRequest struct {
+	AuthToken  string
+	BucketName string `json:"BucketName"`
+	ModelMode  int    `json:"ModelMode"`
+}
+
+type IndexModelResponse struct {
+	BucketName string `json:"BucketName"`
+	Result     bool   `json:"Result"`
+}

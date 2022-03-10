@@ -9,10 +9,10 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequest) (*Group, error) {
+func (csClient *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest) (*IndexModelResponse, error) {
 	method := "POST"
-	url := fmt.Sprintf("%s/user/groups", csClient.config.URL)
-	bodyAsBytes, err := marshalCreateUserGroupRequest(req)
+	url := fmt.Sprintf("%s/Bucket/model", csClient.config.URL)
+	bodyAsBytes, err := marshalIndexModelRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -30,21 +30,17 @@ func (csClient *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGr
 			_ = fmt.Errorf("failed to Close response body  %s", err)
 		}
 	}(httpResp.Body)
-
-	var readUserGroupResp []Group
-	if err := csClient.unmarshalJSONBody(httpResp.Body, &readUserGroupResp); err != nil {
+	var indexModelResponse IndexModelResponse
+	if err := csClient.unmarshalJSONBody(httpResp.Body, &indexModelResponse); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON response body: %s", err)
 	}
-	return &readUserGroupResp[0], err
+	return &indexModelResponse, err
 }
 
-func marshalCreateUserGroupRequest(req *CreateUserGroupRequest) ([]byte, error) {
-	body := []interface{}{
-		map[string]interface{}{
-			"id":          req.Id,
-			"name":        req.Name,
-			"permissions": req.Permission,
-		},
+func marshalIndexModelRequest(req *IndexModelRequest) ([]byte, error) {
+	body := map[string]interface{}{
+		"BucketName": req.BucketName,
+		"ModelMode":  req.ModelMode,
 	}
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
