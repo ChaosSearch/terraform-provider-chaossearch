@@ -42,3 +42,8 @@ variable "region" {
   type = string
   description = "Cluster Region"
 }
+
+variable "profile" {
+  type = string
+  description = "aws profile"
+}

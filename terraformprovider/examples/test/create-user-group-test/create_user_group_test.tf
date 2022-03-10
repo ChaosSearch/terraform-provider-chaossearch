@@ -28,15 +28,15 @@ provider "chaossearch" {
 resource "chaossearch_user_group" "chaossearch_user_group_crate_test" {
   user_groups {
     id   = "100221"
-    name = "user_group-1"
+    name = "user_group-1112"
     permissions {
-      permission {
+
 
         effect    = "Allow"
-        action    = "*"
-        resources = "*"
+        actions    = ["*"]
+        resources = ["*"]
         version   = "1.2"
       }
-    }
+
   }
 }
