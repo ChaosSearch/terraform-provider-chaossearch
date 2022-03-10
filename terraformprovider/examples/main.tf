@@ -27,7 +27,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "bucket-creation" {
-  bucket = "my-tera-test-chaos1"
+  bucket = "my-tera-test-chaos2"
 }
 
 resource "aws_s3_bucket_object" "upload-file" {
@@ -38,10 +38,9 @@ resource "aws_s3_bucket_object" "upload-file" {
 
 }
 
-
 resource "chaossearch_object_group" "create-object-group" {
-  bucket = "test-object-group-tera1"
-  source = "my-tera-test-chaos1"
+  bucket = "test-object-group-tera2"
+  source = "my-tera-test-chaos2"
   format {
     _type            = "CSV"
     column_delimiter = ","
@@ -75,13 +74,21 @@ resource "chaossearch_object_group" "create-object-group" {
   ]
 }
 
+resource "chaossearch_index_model" "chaossearch-og-index" {
+  bucket_name = "test-object-group-tera2"
+  model_mode = 0
+  depends_on = [
+    chaossearch_object_group.create-object-group
+  ]
+}
+
 resource "chaossearch_view" "chaossearch-create-view" {
-  bucket           = "test-view-tera1"
+  bucket           = "test-view-tera2"
   case_insensitive = false
   index_pattern    = ".*"
   index_retention  = -1
   overwrite        = true
-  sources          = ["test-object-group-tera1"]
+  sources          = ["test-object-group-tera2"]
   time_field_name  = "@timestamp"
   filter {
     predicate {
@@ -97,6 +104,6 @@ resource "chaossearch_view" "chaossearch-create-view" {
     }
   }
   depends_on = [
-    chaossearch_object_group.create-object-group
+    chaossearch_index_model.chaossearch-og-index
   ]
 }
