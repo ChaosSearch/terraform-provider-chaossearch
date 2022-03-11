@@ -67,12 +67,13 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"chaossearch_object_group":  resourceObjectGroup(),
-			"chaossearch_view":          resourceView(),
-			"chaossearch_sub_account":   resourceSubAccount(),
-			"chaossearch_user_group":    resourceUserGroup(),
-			"chaossearch_import_bucket": resourceBucket(),
-			"chaossearch_index_model":   resourceIndexModel(),
+			"chaossearch_object_group":   resourceObjectGroup(),
+			"chaossearch_view":           resourceView(),
+			"chaossearch_sub_account":    resourceSubAccount(),
+			"chaossearch_user_group":     resourceUserGroup(),
+			"chaossearch_import_bucket":  resourceBucket(),
+			"chaossearch_index_model":    resourceIndexModel(),
+			"chaossearch_index_metadata": resourceIndexMetadata(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
