@@ -7,26 +7,26 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) ReadUserGroup(ctx context.Context, req *ReadUserGroupRequest) (*Group, error) {
+func (c *CSClient) ReadUserGroup(ctx context.Context, req *ReadUserGroupRequest) (*Group, error) {
 	var resp Group
-	if err := csClient.ReadUserGroupById(ctx, req, &resp); err != nil {
+	if err := c.ReadUserGroupByID(ctx, req, &resp); err != nil {
 		return nil, err
 	}
 	return &resp, nil
 }
 
-func (csClient *CSClient) ReadUserGroupById(ctx context.Context, req *ReadUserGroupRequest, resp *Group) error {
-	method := "GET"
-	url := fmt.Sprintf("%s/user/group/%s", csClient.config.URL, req.ID)
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, nil)
+func (c *CSClient) ReadUserGroupByID(ctx context.Context, req *ReadUserGroupRequest, resp *Group) error {
+
+	url := fmt.Sprintf("%s/user/group/%s", c.config.URL, req.ID)
+	httpReq, err := http.NewRequestWithContext(ctx, GET, url, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
 	sessionToken := req.AuthToken
-	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, nil)
+	httpResp, err := c.signV2AndDo(sessionToken, httpReq, nil)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
+		return fmt.Errorf("failed to %s to %s: %s", GET, url, err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -36,10 +36,10 @@ func (csClient *CSClient) ReadUserGroupById(ctx context.Context, req *ReadUserGr
 	}(httpResp.Body)
 
 	var readUserGroupResp Group
-	if err := csClient.unmarshalJSONBody(httpResp.Body, &readUserGroupResp); err != nil {
+	if err := c.unmarshalJSONBody(httpResp.Body, &readUserGroupResp); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON response body : %s", err)
 	}
-	resp.Id = readUserGroupResp.Id
+	resp.ID = readUserGroupResp.ID
 	resp.Name = readUserGroupResp.Name
 	resp.Permissions = readUserGroupResp.Permissions
 	return nil

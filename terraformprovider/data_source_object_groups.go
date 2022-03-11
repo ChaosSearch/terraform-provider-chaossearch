@@ -1,4 +1,4 @@
-package main
+package cs
 
 import (
 	"context"
@@ -17,16 +17,14 @@ func dataSourceObjectGroups() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
 						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						// TODO BucketType (object group, view, native s3 bucket)
-						// TODO Predicate
+						"creation_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},

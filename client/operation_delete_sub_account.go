@@ -9,20 +9,20 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) DeleteSubAccount(ctx context.Context, req *DeleteSubAccountRequest) error {
-	method := "POST"
-	deleteUrl := fmt.Sprintf("%s/user/deleteSubAccount", csClient.config.URL)
+func (c *CSClient) DeleteSubAccount(ctx context.Context, req *DeleteSubAccountRequest) error {
 
-	bodyAsBytes, err := marshalDeleteSubAccountRequest(req)
-	httpReq, err := http.NewRequestWithContext(ctx, method, deleteUrl, bytes.NewReader(bodyAsBytes))
+	deleteURL := fmt.Sprintf("%s/user/deleteSubAccount", c.config.URL)
+
+	bodyAsBytes, _ := marshalDeleteSubAccountRequest(req)
+	httpReq, err := http.NewRequestWithContext(ctx, POST, deleteURL, bytes.NewReader(bodyAsBytes))
 
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
-	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", method, deleteUrl, err)
+		return fmt.Errorf("failed to %s to %s: %s", POST, deleteURL, err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()

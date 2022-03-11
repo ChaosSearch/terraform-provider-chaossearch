@@ -1,10 +1,8 @@
-package main
+package cs
 
 import (
 	"context"
 	"cs-tf-provider/client"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	log "github.com/sirupsen/logrus"
@@ -139,23 +137,23 @@ func resourceView() *schema.Resource {
 
 func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	filter, c, tokenValue, sourcesStrings, transforms := setViewRequest(data, meta)
+	ViewRequestDTO := setViewRequest(data, meta)
 
 	createViewRequest := &client.CreateViewRequest{
-		AuthToken: tokenValue,
+		AuthToken: ViewRequestDTO.Token,
 
 		Bucket:          data.Get("bucket").(string),
-		Sources:         sourcesStrings,
+		Sources:         ViewRequestDTO.Source,
 		IndexPattern:    data.Get("index_pattern").(string),
 		Overwrite:       data.Get("overwrite").(bool),
 		CaseInsensitive: data.Get("case_insensitive").(bool),
 		IndexRetention:  data.Get("index_retention").(int),
 		TimeFieldName:   data.Get("time_field_name").(string),
-		Transforms:      transforms,
-		FilterPredicate: filter,
+		Transforms:      ViewRequestDTO.Transforms,
+		FilterPredicate: ViewRequestDTO.FilterPredicate,
 	}
 
-	if err := c.CreateView(ctx, createViewRequest); err != nil {
+	if err := ViewRequestDTO.CSClient.CreateView(ctx, createViewRequest); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -165,26 +163,35 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 }
 
-func setViewRequest(data *schema.ResourceData, meta interface{}) (*client.FilterPredicate, *client.CSClient, string, []interface{}, []interface{}) {
-	filterColumnSelectionInterface := data.Get("filter").(*schema.Set).List()[0].(map[string]interface{})
-	predicateColumnSelectionInterface := filterColumnSelectionInterface["predicate"].(*schema.Set).List()[0].(map[string]interface{})
-	predColumnSelectionInterface := predicateColumnSelectionInterface["pred"].(*schema.Set).List()[0].(map[string]interface{})
-	stateColumnSelectionInterface := predColumnSelectionInterface["state"].(*schema.Set).List()[0].(map[string]interface{})
+type ViewRequestDTO struct {
+	FilterPredicate *client.FilterPredicate
+	CSClient        *client.CSClient
+	Token           string
+	Source          []interface{}
+	Transforms      []interface{}
+}
+
+func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO {
+
+	filterInterface := data.Get("filter").(*schema.Set).List()[0].(map[string]interface{})
+	predicateInterface := filterInterface["predicate"].(*schema.Set).List()[0].(map[string]interface{})
+	predInterface := predicateInterface["pred"].(*schema.Set).List()[0].(map[string]interface{})
+	stateInterface := predInterface["state"].(*schema.Set).List()[0].(map[string]interface{})
 
 	state := client.State{
-		Type_: stateColumnSelectionInterface["_type"].(string),
+		Type: stateInterface["_type"].(string),
 	}
 
 	pred := client.Pred{
-		Field: predColumnSelectionInterface["field"].(string),
-		Query: predColumnSelectionInterface["query"].(string),
+		Field: predInterface["field"].(string),
+		Query: predInterface["query"].(string),
 		State: state,
-		Type_: predColumnSelectionInterface["_type"].(string),
+		Type:  predInterface["_type"].(string),
 	}
 
 	Predicate := client.Predicate{
-		Type_: predicateColumnSelectionInterface["_type"].(string),
-		Pred:  pred,
+		Type: predicateInterface["_type"].(string),
+		Pred: pred,
 	}
 
 	filter := &client.FilterPredicate{
@@ -194,26 +201,33 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) (*client.Filter
 	c := meta.(*ProviderMeta).CSClient
 	tokenValue := meta.(*ProviderMeta).token
 
-	sources_, ok := data.GetOk("sources")
+	sources, ok := data.GetOk("sources")
 	if !ok {
 		log.Error(" sources not available")
 	}
 	var sourcesStrings []interface{}
 
-	if sources_ != nil {
-		sourcesStrings = sources_.([]interface{})
+	if sources != nil {
+		sourcesStrings = sources.([]interface{})
 	}
 
-	transforms_, ok := data.GetOk("transforms")
+	transformElem, ok := data.GetOk("transforms")
 	if !ok {
 		log.Error(" transforms not available")
 	}
 	var transforms []interface{}
 
-	if transforms_ != nil {
-		transforms = transforms_.([]interface{})
+	if transformElem != nil {
+		transforms = transformElem.([]interface{})
 	}
-	return filter, c, tokenValue, sourcesStrings, transforms
+	ViewRequestDTO := ViewRequestDTO{
+		FilterPredicate: filter,
+		CSClient:        c,
+		Token:           tokenValue,
+		Source:          sourcesStrings,
+		Transforms:      transforms,
+	}
+	return &ViewRequestDTO
 }
 
 func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -236,25 +250,25 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 		return diag.Errorf("Failed to read View: %s", err)
 	}
 
-	data.Set("name", data.Id())
-	data.Set("view_id", resp.ID)
-	data.Set("_cacheable", resp.Cacheable)
-	data.Set("_case_insensitive", resp.CaseInsensitive)
-	data.Set("_type", resp.Type)
-	data.Set("bucket", resp.Bucket)
-	data.Set("index_pattern", resp.IndexPattern)
-	data.Set("time_field_name", resp.TimeFieldName)
+	c.Set(data, "name", data.Id())
+	c.Set(data, "view_id", resp.ID)
+	c.Set(data, "_cacheable", resp.Cacheable)
+	c.Set(data, "_case_insensitive", resp.CaseInsensitive)
+	c.Set(data, "_type", resp.Type)
+	c.Set(data, "bucket", resp.Bucket)
+	c.Set(data, "index_pattern", resp.IndexPattern)
+	c.Set(data, "time_field_name", resp.TimeFieldName)
 
 	RegionAvailability := make([]interface{}, 1)
 	RegionAvailability[0] = resp.RegionAvailability
-	data.Set("region_availability", RegionAvailability[0])
+	c.Set(data, "region_availability", RegionAvailability[0])
 
 	if resp.MetaData != nil {
 		metadata := make([]interface{}, 1)
 		metadataObjectMap := make(map[string]interface{})
 		metadataObjectMap["creation_date"] = resp.MetaData.CreationDate
 		metadata[0] = metadataObjectMap
-		data.Set("metadata", metadata)
+		c.Set(data, "metadata", metadata)
 	}
 	if resp.FilterPredicate != nil {
 		filter := make([]interface{}, 1)
@@ -265,58 +279,53 @@ func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 		predObjectMap := make(map[string]interface{})
 		if resp.FilterPredicate.Predicate != nil {
 			predObjectMap["field"] = resp.FilterPredicate.Predicate.Pred.Field
-			predObjectMap["_type"] = resp.FilterPredicate.Predicate.Pred.Type_
+			predObjectMap["_type"] = resp.FilterPredicate.Predicate.Pred.Type
 			predObjectMap["query"] = resp.FilterPredicate.Predicate.Pred.Query
 
 			stateObjectMap := make(map[string]interface{})
-			stateObjectMap["_type"] = resp.FilterPredicate.Predicate.Pred.State.Type_
+			stateObjectMap["_type"] = resp.FilterPredicate.Predicate.Pred.State.Type
 			state[0] = stateObjectMap
 			predObjectMap["state"] = state
 			pred[0] = predObjectMap
 
 			predicatePredObjectMap := make(map[string]interface{})
 			predicatePredObjectMap["pred"] = pred
-			predicatePredObjectMap["_type"] = resp.FilterPredicate.Predicate.Type_
+			predicatePredObjectMap["_type"] = resp.FilterPredicate.Predicate.Type
 			predicate[0] = predicatePredObjectMap
 
 			filterPredicateObjectMap := make(map[string]interface{})
 			filterPredicateObjectMap["predicate"] = predicate
 			filter[0] = filterPredicateObjectMap
-			data.Set("filter", filter)
+			c.Set(data, "filter", filter)
 		}
 	}
 
-	compressionOrEmptyString := resp.Compression
-	if strings.ToLower(compressionOrEmptyString) == "none" {
-		compressionOrEmptyString = ""
-	}
-
 	if resp.ArrayFlattenDepth == nil {
-		data.Set("array_flatten_depth", -1)
+		c.Set(data, "array_flatten_depth", -1)
 	} else {
-		data.Set("array_flatten_depth", resp.ArrayFlattenDepth)
+		c.Set(data, "array_flatten_depth", resp.ArrayFlattenDepth)
 	}
 	return diags
 }
 
 func resourceViewUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	filter, c, tokenValue, sourcesStrings, transforms := setViewRequest(data, meta)
+	ViewRequestDTO := setViewRequest(data, meta)
 
 	createViewRequest := &client.CreateViewRequest{
-		AuthToken: tokenValue,
+		AuthToken: ViewRequestDTO.Token,
 
 		Bucket:          data.Get("bucket").(string),
-		Sources:         sourcesStrings,
+		Sources:         ViewRequestDTO.Source,
 		IndexPattern:    data.Get("index_pattern").(string),
 		Overwrite:       true,
 		CaseInsensitive: data.Get("case_insensitive").(bool),
 		IndexRetention:  data.Get("index_retention").(int),
 		TimeFieldName:   data.Get("time_field_name").(string),
-		Transforms:      transforms,
-		FilterPredicate: filter,
+		Transforms:      ViewRequestDTO.Transforms,
+		FilterPredicate: ViewRequestDTO.FilterPredicate,
 	}
 
-	if err := c.CreateView(ctx, createViewRequest); err != nil {
+	if err := ViewRequestDTO.CSClient.CreateView(ctx, createViewRequest); err != nil {
 		return diag.FromErr(err)
 	}
 

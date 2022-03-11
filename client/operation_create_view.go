@@ -10,9 +10,9 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error {
-	method := "POST"
-	url := fmt.Sprintf("%s/Bucket/createView", csClient.config.URL)
+func (c *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error {
+
+	url := fmt.Sprintf("%s/Bucket/createView", c.config.URL)
 	log.Debug("Url-->", url)
 	log.Debug("req-->", req)
 	bodyAsBytes, err := marshalCreateViewRequest(req)
@@ -20,18 +20,18 @@ func (csClient *CSClient) CreateView(ctx context.Context, req *CreateViewRequest
 		return err
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
+	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 	log.Debug(" adding headers...")
 	log.Warn("httpReq-->", httpReq)
 
-	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 
 	log.Warn("httpResp-->", httpResp)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
+		return fmt.Errorf("failed to %s to %s: %s", POST, url, err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()

@@ -1,4 +1,4 @@
-package main
+package cs
 
 import (
 	"context"
@@ -94,9 +94,9 @@ func resourceSubAccountRead(ctx context.Context, data *schema.ResourceData, meta
 	return nil
 }
 
-func resourceSubAccountUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
-}
+//func resourceSubAccountUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+//	return nil
+//}
 
 func resourceSubAccountDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).CSClient

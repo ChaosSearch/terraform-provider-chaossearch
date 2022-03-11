@@ -1,4 +1,4 @@
-package main
+package cs
 
 import (
 	"context"
@@ -67,11 +67,13 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"chaossearch_object_group":  resourceObjectGroup(),
-			"chaossearch_view":          resourceView(),
-			"chaossearch_sub_account":   resourceSubAccount(),
-			"chaossearch_user_group":    resourceUserGroup(),
-			"chaossearch_import_bucket": resourceBucket(),
+			"chaossearch_object_group":   resourceObjectGroup(),
+			"chaossearch_view":           resourceView(),
+			"chaossearch_sub_account":    resourceSubAccount(),
+			"chaossearch_user_group":     resourceUserGroup(),
+			"chaossearch_import_bucket":  resourceBucket(),
+			"chaossearch_index_model":    resourceIndexModel(),
+			"chaossearch_index_metadata": resourceIndexMetadata(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -93,24 +95,24 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	secretAccessKey := d.Get("secret_access_key").(string)
 	region := d.Get("region").(string)
 
-	var username_ string
-	var password_ string
-	var parentUserId_ string
+	var username string
+	var password string
+	var parentUserID string
 
 	if d.Get("login").(*schema.Set).Len() > 0 {
 		columnSelectionInterfaces := d.Get("login").(*schema.Set).List()[0]
 		columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
-		username_ = columnSelectionInterface["user_name"].(string)
-		password_ = columnSelectionInterface["password"].(string)
+		username = columnSelectionInterface["user_name"].(string)
+		password = columnSelectionInterface["password"].(string)
 		if columnSelectionInterface["parent_user_id"] != nil {
-			parentUserId_ = columnSelectionInterface["parent_user_id"].(string)
+			parentUserID = columnSelectionInterface["parent_user_id"].(string)
 		}
 	}
 
-	login_ := client.Login{
-		Username:     username_,
-		Password:     password_,
-		ParentUserId: parentUserId_,
+	login := client.Login{
+		Username:     username,
+		Password:     password,
+		ParentUserID: parentUserID,
 	}
 
 	if url == "" {
@@ -132,7 +134,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	config.SecretAccessKey = secretAccessKey
 	config.Region = region
 
-	csClient := client.NewClient(config, &login_)
+	csClient := client.NewClient(config, &login)
 
 	authResponseString, err := csClient.Auth(ctx)
 
@@ -141,18 +143,17 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	if err != nil {
 		return nil, diag.Errorf("Token generation fail..")
 
-	} else {
-		tokenData := AuthResponse{}
-
-		if err := json.Unmarshal([]byte(authResponseString), &tokenData); err != nil {
-			return fmt.Errorf("failed to unmarshal JSON: %s", err), nil
-		}
-
-		providerMeta := &ProviderMeta{
-			CSClient: csClient,
-			token:    tokenData.Token,
-		}
-		return providerMeta, nil
 	}
+	tokenData := AuthResponse{}
+
+	if err := json.Unmarshal([]byte(authResponseString), &tokenData); err != nil {
+		return fmt.Errorf("failed to unmarshal JSON: %s", err), nil
+	}
+
+	providerMeta := &ProviderMeta{
+		CSClient: csClient,
+		token:    tokenData.Token,
+	}
+	return providerMeta, nil
 
 }

@@ -1,4 +1,4 @@
-package main
+package cs
 
 import (
 	"context"
@@ -18,11 +18,11 @@ func dataSourceViews() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"name": {
+						"creation_date": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
