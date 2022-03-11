@@ -32,18 +32,18 @@ func (c *CSClient) ReadIndexMetadata(ctx context.Context, req *IndexMetadataRequ
 			_ = fmt.Errorf("failed to Close response body  %s", err)
 		}
 	}(httpResp.Body)
-	result := c.processResponse(httpResp)
+	result := c.processResponse(req.BucketName, httpResp)
 	return &result, err
 }
 
-func (c *CSClient) processResponse(httpResp *http.Response) IndexMetadataResponse {
+func (c *CSClient) processResponse(requestBucketName string, httpResp *http.Response) IndexMetadataResponse {
 	respBodyAsBytes, _ := ioutil.ReadAll(httpResp.Body)
 	var result map[string]interface{}
 	if err := json.Unmarshal(respBodyAsBytes, &result); err != nil {
 		_ = fmt.Errorf("failed to unmarshal JSON: %s", err)
 	}
 	metadata := result["Metadata"].(map[string]interface{})
-	bucket := metadata["test-object-group-tera4"].(map[string]interface{})
+	bucket := metadata[requestBucketName].(map[string]interface{})
 
 	bucketName := bucket["Bucket"].(string)
 	lastIndexTime := bucket["LastIndexTime"].(float64)
@@ -55,7 +55,7 @@ func (c *CSClient) processResponse(httpResp *http.Response) IndexMetadataRespons
 
 func marshalIndexMetadataRequest(req *IndexMetadataRequest) ([]byte, error) {
 	body := map[string]interface{}{
-		"BucketNames": []interface{}{req.BucketNames},
+		"BucketNames": []interface{}{req.BucketName},
 	}
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
