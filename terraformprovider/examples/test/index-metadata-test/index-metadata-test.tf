@@ -28,5 +28,5 @@ provider "chaossearch" {
 }
 
 resource "chaossearch_index_metadata" "chaossearch-index-metadata" {
-  bucket_names = ["test-object-group-tera4"]
+  bucket_names = "test-object-group-tera4"
 }
