@@ -168,3 +168,13 @@ terraformprovider/examples/test/update_view_test/.terraform
 terraformprovider/examples/test/update_view_test/.terraform.lock.hcl
 terraformprovider/examples/test/update_view_test/terraform.tfstate
 terraformprovider/examples/test/update_view_test/terraform.txt
+
+terraformprovider/examples/test/index-model-test/.terraform
+terraformprovider/examples/test/index-model-test/.terraform.lock.hcl
+terraformprovider/examples/test/index-model-test/terraform.tfstate
+terraformprovider/examples/test/index-model-test/terraform.txt
+
+terraformprovider/examples/test/index-metadata-test/.terraform
+terraformprovider/examples/test/index-metadata-test/.terraform.lock.hcl
+terraformprovider/examples/test/index-metadata-test/terraform.tfstate
+terraformprovider/examples/test/index-metadata-test/terraform.txt

@@ -308,3 +308,14 @@ type IndexModelResponse struct {
 	BucketName string `json:"BucketName"`
 	Result     bool   `json:"Result"`
 }
+
+type IndexMetadataRequest struct {
+	AuthToken   string
+	BucketNames string `json:"BucketNames"`
+}
+
+type IndexMetadataResponse struct {
+	Bucket        string  `json:"Bucket"`
+	LastIndexTime float64 `json:"LastIndexTime"`
+	State         string  `json:"State"`
+}
