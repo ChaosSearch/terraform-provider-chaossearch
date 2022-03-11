@@ -311,7 +311,7 @@ type IndexModelResponse struct {
 
 type IndexMetadataRequest struct {
 	AuthToken   string
-	BucketNames []interface{} `json:"BucketNames"`
+	BucketNames string `json:"BucketNames"`
 }
 
 type IndexMetadataResponse struct {

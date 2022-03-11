@@ -19,12 +19,9 @@ func resourceIndexMetadata() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"bucket_names": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional: true,
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -34,7 +31,7 @@ func createResourceIndexMetadata(ctx context.Context, data *schema.ResourceData,
 	c := meta.(*ProviderMeta).CSClient
 	indexModel := &client.IndexMetadataRequest{
 		AuthToken:   meta.(*ProviderMeta).token,
-		BucketNames: data.Get("bucket_names").([]interface{}),
+		BucketNames: data.Get("bucket_names").(string),
 	}
 	resp, err := c.ReadIndexMetadata(ctx, indexModel)
 	if err != nil {

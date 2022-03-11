@@ -55,7 +55,7 @@ func (c *CSClient) processResponse(httpResp *http.Response) IndexMetadataRespons
 
 func marshalIndexMetadataRequest(req *IndexMetadataRequest) ([]byte, error) {
 	body := map[string]interface{}{
-		"BucketNames": req.BucketNames,
+		"BucketNames": []interface{}{req.BucketNames},
 	}
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
