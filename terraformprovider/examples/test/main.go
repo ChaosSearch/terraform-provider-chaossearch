@@ -347,16 +347,14 @@ func signV2AndDo(control bool, tokenValue string, req *http.Request, bodyAsBytes
 }
 
 const loginUrl = "https://ap-south-1-aeternum.chaossearch.io/user/login"
-const userName = "aeternum@chaossearch.com"
-const password = "ffpossgjjefjefojwfpjwgpwijaofnaconaonouf3n129091e901ie01292309r8jfcnsijvnsfini1j91e09ur0932hjsaakji"
 
 func Auth() (token string, err error) {
 
 	method := "POST"
 
 	login := Login{
-		Username: userName,
-		Password: password,
+		Username: "",
+		Password: "",
 	}
 
 	bodyAsBytes, err := marshalLoginRequest(&login)

@@ -1,7 +1,6 @@
 #!/bin/sh
 export TF_LOG=DEBUG && export TF_LOG_PATH="terraform.txt"
-#export TF_VAR_admin_password=$CLUSTER_ADMIN_PASSWORD TF_VAR_password=$CLUSTER_USER_PASSWORD TF_VAR_secret_access_key=$CLUSTER_SECRET_ACCESS_KEY
-export TF_VAR_admin_password=ffpossgjjefjefojwfpjwgpwijaofnaconaonouf3n129091e901ie01292309r8jfcnsijvnsfini1j91e09ur0932hjsaakji TF_VAR_password=thisIsAnEx@mple1! TF_VAR_secret_access_key=r5MEYkYntYvXqRSBMK6SFLQfPw7hHRQ0v5cqlkIk
+export TF_VAR_admin_password=$CLUSTER_ADMIN_PASSWORD TF_VAR_password=$CLUSTER_USER_PASSWORD TF_VAR_secret_access_key=$CLUSTER_SECRET_ACCESS_KEY
 shopt -s dotglob
 
 find * -prune -type d | while IFS= read -r d; do

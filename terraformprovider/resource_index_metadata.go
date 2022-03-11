@@ -30,8 +30,8 @@ func resourceIndexMetadata() *schema.Resource {
 func createResourceIndexMetadata(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*ProviderMeta).CSClient
 	indexModel := &client.IndexMetadataRequest{
-		AuthToken:   meta.(*ProviderMeta).token,
-		BucketNames: data.Get("bucket_names").(string),
+		AuthToken:  meta.(*ProviderMeta).token,
+		BucketName: data.Get("bucket_names").(string),
 	}
 	resp, err := c.ReadIndexMetadata(ctx, indexModel)
 	if err != nil {
