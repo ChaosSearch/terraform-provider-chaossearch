@@ -3,13 +3,16 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=chaossearch
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
-VERSION=0.1.7
+VERSION=0.1.1
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 
 default: install
 
-build:
-	go build -o ${BINARY}
+lint_provider:
+	./bin/golangci-lint run -c .golangci.yml
+
+build: lint_provider
+	 go build -o ${BINARY}
 
 run: install
 	cd examples && rm -rf .terraform && terraform init && terraform apply -var-file ../examples/terraform-dev.tfvars

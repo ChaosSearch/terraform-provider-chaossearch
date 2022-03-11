@@ -30,7 +30,7 @@ provider "chaossearch" {
 
 #get object group by id
 data "chaossearch_retrieve_object_group" "object-group" {
-  bucket = "user-group-01"
+  bucket = "aaaaaaa"
 }
 
 output "object_group" {

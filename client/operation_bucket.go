@@ -10,29 +10,28 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) ImportBucket(ctx context.Context, req *ImportBucketRequest) error {
-	method := "POST"
-	url := fmt.Sprintf("%s/Bucket/importBucket", csClient.config.URL)
+func (c *CSClient) ImportBucket(ctx context.Context, req *ImportBucketRequest) error {
+	url := fmt.Sprintf("%s/Bucket/importBucket", c.config.URL)
 	log.Debug("Url-->", url)
 
 	bodyAsBytes, err := marshalImportBuketRequest(req)
 	if err != nil {
 		return err
 	}
-	log.Debug("method-->", method)
+	log.Debug("method-->", POST)
 	log.Debug("bodyAsBytes-->", bodyAsBytes)
 
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
+	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
 	log.Warn("httpReq-->", httpReq)
-	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 
 	log.Warn("httpResp-->", httpResp)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", method, url, err)
+		return fmt.Errorf("failed to %s to %s: %s", POST, url, err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()

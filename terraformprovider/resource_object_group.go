@@ -1,4 +1,4 @@
-package main
+package cs
 
 import (
 	"context"
@@ -291,28 +291,28 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	data.SetId(data.Get("bucket").(string))
 
 	tokenValue := meta.(*ProviderMeta).token
-	req := &client.ReadObjectGroupRequest{
+	req := &client.ReadObjGroupReq{
 		ID:        data.Id(),
 		AuthToken: tokenValue,
 	}
 
-	resp, err := c.ReadObjectGroup(ctx, req)
+	resp, err := c.ReadObjGroup(ctx, req)
 
 	if resp == nil {
 		return diag.Errorf("Couldn't find object group: %s", err)
 	}
 
-	data.Set("object_group_id", resp.ID)
+	c.Set(data, "object_group_id", resp.ID)
 	if err != nil {
 		return diag.Errorf("Failed to read object group: %s", err)
 	}
 
-	data.Set("name", data.Id())
-	data.Set("_public", resp.Public)
-	data.Set("_type", resp.Type)
-	data.Set("content_type", resp.ContentType)
-	data.Set("_realtime", resp.Realtime)
-	data.Set("bucket", resp.Bucket)
+	c.Set(data, "name", data.Id())
+	c.Set(data, "_public", resp.Public)
+	c.Set(data, "_type", resp.Type)
+	c.Set(data, "content_type", resp.ContentType)
+	c.Set(data, "_realtime", resp.Realtime)
+	c.Set(data, "bucket", resp.Bucket)
 
 	var prefixFilterResponse = map[string]string{}
 	for k, v := range resp.ObjectFilter.And[0].(map[string]interface{}) {
@@ -341,7 +341,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	filterObjectMap["prefix_filter"] = PrefixFilter
 	filterObjectMap["regex_filter"] = RegexFilter
 	filter[0] = filterObjectMap
-	data.Set("filter", filter)
+	c.Set(data, "filter", filter)
 
 	if resp.Format != nil {
 		format := make([]interface{}, 1)
@@ -351,7 +351,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		formatObjectMap["column_delimiter"] = resp.Format.ColumnDelimiter
 		formatObjectMap["row_delimiter"] = resp.Format.RowDelimiter
 		format[0] = formatObjectMap
-		data.Set("format", format)
+		c.Set(data, "format", format)
 	}
 
 	if resp.Interval != nil {
@@ -360,7 +360,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		intervalObjectMap["column"] = resp.Interval.Mode
 		intervalObjectMap["mode"] = resp.Interval.Column
 		interval[0] = intervalObjectMap
-		data.Set("interval", interval)
+		c.Set(data, "interval", interval)
 	}
 
 	if resp.Metadata != nil {
@@ -368,7 +368,7 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		metadataObjectMap := make(map[string]interface{})
 		metadataObjectMap["creation_date"] = resp.Metadata.CreationDate
 		metadata[0] = metadataObjectMap
-		data.Set("metadata", metadata)
+		c.Set(data, "metadata", metadata)
 	}
 
 	if resp.Options != nil {
@@ -376,38 +376,38 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		optionsObjectMap := make(map[string]interface{})
 		optionsObjectMap["ignore_irregular"] = resp.Options.IgnoreIrregular
 		options[0] = optionsObjectMap
-		data.Set("options", options)
+		c.Set(data, "options", options)
 	}
 
 	RegionAvailability := make([]interface{}, 1)
 	RegionAvailability[0] = resp.RegionAvailability
-	data.Set("region_availability", RegionAvailability[0])
+	c.Set(data, "region_availability", RegionAvailability[0])
 
-	data.Set("source", resp.Source)
-	data.Set("filter_json", resp.FilterJSON)
-	data.Set("live_events_sqs_arn", resp.LiveEventsSqsArn)
+	c.Set(data, "source", resp.Source)
+	c.Set(data, "filter_json", resp.FilterJSON)
+	c.Set(data, "live_events_sqs_arn", resp.LiveEventsSqsArn)
 
-	data.Set("partition_by", resp.PartitionBy)
-	data.Set("pattern", resp.Pattern)
-	data.Set("source_bucket", resp.SourceBucket)
-	data.Set("column_selection", resp.ColumnSelection)
+	c.Set(data, "partition_by", resp.PartitionBy)
+	c.Set(data, "pattern", resp.Pattern)
+	c.Set(data, "source_bucket", resp.SourceBucket)
+	c.Set(data, "column_selection", resp.ColumnSelection)
 
 	compressionOrEmptyString := resp.Compression
 	if strings.ToLower(compressionOrEmptyString) == "none" {
 		compressionOrEmptyString = ""
 	}
 	log.Info("compression", compressionOrEmptyString)
-	data.Set("compression", compressionOrEmptyString)
-	data.Set("partition_by", resp.PartitionBy)
-	data.Set("pattern", resp.Pattern)
-	data.Set("source_bucket", resp.SourceBucket)
+	c.Set(data, "compression", compressionOrEmptyString)
+	c.Set(data, "partition_by", resp.PartitionBy)
+	c.Set(data, "pattern", resp.Pattern)
+	c.Set(data, "source_bucket", resp.SourceBucket)
 
-	data.Set("column_selection", resp.ColumnSelection)
+	c.Set(data, "column_selection", resp.ColumnSelection)
 
 	if resp.ArrayFlattenDepth == nil {
-		data.Set("array_flatten_depth", -1)
+		c.Set(data, "array_flatten_depth", -1)
 	} else {
-		data.Set("array_flatten_depth", resp.ArrayFlattenDepth)
+		c.Set(data, "array_flatten_depth", resp.ArrayFlattenDepth)
 	}
 
 	return diags

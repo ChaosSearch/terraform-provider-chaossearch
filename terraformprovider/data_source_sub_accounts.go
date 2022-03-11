@@ -1,4 +1,4 @@
-package main
+package cs
 
 import (
 	"context"
@@ -67,7 +67,7 @@ func readAllSubAccounts(ctx context.Context, data *schema.ResourceData, meta int
 			"activated": subAccount.Activated,
 			"full_name": subAccount.FullName,
 			"hocon":     subAccount.Hocon,
-			"uid":       subAccount.Uid,
+			"uid":       subAccount.UID,
 			"username":  subAccount.Username,
 			"group_ids": subAccount.GroupIds,
 		}

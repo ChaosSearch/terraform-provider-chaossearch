@@ -8,21 +8,21 @@ import (
 	"net/url"
 )
 
-func (csClient *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
-	method := "DELETE"
-	safeObjectGroupName := url.PathEscape(req.Name)
-	deleteUrl := fmt.Sprintf("%s/V1/%s", csClient.config.URL, safeObjectGroupName)
+func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
 
-	httpReq, err := http.NewRequestWithContext(ctx, method, deleteUrl, nil)
+	safeObjectGroupName := url.PathEscape(req.Name)
+	deleteURL := fmt.Sprintf("%s/V1/%s", c.config.URL, safeObjectGroupName)
+
+	httpReq, err := http.NewRequestWithContext(ctx, DELETE, deleteURL, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %s", err)
 	}
 
 	sessionToken := req.AuthToken
-	httpResp, err := csClient.signV2AndDo(sessionToken, httpReq, nil)
+	httpResp, err := c.signV2AndDo(sessionToken, httpReq, nil)
 
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", method, deleteUrl, err)
+		return fmt.Errorf("failed to %s to %s: %s", POST, deleteURL, err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
