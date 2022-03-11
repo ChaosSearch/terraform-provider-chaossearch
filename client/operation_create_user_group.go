@@ -20,7 +20,7 @@ func (c *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %s", err)
 	}
-	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to %s to %s: %s", POST, url, err)
 	}

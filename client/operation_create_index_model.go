@@ -9,20 +9,20 @@ import (
 	"net/http"
 )
 
-func (csClient *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest) (*IndexModelResponse, error) {
-	method := "POST"
-	url := fmt.Sprintf("%s/Bucket/model", csClient.config.URL)
-	bodyAsBytes, err := marshalIndexModelRequest(req)
+func (c *CSClient) CreateIndexModel(x context.Context, e *IndexModelRequest) (*IndexModelResponse, error) {
+	//method := "POST"
+	url := fmt.Sprintf("%s/Bucket/model", c.config.URL)
+	bodyAsBytes, err := marshalIndexModelRequest(e)
 	if err != nil {
 		return nil, err
 	}
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(bodyAsBytes))
+	httpReq, err := http.NewRequestWithContext(x, POST, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %s", err)
 	}
-	httpResp, err := csClient.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.signV2AndDo(e.AuthToken, httpReq, bodyAsBytes)
 	if err != nil {
-		return nil, fmt.Errorf("failed to %s to %s: %s", method, url, err)
+		return nil, fmt.Errorf("failed to %s to %s: %s", POST, url, err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -31,7 +31,7 @@ func (csClient *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelR
 		}
 	}(httpResp.Body)
 	var indexModelResponse IndexModelResponse
-	if err := csClient.unmarshalJSONBody(httpResp.Body, &indexModelResponse); err != nil {
+	if err := c.unmarshalJSONBody(httpResp.Body, &indexModelResponse); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON response body: %s", err)
 	}
 	return &indexModelResponse, err
