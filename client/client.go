@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -15,8 +14,26 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	log "github.com/sirupsen/logrus"
 )
+
+type Configuration struct {
+	URL             string
+	AccessKeyID     string
+	SecretAccessKey string
+	AWSServiceName  string
+	Region          string
+	Login           *Login
+}
+
+type Login struct {
+	Username     string
+	Password     string
+	ParentUserID string `json:"ParentUserID,omitempty"`
+}
 
 type CSClient struct {
 	config     *Configuration
@@ -31,6 +48,21 @@ const (
 	PUT    string = "PUT"
 	DELETE string = "DELETE"
 )
+
+func (c *CSClient) Set(data *schema.ResourceData, key string, value interface{}) {
+	err := data.Set(key, value)
+	if err != nil {
+		return
+	}
+}
+
+func NewConfiguration() *Configuration {
+	cfg := &Configuration{
+		AWSServiceName: "s3",
+	}
+
+	return cfg
+}
 
 func NewClient(config *Configuration, login *Login) *CSClient {
 	binaryName := os.Getenv("BINARY")

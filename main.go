@@ -1,12 +1,13 @@
 package main
 
 import (
-	cs "cs-tf-provider/terraformprovider"
+	cs "cs-tf-provider/provider"
 	"fmt"
+	"os"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	log "github.com/sirupsen/logrus"
-	"os"
 )
 
 func main() {

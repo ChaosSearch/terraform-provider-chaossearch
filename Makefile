@@ -9,13 +9,13 @@ OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 default: install
 
 lint_provider:
-	./bin/golangci-lint run -c .golangci.yml
+	golangci-lint run -c .golangci.yml
 
 build: lint_provider
 	 go build -o ${BINARY}
 
 run: install
-	cd examples && rm -rf .terraform && terraform init && terraform apply -var-file ../examples/terraform-dev.tfvars
+	cd provider/examples && rm -rf .terraform && terraform init && terraform apply -var-file ../examples/terraform-dev.tfvars
 
 release:
 	GOOS=darwin GOARCH=arm64 go build -o ./bin/${BINARY}_${VERSION}_${OS_ARCH}
