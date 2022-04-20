@@ -19,8 +19,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type Configuration struct {
@@ -173,25 +171,23 @@ func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes
 	req.Header.Add("x-amz-cs3-authorization", auth)
 	resp, e := c.httpClient.Do(req)
 	if e != nil {
-		return nil, fmt.Errorf("failed to execute request: %s", e)
+		return nil, fmt.Errorf("Failed to execute request => Error: %s", e)
 	}
 
 	if resp.Body == http.NoBody {
-		body, err := ioutil.ReadAll(resp.Body)
+		_, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read response body--->: %s", err)
+			return nil, utils.ReadResponseError(err)
 		}
-		log.Info("Response Body -->", string(body))
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		respAsBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read response body: %s", err)
+			return nil, utils.ReadResponseError(err)
 		}
-		return nil, fmt.Errorf(
-			"expected a 2xx status code, but got %d.\nMethod: %s\nURL: %s\nRequest body: %s\nResponse body: %s",
-			resp.StatusCode, req.Method, req.URL, bodyAsBytes, respAsBytes)
+
+		return nil, utils.ResponseCodeError(resp, req, bodyAsBytes, respAsBytes)
 	}
 
 	return resp, nil
