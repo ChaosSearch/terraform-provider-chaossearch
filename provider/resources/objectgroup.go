@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	log "github.com/sirupsen/logrus"
 )
 
 func ResourceObjectGroup() *schema.Resource {
@@ -265,7 +264,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		RegexFilter:  &regexFilter,
 	}
 	tokenValue := meta.(*models.ProviderMeta).Token
-	log.Warn("token value-->", tokenValue)
+
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
 		AuthToken:      tokenValue,
 		Bucket:         data.Get("bucket").(string),
@@ -397,7 +396,7 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	if strings.ToLower(compressionOrEmptyString) == "none" {
 		compressionOrEmptyString = ""
 	}
-	log.Info("compression", compressionOrEmptyString)
+
 	c.Set(data, "compression", compressionOrEmptyString)
 	c.Set(data, "partition_by", resp.PartitionBy)
 	c.Set(data, "pattern", resp.Pattern)

@@ -3,17 +3,15 @@ package client
 import (
 	"bytes"
 	"context"
+	"cs-tf-provider/client/utils"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 )
 
 func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroupRequest) error {
-
 	url := fmt.Sprintf("%s/Bucket/createObjectGroup", c.config.URL)
-
 	bodyAsBytes, err := marshalCreateObjectGroupRequest(req)
 	if err != nil {
 		return err
@@ -21,20 +19,15 @@ func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroup
 
 	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
-		return fmt.Errorf("failed to create request: %s", err)
+		return utils.CreateRequestError(err)
 	}
 
 	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
-
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", POST, url, err)
+		return utils.SubmitRequestError(POST, url, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			_ = fmt.Errorf("failed to Close response body  %s", err)
-		}
-	}(httpResp.Body)
+	defer httpResp.Body.Close()
+
 	return nil
 }
 
@@ -49,27 +42,20 @@ func (c *CSClient) ReadObjGroup(x context.Context, e *ReadObjGroupReq) (*ReadObj
 
 func (c *CSClient) read(x context.Context, e *ReadObjGroupReq, r *ReadObjGroupResp) error {
 	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, e.ID)
-
 	httpReq, err := http.NewRequestWithContext(x, GET, url, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %s", err)
+		return utils.CreateRequestError(err)
 	}
 
 	httpResp, err := c.signV2AndDo(e.AuthToken, httpReq, nil)
-
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", POST, url, err)
+		return utils.SubmitRequestError(GET, url, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			_ = fmt.Errorf("failed to Close response body  %s", err)
-		}
-	}(httpResp.Body)
+	defer httpResp.Body.Close()
 
 	var ReadObjectGroup ReadObjGroupResp
 	if err := c.unmarshalJSONBody(httpResp.Body, &ReadObjectGroup); err != nil {
-		return fmt.Errorf("failed to unmarshal JSON response body: %s", err)
+		return err
 	}
 	r.Format = ReadObjectGroup.Format
 
@@ -95,9 +81,7 @@ func (c *CSClient) read(x context.Context, e *ReadObjGroupReq, r *ReadObjGroupRe
 }
 
 func (c *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroupRequest) error {
-
 	url := fmt.Sprintf("%s/Bucket/updateObjectGroup", c.config.URL)
-
 	bodyAsBytes, err := marshalUpdateObjectGroupRequest(req)
 	if err != nil {
 		return err
@@ -105,20 +89,14 @@ func (c *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroup
 
 	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
-		return fmt.Errorf("failed to create request: %s", err)
+		return utils.CreateRequestError(err)
 	}
 
 	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
-
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", POST, url, err)
+		return utils.SubmitRequestError(POST, url, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			_ = fmt.Errorf("failed to Close response body  %s", err)
-		}
-	}(httpResp.Body)
+	defer httpResp.Body.Close()
 
 	return nil
 }
@@ -134,34 +112,27 @@ func marshalUpdateObjectGroupRequest(req *UpdateObjectGroupRequest) ([]byte, err
 
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return nil, utils.MarshalJsonError(err)
 	}
 
 	return bodyAsBytes, nil
 }
 
 func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
-
 	safeObjectGroupName := url.PathEscape(req.Name)
-	deleteURL := fmt.Sprintf("%s/V1/%s", c.config.URL, safeObjectGroupName)
-
-	httpReq, err := http.NewRequestWithContext(ctx, DELETE, deleteURL, nil)
+	url := fmt.Sprintf("%s/V1/%s", c.config.URL, safeObjectGroupName)
+	httpReq, err := http.NewRequestWithContext(ctx, DELETE, url, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %s", err)
+		return utils.CreateRequestError(err)
 	}
 
 	sessionToken := req.AuthToken
 	httpResp, err := c.signV2AndDo(sessionToken, httpReq, nil)
-
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", POST, deleteURL, err)
+		return utils.SubmitRequestError(DELETE, url, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			_ = fmt.Errorf("failed to Close response body  %s", err)
-		}
-	}(httpResp.Body)
+	defer httpResp.Body.Close()
+
 	return nil
 }
 
@@ -191,10 +162,10 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		},
 		"realtime": req.Realtime,
 	}
-	bodyAsBytes, err := json.Marshal(body)
 
+	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return nil, utils.MarshalJsonError(err)
 	}
 
 	return bodyAsBytes, nil

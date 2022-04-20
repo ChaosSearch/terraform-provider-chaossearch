@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha1"
+	"cs-tf-provider/client/utils"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
@@ -84,11 +85,6 @@ func NewClient(config *Configuration, login *Login) *CSClient {
 func (c *CSClient) Auth(ctx context.Context) (token string, err error) {
 	url := fmt.Sprintf("%s/user/login", c.config.URL)
 	login := c.Login
-
-	log.Warn("url-->", url)
-	log.Warn("username-->", login.Username)
-	log.Warn("parent user id-->", login.ParentUserID)
-
 	bodyAsBytes, err := marshalLoginRequest(login)
 	if err != nil {
 		return "", err
@@ -96,35 +92,23 @@ func (c *CSClient) Auth(ctx context.Context) (token string, err error) {
 
 	req, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
-		return "", fmt.Errorf("failed to create request: %s", err)
+		return "", utils.CreateRequestError(err)
 	}
-	log.Debug(" adding headers...")
 
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
 	req.Header.Add("x-amz-chaossumo-route-token", "login")
 	req.Header.Add("Content-Type", "text/plain")
-
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return "", utils.SubmitRequestError(POST, url, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			_ = fmt.Errorf("failed to Close response body  %s", err)
-		}
-	}(res.Body)
+	defer res.Body.Close()
+
 	// TODO add a status call once successful login to ensure that the user is actually deployed
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return "", utils.ReadResponseError(err)
 	}
-	fmt.Println(string(body))
+
 	return string(body), nil
 }
 
@@ -145,28 +129,22 @@ func marshalLoginRequest(req *Login) ([]byte, error) {
 
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return nil, utils.MarshalJsonError(err)
 	}
 	return bodyAsBytes, nil
 }
 
 func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
-	log.Debug("------- AWS V2 Sign Starts------")
-
 	claims := jwt.MapClaims{}
-	log.Debug("token-->", tokenValue)
-
 	_, _, err := new(jwt.Parser).ParseUnverified(tokenValue, claims)
-
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %s", err)
+		return nil, fmt.Errorf("Failed to parse JWT => Error: %s", err)
 	}
 
 	accessKey := claims["AccessKeyId"].(string)
 	secretAccessKey := claims["SecretAccessKey"].(string)
 	externalID := claims["external_id"].(string)
 	dateTime := time.Now().UTC().String()
-
 	req.Header.Add("Content-Type", "application/json")
 
 	var routeToken string
@@ -180,9 +158,6 @@ func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes
 	req.Header.Add("x-amz-security-token", tokenValue)
 	req.Header.Add("X-Amz-Date", dateTime)
 
-	log.Debug("headers -->", req.Header)
-	log.Debug("req.URL.Path -->", req.URL.Path)
-
 	msgLines := []string{
 		req.Method, "",
 		"application/json", "",
@@ -193,36 +168,21 @@ func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes
 	}
 
 	msg := strings.Join(msgLines, "\n")
-	log.Debug("msg-->", msg)
-
 	auth := "AWS " + accessKey + ":" + generateSignature(secretAccessKey, msg)
-	log.Debug("auth-->", auth)
-
 	req.Header.Add("Authorization", auth)
 	req.Header.Add("x-amz-cs3-authorization", auth)
-	log.Debug("req.Header-->", req.Header)
-
 	resp, e := c.httpClient.Do(req)
 	if e != nil {
 		return nil, fmt.Errorf("failed to execute request: %s", e)
 	}
 
-	if req.Body != nil {
-		if req.Body == http.NoBody {
-			reqBody, _ := ioutil.ReadAll(req.Body)
-			log.Info("Request Body -->", string(reqBody))
-		}
-	}
-
 	if resp.Body == http.NoBody {
-		body, err1 := ioutil.ReadAll(resp.Body)
-		if err1 != nil {
-			return nil, fmt.Errorf("failed to read response body--->: %s", err1)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read response body--->: %s", err)
 		}
 		log.Info("Response Body -->", string(body))
 	}
-
-	log.Warn("Got response:Status code: ", resp.StatusCode)
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		respAsBytes, err := ioutil.ReadAll(resp.Body)
@@ -233,7 +193,7 @@ func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes
 			"expected a 2xx status code, but got %d.\nMethod: %s\nURL: %s\nRequest body: %s\nResponse body: %s",
 			resp.StatusCode, req.Method, req.URL, bodyAsBytes, respAsBytes)
 	}
-	log.Debug("------- AWS V2 Sign Ends------")
+
 	return resp, nil
 }
 
@@ -255,11 +215,11 @@ func isAdminAPI(url string) bool {
 func (c *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
-		return fmt.Errorf("failed to read body: %s", err)
+		return utils.ReadResponseError(err)
 	}
-	log.Printf("Unmarshalling JSON:-->%s<--", bodyAsBytes)
+
 	if err := json.Unmarshal(bodyAsBytes, v); err != nil {
-		return fmt.Errorf("failed to unmarshal JSON: %s", err)
+		return utils.UnmarshalJsonError(err)
 	}
 	return nil
 }
@@ -267,11 +227,11 @@ func (c *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error 
 func (c *CSClient) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
 	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
-		return fmt.Errorf("failed to read body: %s", err)
+		return utils.ReadResponseError(err)
 	}
-	//log.Warn("Unmarshalling XML:", bodyAsBytes)
+
 	if err := xml.Unmarshal(bodyAsBytes, v); err != nil {
-		return fmt.Errorf("failed to unmarshal XML: %s", err)
+		return utils.UnmarshalXmlError(err)
 	}
 	return nil
 }

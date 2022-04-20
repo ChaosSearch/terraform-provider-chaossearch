@@ -3,20 +3,15 @@ package client
 import (
 	"bytes"
 	"context"
+	"cs-tf-provider/client/utils"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (c *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error {
-
 	url := fmt.Sprintf("%s/Bucket/createView", c.config.URL)
-	log.Debug("Url-->", url)
-	log.Debug("req-->", req)
 	bodyAsBytes, err := marshalCreateViewRequest(req)
 	if err != nil {
 		return err
@@ -24,23 +19,14 @@ func (c *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error
 
 	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
-		return fmt.Errorf("failed to create request: %s", err)
+		return utils.CreateRequestError(err)
 	}
-	log.Debug(" adding headers...")
-	log.Warn("httpReq-->", httpReq)
 
 	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
-
-	log.Warn("httpResp-->", httpResp)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", POST, url, err)
+		return utils.SubmitRequestError(POST, url, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			_ = fmt.Errorf("failed to Close response body  %s", err)
-		}
-	}(httpResp.Body)
+	defer httpResp.Body.Close()
 
 	return nil
 }
@@ -57,24 +43,18 @@ func (c *CSClient) readViewAttr(x context.Context, e *ReadViewRequest, r *ReadVi
 	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, e.ID)
 	httpReq, err := http.NewRequestWithContext(x, GET, url, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %s", err)
+		return utils.CreateRequestError(err)
 	}
 
 	httpResp, err := c.signV2AndDo(e.AuthToken, httpReq, nil)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", GET, url, err)
+		return utils.SubmitRequestError(GET, url, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			_ = fmt.Errorf("failed to Close response body  %s", err)
-		}
-	}(httpResp.Body)
+	defer httpResp.Body.Close()
 
 	var read ReadViewResponse
-
 	if err := c.unmarshalJSONBody(httpResp.Body, &read); err != nil {
-		return fmt.Errorf("failed to unmarshal JSON response body: %s", err)
+		return err
 	}
 
 	r.FilterPredicate = read.FilterPredicate
@@ -94,32 +74,24 @@ func (c *CSClient) readViewAttr(x context.Context, e *ReadViewRequest, r *ReadVi
 }
 
 func (c *CSClient) DeleteView(ctx context.Context, req *DeleteViewRequest) error {
-
 	safeViewName := url.PathEscape(req.Name)
 	deleteViewURL := fmt.Sprintf("%s/V1/%s", c.config.URL, safeViewName)
-
 	httpReq, err := http.NewRequestWithContext(ctx, DELETE, deleteViewURL, nil)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %s", err)
+		return utils.CreateRequestError(err)
 	}
 
 	sessionToken := req.AuthToken
 	httpResp, err := c.signV2AndDo(sessionToken, httpReq, nil)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", POST, deleteViewURL, err)
+		return utils.SubmitRequestError(DELETE, deleteViewURL, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			_ = fmt.Errorf("failed to Close response body %s", err)
-		}
-	}(httpResp.Body)
+	defer httpResp.Body.Close()
 
 	return nil
 }
 
 func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
-	log.Debug("req.Sources-->", req.Sources)
 	body := map[string]interface{}{
 		"bucket":          req.Bucket,
 		"sources":         req.Sources,
@@ -134,7 +106,8 @@ func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
 
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return nil, utils.MarshalJsonError(err)
 	}
+
 	return bodyAsBytes, nil
 }
