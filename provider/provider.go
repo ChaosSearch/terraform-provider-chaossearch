@@ -3,6 +3,9 @@ package provider
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/provider/datasources"
+	"cs-tf-provider/provider/models"
+	"cs-tf-provider/provider/resources"
 	"encoding/json"
 	"fmt"
 
@@ -11,18 +14,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type ProviderMeta struct {
-	CSClient *client.CSClient
-	token    string
-}
-
-type AuthResponse struct {
-	Token string
-}
-
 // Provider -
 func Provider() *schema.Provider {
-
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"url": {
@@ -67,22 +60,22 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"chaossearch_object_group":   resourceObjectGroup(),
-			"chaossearch_view":           resourceView(),
-			"chaossearch_sub_account":    resourceSubAccount(),
-			"chaossearch_user_group":     resourceUserGroup(),
-			"chaossearch_index_model":    resourceIndexModel(),
-			"chaossearch_index_metadata": resourceIndexMetadata(),
+			"chaossearch_object_group":   resources.ResourceObjectGroup(),
+			"chaossearch_view":           resources.ResourceView(),
+			"chaossearch_sub_account":    resources.ResourceSubAccount(),
+			"chaossearch_user_group":     resources.ResourceUserGroup(),
+			"chaossearch_index_model":    resources.ResourceIndexModel(),
+			"chaossearch_index_metadata": resources.ResourceIndexMetadata(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"chaossearch_retrieve_object_groups": dataSourceObjectGroups(),
-			"chaossearch_retrieve_object_group":  dataSourceObjectGroup(),
-			"chaossearch_retrieve_views":         dataSourceViews(),
-			"chaossearch_retrieve_view":          dataSourceView(),
-			"chaossearch_retrieve_sub_accounts":  dataSourceSubAccounts(),
-			"chaossearch_retrieve_groups":        dataSourceUserGroups(),
-			"chaossearch_retrieve_user_group":    dataSourceUserGroup(),
+			"chaossearch_retrieve_object_groups": datasources.DataSourceObjectGroups(),
+			"chaossearch_retrieve_object_group":  datasources.DataSourceObjectGroup(),
+			"chaossearch_retrieve_views":         datasources.DataSourceViews(),
+			"chaossearch_retrieve_view":          datasources.DataSourceView(),
+			"chaossearch_retrieve_sub_accounts":  datasources.DataSourceSubAccounts(),
+			"chaossearch_retrieve_groups":        datasources.DataSourceUserGroups(),
+			"chaossearch_retrieve_user_group":    datasources.DataSourceUserGroup(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
@@ -143,15 +136,15 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		return nil, diag.Errorf("Token generation fail..")
 
 	}
-	tokenData := AuthResponse{}
+	tokenData := models.AuthResponse{}
 
 	if err := json.Unmarshal([]byte(authResponseString), &tokenData); err != nil {
 		return fmt.Errorf("failed to unmarshal JSON: %s", err), nil
 	}
 
-	providerMeta := &ProviderMeta{
+	providerMeta := &models.ProviderMeta{
 		CSClient: csClient,
-		token:    tokenData.Token,
+		Token:    tokenData.Token,
 	}
 	return providerMeta, nil
 

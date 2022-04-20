@@ -1,18 +1,19 @@
-package provider
+package resources
 
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	log "github.com/sirupsen/logrus"
 )
 
-func resourceView() *schema.Resource {
+func ResourceView() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceViewCreate,
-		ReadContext:   resourceViewRead,
+		ReadContext:   ResourceViewRead,
 		UpdateContext: resourceViewUpdate,
 		DeleteContext: resourceViewDelete,
 		Importer: &schema.ResourceImporter{
@@ -160,7 +161,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 	data.SetId(data.Get("bucket").(string))
 
-	return resourceViewRead(ctx, data, meta)
+	return ResourceViewRead(ctx, data, meta)
 
 }
 
@@ -199,8 +200,8 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO
 		Predicate: &Predicate,
 	}
 
-	c := meta.(*ProviderMeta).CSClient
-	tokenValue := meta.(*ProviderMeta).token
+	c := meta.(*models.ProviderMeta).CSClient
+	tokenValue := meta.(*models.ProviderMeta).Token
 
 	sources, ok := data.GetOk("sources")
 	if !ok {
@@ -231,12 +232,12 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO
 	return &ViewRequestDTO
 }
 
-func resourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Get("bucket").(string))
 	diags := diag.Diagnostics{}
-	c := meta.(*ProviderMeta).CSClient
+	c := meta.(*models.ProviderMeta).CSClient
 
-	tokenValue := meta.(*ProviderMeta).token
+	tokenValue := meta.(*models.ProviderMeta).Token
 	req := &client.ReadViewRequest{
 		AuthToken: tokenValue,
 		ID:        data.Id(),
@@ -332,13 +333,13 @@ func resourceViewUpdate(ctx context.Context, data *schema.ResourceData, meta int
 
 	data.SetId(data.Get("bucket").(string))
 
-	return resourceViewRead(ctx, data, meta)
+	return ResourceViewRead(ctx, data, meta)
 }
 
 func resourceViewDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).CSClient
+	c := meta.(*models.ProviderMeta).CSClient
 
-	tokenValue := meta.(*ProviderMeta).token
+	tokenValue := meta.(*models.ProviderMeta).Token
 	deleteViewRequest := &client.DeleteViewRequest{
 		AuthToken: tokenValue,
 		Name:      data.Get("bucket").(string),

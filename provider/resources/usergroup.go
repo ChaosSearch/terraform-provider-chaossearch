@@ -1,14 +1,15 @@
-package provider
+package resources
 
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceUserGroup() *schema.Resource {
+func ResourceUserGroup() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceGroupCreate,
 		ReadContext:   resourceGroupRead,
@@ -161,8 +162,8 @@ func resourceUserGroup() *schema.Resource {
 }
 
 func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).CSClient
-	tokenValue := meta.(*ProviderMeta).token
+	c := meta.(*models.ProviderMeta).CSClient
+	tokenValue := meta.(*models.ProviderMeta).Token
 
 	var id, name string
 	var permissionList []client.Permission
@@ -264,8 +265,8 @@ func GroupObject(data *schema.ResourceData, dto GroupObjectDTO) (string, string,
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	data.SetId(data.Id())
 	diags := diag.Diagnostics{}
-	c := meta.(*ProviderMeta).CSClient
-	tokenValue := meta.(*ProviderMeta).token
+	c := meta.(*models.ProviderMeta).CSClient
+	tokenValue := meta.(*models.ProviderMeta).Token
 	req := &client.ReadUserGroupRequest{
 		AuthToken: tokenValue,
 		ID:        data.Id(),
@@ -308,8 +309,8 @@ func CreateUserGroupResponse(resp *client.Group) []map[string]interface{} {
 }
 
 func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).CSClient
-	tokenValue := meta.(*ProviderMeta).token
+	c := meta.(*models.ProviderMeta).CSClient
+	tokenValue := meta.(*models.ProviderMeta).Token
 	var id, name string
 	var permissionList []client.Permission
 	var conditionList []client.Condition
@@ -338,9 +339,9 @@ func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta in
 }
 
 func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).CSClient
+	c := meta.(*models.ProviderMeta).CSClient
 
-	tokenValue := meta.(*ProviderMeta).token
+	tokenValue := meta.(*models.ProviderMeta).Token
 	deleteUserGroupRequest := &client.DeleteUserGroupRequest{
 		AuthToken: tokenValue,
 		ID:        data.Id(),

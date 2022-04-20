@@ -1,7 +1,8 @@
-package provider
+package datasources
 
 import (
 	"context"
+	"cs-tf-provider/provider/models"
 	"strconv"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceSubAccounts() *schema.Resource {
+func DataSourceSubAccounts() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: readAllSubAccounts,
 		Schema: map[string]*schema.Schema{
@@ -54,8 +55,8 @@ func dataSourceSubAccounts() *schema.Resource {
 }
 
 func readAllSubAccounts(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*ProviderMeta).CSClient
-	tokenValue := meta.(*ProviderMeta).token
+	client := meta.(*models.ProviderMeta).CSClient
+	tokenValue := meta.(*models.ProviderMeta).Token
 	usersResponse, err := client.ListUsers(ctx, tokenValue)
 	if err != nil {
 		return diag.FromErr(err)

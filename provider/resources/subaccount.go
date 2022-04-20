@@ -1,14 +1,15 @@
-package provider
+package resources
 
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/provider/models"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceSubAccount() *schema.Resource {
+func ResourceSubAccount() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceSubAccountCreate,
 		ReadContext:   resourceSubAccountRead,
@@ -68,7 +69,7 @@ func resourceSubAccount() *schema.Resource {
 }
 
 func resourceSubAccountCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).CSClient
+	c := meta.(*models.ProviderMeta).CSClient
 	columnSelectionInterface := data.Get("user_info_block").(*schema.Set).List()[0].(map[string]interface{})
 
 	userInfoBlock := client.UserInfoBlock{
@@ -78,7 +79,7 @@ func resourceSubAccountCreate(ctx context.Context, data *schema.ResourceData, me
 	}
 
 	createSubAccountRequest := &client.CreateSubAccountRequest{
-		AuthToken:     meta.(*ProviderMeta).token,
+		AuthToken:     meta.(*models.ProviderMeta).Token,
 		UserInfoBlock: userInfoBlock,
 		GroupIds:      data.Get("group_ids").([]interface{}),
 		Password:      data.Get("password").(string),
@@ -100,10 +101,10 @@ func resourceSubAccountRead(ctx context.Context, data *schema.ResourceData, meta
 //}
 
 func resourceSubAccountDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).CSClient
+	c := meta.(*models.ProviderMeta).CSClient
 	userInfoBlockData := data.Get("user_info_block").(*schema.Set).List()[0].(map[string]interface{})
 	deleteSubAccountRequest := &client.DeleteSubAccountRequest{
-		AuthToken: meta.(*ProviderMeta).token,
+		AuthToken: meta.(*models.ProviderMeta).Token,
 		Username:  userInfoBlockData["username"].(string),
 	}
 

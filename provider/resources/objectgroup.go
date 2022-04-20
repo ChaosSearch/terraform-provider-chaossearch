@@ -1,8 +1,9 @@
-package provider
+package resources
 
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/provider/models"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,10 +11,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func resourceObjectGroup() *schema.Resource {
+func ResourceObjectGroup() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceObjectGroupCreate,
-		ReadContext:   resourceObjectGroupRead,
+		ReadContext:   ResourceObjectGroupRead,
 		UpdateContext: resourceObjectGroupUpdate,
 		DeleteContext: resourceObjectGroupDelete,
 		Importer: &schema.ResourceImporter{
@@ -203,7 +204,7 @@ func resourceObjectGroup() *schema.Resource {
 }
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).CSClient
+	c := meta.(*models.ProviderMeta).CSClient
 
 	formatColumnSelectionInterface := data.Get("format").(*schema.Set).List()[0].(map[string]interface{})
 	intervalColumnSelectionInterface := data.Get("interval").(*schema.Set).List()[0].(map[string]interface{})
@@ -263,7 +264,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		PrefixFilter: &prefixFilter,
 		RegexFilter:  &regexFilter,
 	}
-	tokenValue := meta.(*ProviderMeta).token
+	tokenValue := meta.(*models.ProviderMeta).Token
 	log.Warn("token value-->", tokenValue)
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
 		AuthToken:      tokenValue,
@@ -281,17 +282,16 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	data.SetId(data.Get("bucket").(string))
-	return resourceObjectGroupRead(ctx, data, meta)
-
+	return ResourceObjectGroupRead(ctx, data, meta)
 }
 
-func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
-	c := meta.(*ProviderMeta).CSClient
+	c := meta.(*models.ProviderMeta).CSClient
 
 	data.SetId(data.Get("bucket").(string))
 
-	tokenValue := meta.(*ProviderMeta).token
+	tokenValue := meta.(*models.ProviderMeta).Token
 	req := &client.ReadObjGroupReq{
 		ID:        data.Id(),
 		AuthToken: tokenValue,
@@ -415,8 +415,8 @@ func resourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 }
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).CSClient
-	tokenValue := meta.(*ProviderMeta).token
+	c := meta.(*models.ProviderMeta).CSClient
+	tokenValue := meta.(*models.ProviderMeta).Token
 	updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
 		AuthToken:             tokenValue,
 		Bucket:                data.Get("bucket").(string),
@@ -430,12 +430,12 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return resourceObjectGroupRead(ctx, data, meta)
+	return ResourceObjectGroupRead(ctx, data, meta)
 }
 
 func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*ProviderMeta).CSClient
-	tokenValue := meta.(*ProviderMeta).token
+	c := meta.(*models.ProviderMeta).CSClient
+	tokenValue := meta.(*models.ProviderMeta).Token
 	deleteObjectGroupRequest := &client.DeleteObjectGroupRequest{
 		AuthToken: tokenValue,
 		Name:      data.Get("bucket").(string),
