@@ -3,15 +3,14 @@ package provider
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/client/utils"
 	"cs-tf-provider/provider/datasources"
 	"cs-tf-provider/provider/models"
 	"cs-tf-provider/provider/resources"
 	"encoding/json"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	log "github.com/sirupsen/logrus"
 )
 
 // Provider -
@@ -130,8 +129,6 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	authResponseString, err := csClient.Auth(ctx)
 
-	log.Debug("authResponseString-->", authResponseString)
-
 	if err != nil {
 		return nil, diag.Errorf("Token generation fail..")
 
@@ -139,7 +136,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	tokenData := models.AuthResponse{}
 
 	if err := json.Unmarshal([]byte(authResponseString), &tokenData); err != nil {
-		return fmt.Errorf("failed to unmarshal JSON: %s", err), nil
+		return utils.UnmarshalJsonError(err), nil
 	}
 
 	providerMeta := &models.ProviderMeta{

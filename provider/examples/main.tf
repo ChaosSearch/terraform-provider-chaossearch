@@ -88,7 +88,7 @@ output "chaossearch_retrieve_groups" {
 }
 
 resource "chaossearch_object_group" "create-object-group" {
-  bucket = "test-object-group-tera7"
+  bucket = "test-object-group-tera8"
   source = "chaossearch-tf-provider-test"
   format {
     _type            = "CSV"
