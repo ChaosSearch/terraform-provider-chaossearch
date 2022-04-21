@@ -3,16 +3,14 @@ package client
 import (
 	"bytes"
 	"context"
+	"cs-tf-provider/client/utils"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
 func (c *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRequest) error {
-
 	url := fmt.Sprintf("%s/user/createSubAccount", c.config.URL)
-
 	bodyAsBytes, err := marshalCreateSubAccountRequest(req)
 	if err != nil {
 		return err
@@ -20,44 +18,36 @@ func (c *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRe
 
 	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
 	if err != nil {
-		return fmt.Errorf("failed to create request: %s", err)
+		return utils.CreateRequestError(err)
 	}
 
 	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
-
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", POST, url, err)
+		return utils.SubmitRequestError(POST, url, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			_ = fmt.Errorf("failed to Close response body  %s", err)
-		}
-	}(httpResp.Body)
+	defer httpResp.Body.Close()
+
 	return nil
 }
 
 func (c *CSClient) DeleteSubAccount(ctx context.Context, req *DeleteSubAccountRequest) error {
-
-	deleteURL := fmt.Sprintf("%s/user/deleteSubAccount", c.config.URL)
-
-	bodyAsBytes, _ := marshalDeleteSubAccountRequest(req)
-	httpReq, err := http.NewRequestWithContext(ctx, POST, deleteURL, bytes.NewReader(bodyAsBytes))
-
+	url := fmt.Sprintf("%s/user/deleteSubAccount", c.config.URL)
+	bodyAsBytes, err := marshalDeleteSubAccountRequest(req)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %s", err)
+		return err
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
+	if err != nil {
+		return utils.CreateRequestError(err)
 	}
 
 	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
 	if err != nil {
-		return fmt.Errorf("failed to %s to %s: %s", POST, deleteURL, err)
+		return utils.SubmitRequestError(POST, url, err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			_ = fmt.Errorf("failed to Close response body  %s", err)
-		}
-	}(httpResp.Body)
+	defer httpResp.Body.Close()
+
 	return nil
 }
 
@@ -72,10 +62,12 @@ func marshalCreateSubAccountRequest(req *CreateSubAccountRequest) ([]byte, error
 		"Password": req.Password,
 		"Hocon":    req.HoCon,
 	}
+
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return nil, utils.MarshalJsonError(err)
 	}
+
 	return bodyAsBytes, nil
 }
 
@@ -83,9 +75,11 @@ func marshalDeleteSubAccountRequest(req *DeleteSubAccountRequest) ([]byte, error
 	body := map[string]interface{}{
 		"Username": req.Username,
 	}
+
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return nil, utils.MarshalJsonError(err)
 	}
+
 	return bodyAsBytes, nil
 }
