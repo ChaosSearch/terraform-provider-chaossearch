@@ -157,6 +157,7 @@ func (client *CSClient) createAndSendReq(
 		return nil, utils.SubmitRequestError(requestType, url, err)
 	}
 
+	defer httpReq.Body.Close()
 	return httpResp, nil
 }
 

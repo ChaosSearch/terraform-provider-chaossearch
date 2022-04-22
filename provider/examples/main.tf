@@ -88,7 +88,7 @@ output "object_group_retrieve_sub_accounts" {
 
 
 resource "chaossearch_object_group" "create-object-group" {
-  bucket = "test-object-group-tera14"
+  bucket = "test-object-group-tera15"
   source = "chaossearch-tf-provider-test"
   format {
     _type            = "CSV"
@@ -121,7 +121,7 @@ resource "chaossearch_object_group" "create-object-group" {
 }
 
 resource "chaossearch_index_model" "model-1" {
-  bucket_name = "test-object-group-tera14"
+  bucket_name = "test-object-group-tera15"
   model_mode = -1
   depends_on = [
     chaossearch_object_group.create-object-group
@@ -129,12 +129,12 @@ resource "chaossearch_index_model" "model-1" {
 }
 
 resource "chaossearch_view" "chaossearch-create-view" {
-  bucket           = "test-view-tera14"
+  bucket           = "test-view-tera15"
   case_insensitive = false
   index_pattern    = ".*"
   index_retention  = -1
   overwrite        = true
-  sources          = ["test-object-group-tera14"]
+  sources          = ["test-object-group-tera15"]
   time_field_name  = "@timestamp"
   filter {
     predicate {
