@@ -18,5 +18,6 @@ func (c *CSClient) ListBuckets(ctx context.Context, authToken string) (*ListBuck
 		return nil, utils.UnmarshalXmlError(err)
 	}
 
+	defer httpResp.Body.Close()
 	return &resp, nil
 }

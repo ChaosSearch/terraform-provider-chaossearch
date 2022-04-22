@@ -15,11 +15,12 @@ func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroup
 		return err
 	}
 
-	_, err = c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
 	if err != nil {
 		return fmt.Errorf("Create Object Group Failure => %s", err)
 	}
 
+	defer httpResp.Body.Close()
 	return nil
 }
 
@@ -35,6 +36,7 @@ func (c *CSClient) ReadObjGroup(ctx context.Context, req *ReadObjGroupReq) (*Rea
 		return nil, err
 	}
 
+	defer httpResp.Body.Close()
 	return &resp, nil
 }
 
@@ -45,11 +47,12 @@ func (c *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroup
 		return err
 	}
 
-	_, err = c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
 	if err != nil {
 		return fmt.Errorf("Update Object Group Failure => %s", err)
 	}
 
+	defer httpResp.Body.Close()
 	return nil
 }
 
@@ -73,11 +76,12 @@ func marshalUpdateObjectGroupRequest(req *UpdateObjectGroupRequest) ([]byte, err
 func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
 	safeObjectGroupName := url.PathEscape(req.Name)
 	url := fmt.Sprintf("%s/V1/%s", c.config.URL, safeObjectGroupName)
-	_, err := c.createAndSendReq(ctx, req.AuthToken, url, DELETE, nil)
+	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, DELETE, nil)
 	if err != nil {
 		return fmt.Errorf("Delete Object Group Failure => %s", err)
 	}
 
+	defer httpResp.Body.Close()
 	return nil
 }
 

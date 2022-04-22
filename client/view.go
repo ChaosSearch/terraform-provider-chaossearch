@@ -15,11 +15,12 @@ func (c *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error
 		return err
 	}
 
-	_, err = c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
 	if err != nil {
 		return fmt.Errorf("Create View Failure => %s", err)
 	}
 
+	defer httpResp.Body.Close()
 	return nil
 }
 
@@ -35,17 +36,19 @@ func (c *CSClient) ReadView(ctx context.Context, req *ReadViewRequest) (*ReadVie
 		return nil, err
 	}
 
+	defer httpResp.Body.Close()
 	return &resp, nil
 }
 
 func (c *CSClient) DeleteView(ctx context.Context, req *DeleteViewRequest) error {
 	safeViewName := url.PathEscape(req.Name)
 	url := fmt.Sprintf("%s/V1/%s", c.config.URL, safeViewName)
-	_, err := c.createAndSendReq(ctx, req.AuthToken, url, DELETE, nil)
+	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, DELETE, nil)
 	if err != nil {
 		return fmt.Errorf("Delete View Failure => %s", err)
 	}
 
+	defer httpResp.Body.Close()
 	return nil
 }
 

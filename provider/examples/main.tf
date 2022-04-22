@@ -26,7 +26,7 @@ provider "aws" {
   region  = var.CS_REGION
 }
 
-resource "chaossearch_user_group" "chaossearch_user_group_create_test" {
+/* resource "chaossearch_user_group" "chaossearch_user_group_create_test" {
   user_groups {
     name = "kyle-riley-test-group"
     permissions {
@@ -84,11 +84,11 @@ data "chaossearch_retrieve_sub_accounts" "sub_accounts" {
 
 output "object_group_retrieve_sub_accounts" {
   value = data.chaossearch_retrieve_sub_accounts.sub_accounts
-}
+} */
 
-/*
+
 resource "chaossearch_object_group" "create-object-group" {
-  bucket = "test-object-group-tera13"
+  bucket = "test-object-group-tera14"
   source = "chaossearch-tf-provider-test"
   format {
     _type            = "CSV"
@@ -121,7 +121,7 @@ resource "chaossearch_object_group" "create-object-group" {
 }
 
 resource "chaossearch_index_model" "model-1" {
-  bucket_name = "test-object-group-tera13"
+  bucket_name = "test-object-group-tera14"
   model_mode = -1
   depends_on = [
     chaossearch_object_group.create-object-group
@@ -129,12 +129,12 @@ resource "chaossearch_index_model" "model-1" {
 }
 
 resource "chaossearch_view" "chaossearch-create-view" {
-  bucket           = "test-view-tera13"
+  bucket           = "test-view-tera14"
   case_insensitive = false
   index_pattern    = ".*"
   index_retention  = -1
   overwrite        = true
-  sources          = ["test-object-group-tera13"]
+  sources          = ["test-object-group-tera14"]
   time_field_name  = "@timestamp"
   filter {
     predicate {
@@ -163,7 +163,7 @@ data "chaossearch_retrieve_views" "views" {
 output "views" {
   value = data.chaossearch_retrieve_views.views
 }
-*/
+
 /*
 resource "aws_s3_bucket" "bucket-creation" {
   bucket = "chaossearch-tf-provider-test"

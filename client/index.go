@@ -24,6 +24,7 @@ func (c *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest)
 		return nil, err
 	}
 
+	defer httpResp.Body.Close()
 	return &indexModelResponse, nil
 }
 
