@@ -129,46 +129,73 @@ func marshalLoginRequest(req *Login) ([]byte, error) {
 	if err != nil {
 		return nil, utils.MarshalJsonError(err)
 	}
+
 	return bodyAsBytes, nil
 }
 
+func (client *CSClient) createAndSendReq(
+	ctx context.Context,
+	authToken string,
+	url string,
+	requestType string,
+	body []byte,
+) (*http.Response, error) {
+	var httpReq *http.Request
+	var err error
+	if len(body) == 0 {
+		httpReq, err = http.NewRequestWithContext(ctx, requestType, url, nil)
+	} else {
+		httpReq, err = http.NewRequestWithContext(ctx, requestType, url, bytes.NewReader(body))
+	}
+
+	if err != nil {
+		return nil, utils.CreateRequestError(err)
+	}
+
+	httpResp, err := client.signV2AndDo(authToken, httpReq, body)
+	if err != nil {
+		return nil, utils.SubmitRequestError(requestType, url, err)
+	}
+
+	return httpResp, nil
+}
+
 func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
+	var routeToken string
+
 	claims := jwt.MapClaims{}
 	_, _, err := new(jwt.Parser).ParseUnverified(tokenValue, claims)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse JWT => Error: %s", err)
 	}
 
-	accessKey := claims["AccessKeyId"].(string)
-	secretAccessKey := claims["SecretAccessKey"].(string)
-	externalID := claims["external_id"].(string)
-	dateTime := time.Now().UTC().String()
-	req.Header.Add("Content-Type", "application/json")
-
-	var routeToken string
 	if isAdminAPI(req.URL.Path) {
 		routeToken = "login"
 	} else {
-		routeToken = externalID
+		routeToken = claims["external_id"].(string)
 	}
 
+	dateTime := time.Now().UTC().String()
+	msg := fmt.Sprintf("%s\n\n", req.Method) +
+		"application/json\n\n" +
+		fmt.Sprintf("x-amz-chaossumo-route-token:%s\n", routeToken) +
+		fmt.Sprintf("x-amz-date:%s\n", dateTime) +
+		fmt.Sprintf("x-amz-security-token:%s\n", tokenValue) +
+		req.URL.Path
+
+	auth := fmt.Sprintf(
+		"AWS %s:%s",
+		claims["AccessKeyId"].(string),
+		generateSignature(claims["SecretAccessKey"].(string), msg),
+	)
+
+	req.Header.Add("Authorization", auth)
+	req.Header.Add("x-amz-cs3-authorization", auth)
+	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("x-amz-chaossumo-route-token", routeToken)
 	req.Header.Add("x-amz-security-token", tokenValue)
 	req.Header.Add("X-Amz-Date", dateTime)
 
-	msgLines := []string{
-		req.Method, "",
-		"application/json", "",
-		"x-amz-chaossumo-route-token:" + routeToken,
-		"x-amz-date:" + dateTime,
-		"x-amz-security-token:" + tokenValue,
-		req.URL.Path,
-	}
-
-	msg := strings.Join(msgLines, "\n")
-	auth := "AWS " + accessKey + ":" + generateSignature(secretAccessKey, msg)
-	req.Header.Add("Authorization", auth)
-	req.Header.Add("x-amz-cs3-authorization", auth)
 	resp, e := c.httpClient.Do(req)
 	if e != nil {
 		return nil, fmt.Errorf("Failed to execute request => Error: %s", e)
@@ -217,6 +244,7 @@ func (c *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error 
 	if err := json.Unmarshal(bodyAsBytes, v); err != nil {
 		return utils.UnmarshalJsonError(err)
 	}
+
 	return nil
 }
 
@@ -229,5 +257,6 @@ func (c *CSClient) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
 	if err := xml.Unmarshal(bodyAsBytes, v); err != nil {
 		return utils.UnmarshalXmlError(err)
 	}
+
 	return nil
 }

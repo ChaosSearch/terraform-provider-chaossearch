@@ -22,6 +22,7 @@ type ReadViewRequest struct {
 	AuthToken string
 	ID        string
 }
+
 type Metadata struct {
 	CreationDate int64 `json:"creationDate"`
 }
@@ -29,6 +30,7 @@ type Metadata struct {
 type ObjectFilter struct {
 	And []interface{} `json:"AND"`
 }
+
 type ReadObjGroupResp struct {
 	Public             bool         `json:"_public"`
 	Realtime           bool         `json:"_realtime"`
@@ -53,8 +55,7 @@ type ReadObjGroupResp struct {
 	KeepOriginal       bool
 	ArrayFlattenDepth  *int
 	ColumnRenames      map[string]string
-	ColumnSelection    []map[string]interface {
-	}
+	ColumnSelection    []map[string]interface{}
 }
 
 type CreateObjectGroupRequest struct {
@@ -104,6 +105,7 @@ type RegexFilter struct {
 type Options struct {
 	IgnoreIrregular bool
 }
+
 type UpdateIndexingStateRequest struct {
 	ObjectGroupName string
 	Active          bool
@@ -205,12 +207,15 @@ type State struct {
 type StartsWith struct {
 	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
 }
+
 type Equals struct {
 	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
 }
+
 type NotEquals struct {
 	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
 }
+
 type Like struct {
 	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
 }
@@ -221,9 +226,11 @@ type Condition struct {
 	NotEquals  NotEquals
 	Like       Like
 }
+
 type ConditionGroup struct {
 	Condition []Condition `json:"Condition"`
 }
+
 type Permission struct {
 	Effect         string
 	Version        string
@@ -270,7 +277,7 @@ type ListUsersResponse struct {
 
 type User struct {
 	SubAccounts []SubAccount `json:"SubAccounts"`
-	Groups      []Group      `json:"Groups"`
+	UserGroups  []UserGroup  `json:"Groups"`
 }
 
 type SubAccount struct {
@@ -282,7 +289,7 @@ type SubAccount struct {
 	Activated bool          `json:"Activated"`
 }
 
-type Group struct {
+type UserGroup struct {
 	ID          string       `json:"Id"`
 	Name        string       `json:"Name"`
 	Permissions []Permission `json:"permissions"`

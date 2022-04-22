@@ -133,12 +133,12 @@ func readAllUserGroups(ctx context.Context, data *schema.ResourceData, meta inte
 		return diag.FromErr(err)
 	}
 
-	result := make([]map[string]interface{}, len(usersResponse.Users[0].Groups))
-	for i := 0; i < len(usersResponse.Users[0].Groups); i++ {
+	result := make([]map[string]interface{}, len(usersResponse.Users[0].UserGroups))
+	for i := 0; i < len(usersResponse.Users[0].UserGroups); i++ {
 		permissionArr := make([]interface{}, 1)
 		permissionMap := make(map[string]interface{})
 
-		group := usersResponse.Users[0].Groups[i]
+		group := usersResponse.Users[0].UserGroups[i]
 
 		permissionMap["version"] = group.Permissions[0].Version
 		permissionMap["resources"] = group.Permissions[0].Resources
