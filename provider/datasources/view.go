@@ -181,6 +181,7 @@ func DataSourceViews() *schema.Resource {
 }
 
 func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	client := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
 	clientResponse, err := client.ListBuckets(ctx, tokenValue)
@@ -188,12 +189,11 @@ func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	result := GetBucketData(clientResponse)
-	var diags diag.Diagnostics
-	objectGroups := result
+	objectGroups := GetBucketData(clientResponse)
 	if err := data.Set("object_groups", objectGroups); err != nil {
 		return diag.FromErr(err)
 	}
+
 	data.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 	return diags
 }

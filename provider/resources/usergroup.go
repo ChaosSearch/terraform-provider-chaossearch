@@ -21,27 +21,21 @@ func ResourceUserGroup() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"user_groups": {
 				Type:     schema.TypeSet,
-				Optional: false,
 				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:     schema.TypeString,
-							Required: false,
-							ForceNew: false,
 							Optional: true,
 							Computed: true,
 						},
 						"name": {
 							Type:     schema.TypeString,
-							Required: false,
-							ForceNew: false,
 							Optional: true,
 						},
 						"permissions": {
 							Type:     schema.TypeSet,
 							Optional: true,
-							Required: false,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -55,8 +49,6 @@ func ResourceUserGroup() *schema.Resource {
 									},
 									"effect": {
 										Type:     schema.TypeString,
-										Required: false,
-										ForceNew: false,
 										Optional: true,
 									},
 									"resources": {
@@ -69,32 +61,25 @@ func ResourceUserGroup() *schema.Resource {
 									},
 									"version": {
 										Type:     schema.TypeString,
-										Required: false,
-										ForceNew: false,
 										Optional: true,
 									},
 									"conditions": {
 										Type:     schema.TypeSet,
 										Optional: true,
-										ForceNew: false,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"condition": {
 													Type:     schema.TypeSet,
 													Optional: true,
-													Required: false,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"starts_with": {
 																Type:     schema.TypeSet,
 																Optional: true,
-																ForceNew: false,
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"chaos_document_attributes_title": {
 																			Type:     schema.TypeString,
-																			Required: false,
-																			ForceNew: false,
 																			Optional: true,
 																		},
 																	},
@@ -103,13 +88,10 @@ func ResourceUserGroup() *schema.Resource {
 															"equals": {
 																Type:     schema.TypeSet,
 																Optional: true,
-																ForceNew: false,
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"chaos_document_attributes_title": {
 																			Type:     schema.TypeString,
-																			Required: false,
-																			ForceNew: false,
 																			Optional: true,
 																		},
 																	},
@@ -118,13 +100,10 @@ func ResourceUserGroup() *schema.Resource {
 															"not_equals": {
 																Type:     schema.TypeSet,
 																Optional: true,
-																ForceNew: false,
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"chaos_document_attributes_title": {
 																			Type:     schema.TypeString,
-																			Required: false,
-																			ForceNew: false,
 																			Optional: true,
 																		},
 																	},
@@ -133,13 +112,10 @@ func ResourceUserGroup() *schema.Resource {
 															"like": {
 																Type:     schema.TypeSet,
 																Optional: true,
-																ForceNew: false,
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"chaos_document_attributes_title": {
 																			Type:     schema.TypeString,
-																			Required: false,
-																			ForceNew: false,
 																			Optional: true,
 																		},
 																	},

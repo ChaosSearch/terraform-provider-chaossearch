@@ -22,23 +22,19 @@ func ResourceSubAccount() *schema.Resource {
 			"user_info_block": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"username": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: false,
 						},
 						"full_name": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: false,
 						},
 						"email": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: false,
 						},
 					},
 				},
@@ -46,7 +42,6 @@ func ResourceSubAccount() *schema.Resource {
 			"group_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
-				ForceNew: false,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -54,12 +49,10 @@ func ResourceSubAccount() *schema.Resource {
 			"password": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: false,
 			},
 			"hocon": {
 				Type:     schema.TypeList,
 				Optional: true,
-				ForceNew: false,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

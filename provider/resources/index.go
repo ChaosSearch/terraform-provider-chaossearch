@@ -4,8 +4,8 @@ import (
 	"context"
 	"cs-tf-provider/client"
 	"cs-tf-provider/provider/models"
+	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,13 +22,11 @@ func ResourceIndexModel() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"bucket_name": {
 				Type:     schema.TypeString,
-				Required: false,
 				ForceNew: true,
 				Optional: true,
 			},
 			"model_mode": {
 				Type:     schema.TypeInt,
-				Required: false,
 				ForceNew: true,
 				Optional: true,
 			},
@@ -43,11 +41,13 @@ func createResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 		BucketName: data.Get("bucket_name").(string),
 		ModelMode:  data.Get("model_mode").(int),
 	}
+
 	resp, err := c.CreateIndexModel(ctx, indexModel)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	data.SetId(strings.Join([]string{"BucketName:" + resp.BucketName, " Result: " + strconv.FormatBool(resp.Result)}, ","))
+
+	data.SetId(fmt.Sprintf("BucketName: %s, Result: %s", resp.BucketName, strconv.FormatBool(resp.Result)))
 	return nil
 }
 

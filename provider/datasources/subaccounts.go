@@ -55,6 +55,7 @@ func DataSourceSubAccounts() *schema.Resource {
 }
 
 func readAllSubAccounts(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	client := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
 	usersResponse, err := client.ListUsers(ctx, tokenValue)
@@ -74,7 +75,7 @@ func readAllSubAccounts(ctx context.Context, data *schema.ResourceData, meta int
 			"group_ids": subAccount.GroupIds,
 		}
 	}
-	var diags diag.Diagnostics
+
 	subAccounts := result
 	if err := data.Set("sub_accounts", subAccounts); err != nil {
 		return diag.FromErr(err)

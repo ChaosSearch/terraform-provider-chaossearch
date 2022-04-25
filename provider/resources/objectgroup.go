@@ -23,48 +23,38 @@ func ResourceObjectGroup() *schema.Resource {
 			"bucket": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: false,
 			},
 			"source": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: false,
 			},
 			"format": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    false,
-				Description: "",
+				Type:     schema.TypeSet,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"_type": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: false,
 						},
 						"column_delimiter": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: false,
 						},
 						"header_row": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							ForceNew: false,
 						},
 						"row_delimiter": {
 							Type:     schema.TypeString,
 							Optional: true,
-							ForceNew: false,
 						},
 					},
 				},
 			},
 			"index_retention": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    false,
-				Description: "",
+				Type:     schema.TypeSet,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"for_partition": {
@@ -77,7 +67,6 @@ func ResourceObjectGroup() *schema.Resource {
 						"overall": {
 							Type:     schema.TypeInt,
 							Optional: true,
-							ForceNew: false,
 						},
 					},
 				},
@@ -85,24 +74,20 @@ func ResourceObjectGroup() *schema.Resource {
 			"filter": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"prefix_filter": {
 							Type:     schema.TypeSet,
 							Optional: true,
-							ForceNew: false,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"field": {
 										Type:     schema.TypeString,
 										Required: true,
-										ForceNew: false,
 									},
 									"prefix": {
 										Type:     schema.TypeString,
 										Optional: true,
-										ForceNew: false,
 									},
 								},
 							},
@@ -110,18 +95,15 @@ func ResourceObjectGroup() *schema.Resource {
 						"regex_filter": {
 							Type:     schema.TypeSet,
 							Optional: true,
-							ForceNew: false,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"field": {
 										Type:     schema.TypeString,
 										Required: true,
-										ForceNew: false,
 									},
 									"regex": {
 										Type:     schema.TypeString,
 										Optional: true,
-										ForceNew: false,
 									},
 								},
 							},
@@ -132,18 +114,15 @@ func ResourceObjectGroup() *schema.Resource {
 			"interval": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"column": {
 							Type:     schema.TypeInt,
 							Required: true,
-							ForceNew: false,
 						},
 						"mode": {
 							Type:     schema.TypeInt,
 							Optional: true,
-							ForceNew: false,
 						},
 					},
 				},
@@ -151,46 +130,34 @@ func ResourceObjectGroup() *schema.Resource {
 			"options": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ignore_irregular": {
 							Type:     schema.TypeBool,
 							Required: true,
-							ForceNew: false,
 						},
 					},
 				},
 			},
 			"realtime": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    false,
-				Description: "",
+				Type:     schema.TypeBool,
+				Optional: true,
 			},
 			"index_parallelism": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    false,
-				Description: "",
+				Type:     schema.TypeInt,
+				Optional: true,
 			},
 			"index_retention_value": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    false,
-				Description: "",
+				Type:     schema.TypeInt,
+				Optional: true,
 			},
 			"target_active_index": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    false,
-				Description: "",
+				Type:     schema.TypeInt,
+				Optional: true,
 			},
 			"live_events_parallelism": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    false,
-				Description: "",
+				Type:     schema.TypeInt,
+				Optional: true,
 			},
 			"description": {
 				Type:     schema.TypeString,

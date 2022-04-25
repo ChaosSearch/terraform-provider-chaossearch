@@ -57,12 +57,14 @@ func (c *CSClient) Set(data *schema.ResourceData, key string, value interface{})
 	}
 }
 
-func NewConfiguration() *Configuration {
-	cfg := &Configuration{
-		AWSServiceName: "s3",
+func NewConfiguration(url, accessKeyID, secretAccessKey, region string) *Configuration {
+	return &Configuration{
+		AWSServiceName:  "s3",
+		URL:             url,
+		AccessKeyID:     accessKeyID,
+		SecretAccessKey: secretAccessKey,
+		Region:          region,
 	}
-
-	return cfg
 }
 
 func NewClient(config *Configuration, login *Login) *CSClient {

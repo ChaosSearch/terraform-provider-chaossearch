@@ -18,43 +18,31 @@ func DataSourceObjectGroup() *schema.Resource {
 			"bucket": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: false,
 			},
 			"_public": {
 				Type:     schema.TypeBool,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
 			"_realtime": {
 				Type:     schema.TypeBool,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
 			"_type": {
 				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
 			"content_type": {
 				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
 			"source": {
 				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
 			"format": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "",
+				Type:     schema.TypeSet,
+				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"_type": {
@@ -80,7 +68,6 @@ func DataSourceObjectGroup() *schema.Resource {
 					},
 				},
 			},
-
 			"filter": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -178,7 +165,9 @@ func DataSourceObjectGroup() *schema.Resource {
 			"region_availability": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 				Optional: true,
 			},
 		},

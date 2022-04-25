@@ -7,8 +7,15 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	log "github.com/sirupsen/logrus"
 )
+
+type ViewRequestDTO struct {
+	FilterPredicate *client.FilterPredicate
+	CSClient        *client.CSClient
+	Token           string
+	Source          []interface{}
+	Transforms      []interface{}
+}
 
 func ResourceView() *schema.Resource {
 	return &schema.Resource{
@@ -22,8 +29,6 @@ func ResourceView() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"bucket": {
 				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
 			"sources": {
@@ -36,15 +41,11 @@ func ResourceView() *schema.Resource {
 			},
 			"index_pattern": {
 				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
 
 			"overwrite": {
 				Type:     schema.TypeBool,
-				Required: false,
-				ForceNew: false,
 				Default:  false,
 				Optional: true,
 			},
@@ -58,63 +59,54 @@ func ResourceView() *schema.Resource {
 				Default:     14,
 				Description: "",
 				Optional:    true,
-				ForceNew:    false,
 			},
 			"time_field_name": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: false,
 			},
 			"transforms": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 				Optional: true,
 			},
-
 			"filter": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				ForceNew: false,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"predicate": {
 							Type:     schema.TypeSet,
 							Required: true,
-							ForceNew: false,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"pred": {
 										Type:     schema.TypeSet,
 										Required: true,
-										ForceNew: false,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"field": {
 													Type:     schema.TypeString,
 													Optional: true,
-													ForceNew: false,
 												},
 												"_type": {
 													Type:     schema.TypeString,
 													Optional: true,
-													ForceNew: false,
 												},
 												"query": {
 													Type:     schema.TypeString,
 													Optional: true,
-													ForceNew: false,
 												},
 												"state": {
 													Type:     schema.TypeSet,
 													Required: true,
-													ForceNew: false,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"_type": {
 																Type:     schema.TypeString,
 																Optional: true,
-																ForceNew: false,
 															},
 														},
 													},
@@ -125,7 +117,6 @@ func ResourceView() *schema.Resource {
 									"_type": {
 										Type:     schema.TypeString,
 										Optional: true,
-										ForceNew: false,
 									},
 								},
 							},
@@ -138,12 +129,9 @@ func ResourceView() *schema.Resource {
 }
 
 func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	ViewRequestDTO := setViewRequest(data, meta)
-
 	createViewRequest := &client.CreateViewRequest{
-		AuthToken: ViewRequestDTO.Token,
-
+		AuthToken:       ViewRequestDTO.Token,
 		Bucket:          data.Get("bucket").(string),
 		Sources:         ViewRequestDTO.Source,
 		IndexPattern:    data.Get("index_pattern").(string),
@@ -165,21 +153,13 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 }
 
-type ViewRequestDTO struct {
-	FilterPredicate *client.FilterPredicate
-	CSClient        *client.CSClient
-	Token           string
-	Source          []interface{}
-	Transforms      []interface{}
-}
-
 func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO {
-
+	var sourcesStrings []interface{}
+	var transforms []interface{}
 	filterInterface := data.Get("filter").(*schema.Set).List()[0].(map[string]interface{})
 	predicateInterface := filterInterface["predicate"].(*schema.Set).List()[0].(map[string]interface{})
 	predInterface := predicateInterface["pred"].(*schema.Set).List()[0].(map[string]interface{})
 	stateInterface := predInterface["state"].(*schema.Set).List()[0].(map[string]interface{})
-
 	state := client.State{
 		Type: stateInterface["_type"].(string),
 	}
@@ -202,26 +182,16 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO
 
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
-
-	sources, ok := data.GetOk("sources")
-	if !ok {
-		log.Error(" sources not available")
-	}
-	var sourcesStrings []interface{}
-
+	sources, _ := data.GetOk("sources")
 	if sources != nil {
 		sourcesStrings = sources.([]interface{})
 	}
 
-	transformElem, ok := data.GetOk("transforms")
-	if !ok {
-		log.Error(" transforms not available")
-	}
-	var transforms []interface{}
-
+	transformElem, _ := data.GetOk("transforms")
 	if transformElem != nil {
 		transforms = transformElem.([]interface{})
 	}
+
 	ViewRequestDTO := ViewRequestDTO{
 		FilterPredicate: filter,
 		CSClient:        c,
@@ -229,6 +199,7 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO
 		Source:          sourcesStrings,
 		Transforms:      transforms,
 	}
+
 	return &ViewRequestDTO
 }
 
