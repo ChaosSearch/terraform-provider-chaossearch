@@ -135,29 +135,31 @@ func marshalLoginRequest(req *Login) ([]byte, error) {
 
 func (client *CSClient) createAndSendReq(
 	ctx context.Context,
-	authToken string,
-	url string,
-	requestType string,
-	body []byte,
+	request ClientRequest,
 ) (*http.Response, error) {
 	var httpReq *http.Request
 	var err error
-	if len(body) == 0 {
-		httpReq, err = http.NewRequestWithContext(ctx, requestType, url, nil)
+	if request.Body == nil {
+		httpReq, err = http.NewRequestWithContext(ctx, request.RequestType, request.Url, nil)
 	} else {
-		httpReq, err = http.NewRequestWithContext(ctx, requestType, url, bytes.NewReader(body))
+		httpReq, err = http.NewRequestWithContext(ctx, request.RequestType, request.Url, bytes.NewReader(request.Body))
 	}
 
 	if err != nil {
 		return nil, utils.CreateRequestError(err)
 	}
 
-	httpResp, err := client.signV2AndDo(authToken, httpReq, body)
+	httpResp, err := client.signV2AndDo(request.AuthToken, httpReq, request.Body)
 	if err != nil {
-		return nil, utils.SubmitRequestError(requestType, url, err)
+		return nil, utils.SubmitRequestError(request.RequestType, request.Url, err)
 	}
 
-	defer httpReq.Body.Close()
+	defer func(httpReq *http.Request) {
+		if httpReq.Body != nil {
+			httpReq.Body.Close()
+		}
+	}(httpReq)
+
 	return httpResp, nil
 }
 

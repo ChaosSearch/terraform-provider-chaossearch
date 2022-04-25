@@ -15,7 +15,14 @@ func (c *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest)
 		return nil, err
 	}
 
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("Create Index Model Failure => %s", err)
 	}

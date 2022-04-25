@@ -326,3 +326,10 @@ type IndexMetadataResponse struct {
 	LastIndexTime float64 `json:"LastIndexTime"`
 	State         string  `json:"State"`
 }
+
+type ClientRequest struct {
+	RequestType string
+	Url         string
+	AuthToken   string
+	Body        []byte
+}

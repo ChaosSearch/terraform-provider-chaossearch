@@ -15,7 +15,14 @@ func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroup
 		return err
 	}
 
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Create Object Group Failure => %s", err)
 	}
@@ -27,7 +34,13 @@ func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroup
 func (c *CSClient) ReadObjGroup(ctx context.Context, req *ReadObjGroupReq) (*ReadObjGroupResp, error) {
 	var resp ReadObjGroupResp
 	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, req.ID)
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, GET, nil)
+	request := ClientRequest{
+		RequestType: GET,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("Read Object Group Failure => %s", err)
 	}
@@ -47,7 +60,14 @@ func (c *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroup
 		return err
 	}
 
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Update Object Group Failure => %s", err)
 	}
@@ -76,7 +96,13 @@ func marshalUpdateObjectGroupRequest(req *UpdateObjectGroupRequest) ([]byte, err
 func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
 	safeObjectGroupName := url.PathEscape(req.Name)
 	url := fmt.Sprintf("%s/V1/%s", c.config.URL, safeObjectGroupName)
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, DELETE, nil)
+	request := ClientRequest{
+		RequestType: DELETE,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Delete Object Group Failure => %s", err)
 	}
