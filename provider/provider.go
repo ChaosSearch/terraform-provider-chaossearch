@@ -47,7 +47,8 @@ func Provider() *schema.Provider {
 							Type:     schema.TypeString,
 							Required: true,
 							ForceNew: true,
-						}, "parent_user_id": {
+						},
+						"parent_user_id": {
 							Type:     schema.TypeString,
 							Optional: true,
 							ForceNew: true,
@@ -105,9 +106,9 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		return nil, diagErr
 	}
 
-	loginSet := d.Get("login").(*schema.Set)
-	if loginSet.Len() > 0 {
-		loginMap := loginSet.List()[0].(map[string]interface{})
+	loginList := d.Get("login").(*schema.Set).List()
+	if len(loginList) > 0 {
+		loginMap := loginList[0].(map[string]interface{})
 		username = loginMap["user_name"].(string)
 		if username == "" {
 			return nil, diag.Errorf("Failed to configure provider => Expected 'user_name' to be defined")

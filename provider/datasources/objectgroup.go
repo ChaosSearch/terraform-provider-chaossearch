@@ -19,15 +19,15 @@ func DataSourceObjectGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"_public": {
+			"public": {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"_realtime": {
+			"realtime": {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"_type": {
+			"type": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -45,7 +45,7 @@ func DataSourceObjectGroup() *schema.Resource {
 				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"_type": {
+						"type": {
 							Type:     schema.TypeString,
 							Optional: true,
 							ForceNew: true,
@@ -199,6 +199,7 @@ func DataSourceObjectGroups() *schema.Resource {
 }
 
 func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	client := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
 	clientResponse, err := client.ListBuckets(ctx, tokenValue)
@@ -206,10 +207,7 @@ func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	result := GetBucketData(clientResponse)
-	var diags diag.Diagnostics
-	objectGroups := result
-	if err := data.Set("object_groups", objectGroups); err != nil {
+	if err := data.Set("object_groups", GetBucketData(clientResponse)); err != nil {
 		return diag.FromErr(err)
 	}
 	data.SetId(strconv.FormatInt(time.Now().Unix(), 10))

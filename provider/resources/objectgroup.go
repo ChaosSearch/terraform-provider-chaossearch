@@ -20,6 +20,10 @@ func ResourceObjectGroup() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"bucket": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -33,7 +37,7 @@ func ResourceObjectGroup() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"_type": {
+						"type": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -170,68 +174,100 @@ func ResourceObjectGroup() *schema.Resource {
 }
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*models.ProviderMeta).CSClient
-
-	formatColumnSelectionInterface := data.Get("format").(*schema.Set).List()[0].(map[string]interface{})
-	intervalColumnSelectionInterface := data.Get("interval").(*schema.Set).List()[0].(map[string]interface{})
-	indexRetentionColumnSelectionInterface := data.Get("index_retention").(*schema.Set).List()[0].(map[string]interface{})
-	optionsColumnSelectionInterface := data.Get("options").(*schema.Set).List()[0].(map[string]interface{})
-
-	format := client.Format{
-		Type:            formatColumnSelectionInterface["_type"].(string),
-		ColumnDelimiter: formatColumnSelectionInterface["column_delimiter"].(string),
-		RowDelimiter:    formatColumnSelectionInterface["row_delimiter"].(string),
-		HeaderRow:       formatColumnSelectionInterface["header_row"].(bool),
-	}
-
-	interval := client.Interval{
-		Mode:   intervalColumnSelectionInterface["mode"].(int),
-		Column: intervalColumnSelectionInterface["column"].(int),
-	}
-
-	indexRetention := client.IndexRetention{
-		ForPartition: indexRetentionColumnSelectionInterface["for_partition"].([]interface{}),
-		Overall:      indexRetentionColumnSelectionInterface["overall"].(int),
-	}
-
-	options := client.Options{
-		IgnoreIrregular: optionsColumnSelectionInterface["ignore_irregular"].(bool),
-	}
-
+	var prefixFilter *client.PrefixFilter
 	var prefixFilterField string
 	var prefix string
+	var regexFilter *client.RegexFilter
 	var regexFilterField string
 	var regex string
 
-	if data.Get("filter").(*schema.Set).Len() > 0 {
-		filterColumnSelectionInterface := data.Get("filter").(*schema.Set).List()[0]
-		filterColumnSelection := filterColumnSelectionInterface.(map[string]interface{})
-
-		prefixFilter := filterColumnSelection["prefix_filter"].(*schema.Set).List()[0].(map[string]interface{})
-		regexFilter := filterColumnSelection["regex_filter"].(*schema.Set).List()[0].(map[string]interface{})
-
-		prefixFilterField = prefixFilter["field"].(string)
-		prefix = prefixFilter["prefix"].(string)
-
-		regexFilterField = regexFilter["field"].(string)
-		regex = regexFilter["regex"].(string)
+	c := meta.(*models.ProviderMeta).CSClient
+	formatList := data.Get("format").(*schema.Set).List()
+	formatMap := make(map[string]interface{}, 1)
+	if len(formatList) > 0 {
+		formatMap = formatList[0].(map[string]interface{})
 	}
 
-	prefixFilter := client.PrefixFilter{
-		Field:  prefixFilterField,
-		Prefix: prefix,
+	format := client.Format{
+		Type:            formatMap["type"].(string),
+		ColumnDelimiter: formatMap["column_delimiter"].(string),
+		RowDelimiter:    formatMap["row_delimiter"].(string),
+		HeaderRow:       formatMap["header_row"].(bool),
 	}
 
-	regexFilter := client.RegexFilter{
-		Field: regexFilterField,
-		Regex: regex,
+	intervalList := data.Get("interval").(*schema.Set).List()
+	intervalMap := make(map[string]interface{})
+	if len(intervalList) > 0 {
+		intervalMap = intervalList[0].(map[string]interface{})
 	}
+
+	interval := client.Interval{
+		Mode:   intervalMap["mode"].(int),
+		Column: intervalMap["column"].(int),
+	}
+
+	indexList := data.Get("index_retention").(*schema.Set).List()
+	indexMap := make(map[string]interface{})
+	if len(indexList) > 0 {
+		indexMap = indexList[0].(map[string]interface{})
+	}
+
+	indexRetention := client.IndexRetention{
+		ForPartition: indexMap["for_partition"].([]interface{}),
+		Overall:      indexMap["overall"].(int),
+	}
+
+	optionsList := data.Get("options").(*schema.Set).List()
+	optionsMap := make(map[string]interface{})
+	if len(optionsList) > 0 {
+		optionsMap = optionsList[0].(map[string]interface{})
+	}
+
+	options := client.Options{
+		IgnoreIrregular: optionsMap["ignore_irregular"].(bool),
+	}
+
+	filterSet := data.Get("filter").(*schema.Set)
+	if filterSet.Len() > 0 {
+		var prefixMap map[string]interface{}
+		filterList := data.Get("filter").(*schema.Set).List()[0]
+		filterMap := filterList.(map[string]interface{})
+
+		prefixList := filterMap["prefix_filter"].(*schema.Set).List()
+		if len(prefixList) > 0 {
+			prefixMap = prefixList[0].(map[string]interface{})
+			prefixFilterField = prefixMap["field"].(string)
+			prefix = prefixMap["prefix"].(string)
+
+			prefixFilter = &client.PrefixFilter{
+				Field:  prefixFilterField,
+				Prefix: prefix,
+			}
+		} else {
+			prefixFilter = nil
+		}
+
+		regexList := filterMap["regex_filter"].(*schema.Set).List()
+		if len(regexList) > 0 {
+			regexMap := regexList[0].(map[string]interface{})
+			regexFilterField = regexMap["field"].(string)
+			regex = regexMap["regex"].(string)
+
+			regexFilter = &client.RegexFilter{
+				Field: regexFilterField,
+				Regex: regex,
+			}
+		} else {
+			regexFilter = nil
+		}
+	}
+
 	filter := &client.Filter{
-		PrefixFilter: &prefixFilter,
-		RegexFilter:  &regexFilter,
+		PrefixFilter: prefixFilter,
+		RegexFilter:  regexFilter,
 	}
-	tokenValue := meta.(*models.ProviderMeta).Token
 
+	tokenValue := meta.(*models.ProviderMeta).Token
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
 		AuthToken:      tokenValue,
 		Bucket:         data.Get("bucket").(string),
@@ -247,11 +283,15 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {
 		return diag.FromErr(err)
 	}
+
 	data.SetId(data.Get("bucket").(string))
 	return ResourceObjectGroupRead(ctx, data, meta)
 }
 
 func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var prefixFilterMap = map[string]string{}
+	var regexFilterMap = map[string]string{}
+
 	diags := diag.Diagnostics{}
 	c := meta.(*models.ProviderMeta).CSClient
 
@@ -264,118 +304,104 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	}
 
 	resp, err := c.ReadObjGroup(ctx, req)
+	if err != nil {
+		return diag.Errorf("Failed to read object group: %s", err)
+	}
 
 	if resp == nil {
 		return diag.Errorf("Couldn't find object group: %s", err)
 	}
 
-	c.Set(data, "object_group_id", resp.ID)
-	if err != nil {
-		return diag.Errorf("Failed to read object group: %s", err)
+	objectFilter := resp.ObjectFilter
+	if len(objectFilter.And) > 0 {
+		for index, filters := range objectFilter.And {
+			for key, val := range filters.(map[string]interface{}) {
+				if index == 0 {
+					prefixFilterMap[key] = val.(string)
+				} else if index == 1 {
+					regexFilterMap[key] = val.(string)
+				}
+			}
+		}
 	}
 
-	c.Set(data, "name", data.Id())
-	c.Set(data, "_public", resp.Public)
-	c.Set(data, "_type", resp.Type)
-	c.Set(data, "content_type", resp.ContentType)
-	c.Set(data, "_realtime", resp.Realtime)
-	c.Set(data, "bucket", resp.Bucket)
-
-	var prefixFilterResponse = map[string]string{}
-	for k, v := range resp.ObjectFilter.And[0].(map[string]interface{}) {
-		prefixFilterResponse[k] = v.(string)
-	}
-
-	var regexFilterRes = map[string]string{}
-	for k, v := range resp.ObjectFilter.And[1].(map[string]interface{}) {
-		regexFilterRes[k] = v.(string)
-	}
-
-	PrefixFilterObjectMap := make(map[string]interface{})
-	PrefixFilterObjectMap["field"] = prefixFilterResponse["field"]
-	PrefixFilterObjectMap["prefix"] = prefixFilterResponse["prefix"]
-
-	RegexFilterObjectMap := make(map[string]interface{})
-	RegexFilterObjectMap["field"] = regexFilterRes["field"]
-	RegexFilterObjectMap["regex"] = regexFilterRes["regex"]
-
-	filter := make([]interface{}, 1)
-	PrefixFilter := make([]interface{}, 1)
-	PrefixFilter[0] = PrefixFilterObjectMap
-	RegexFilter := make([]interface{}, 1)
-	RegexFilter[0] = RegexFilterObjectMap
-	filterObjectMap := make(map[string]interface{})
-	filterObjectMap["prefix_filter"] = PrefixFilter
-	filterObjectMap["regex_filter"] = RegexFilter
-	filter[0] = filterObjectMap
-	c.Set(data, "filter", filter)
+	c.Set(data, "filter", []interface{}{
+		map[string]interface{}{
+			"prefix_filter": []interface{}{
+				prefixFilterMap,
+			},
+			"regex_filter": []interface{}{
+				regexFilterMap,
+			},
+		},
+	})
 
 	if resp.Format != nil {
-		format := make([]interface{}, 1)
-		formatObjectMap := make(map[string]interface{})
-		formatObjectMap["_type"] = resp.Format.Type
-		formatObjectMap["header_row"] = resp.Format.HeaderRow
-		formatObjectMap["column_delimiter"] = resp.Format.ColumnDelimiter
-		formatObjectMap["row_delimiter"] = resp.Format.RowDelimiter
-		format[0] = formatObjectMap
-		c.Set(data, "format", format)
+		c.Set(data, "format", []interface{}{
+			map[string]interface{}{
+				"type":             resp.Format.Type,
+				"header_row":       resp.Format.HeaderRow,
+				"column_delimiter": resp.Format.ColumnDelimiter,
+				"row_delimiter":    resp.Format.RowDelimiter,
+			},
+		})
 	}
 
 	if resp.Interval != nil {
-		interval := make([]interface{}, 1)
-		intervalObjectMap := make(map[string]interface{})
-		intervalObjectMap["column"] = resp.Interval.Mode
-		intervalObjectMap["mode"] = resp.Interval.Column
-		interval[0] = intervalObjectMap
-		c.Set(data, "interval", interval)
+		c.Set(data, "interval", []interface{}{
+			map[string]interface{}{
+				"column": resp.Interval.Column,
+				"mode":   resp.Interval.Mode,
+			},
+		})
 	}
 
 	if resp.Metadata != nil {
-		metadata := make([]interface{}, 1)
-		metadataObjectMap := make(map[string]interface{})
-		metadataObjectMap["creation_date"] = resp.Metadata.CreationDate
-		metadata[0] = metadataObjectMap
-		c.Set(data, "metadata", metadata)
+		c.Set(data, "metadata", []interface{}{
+			map[string]interface{}{
+				"creation_date": resp.Metadata.CreationDate,
+			},
+		})
 	}
 
 	if resp.Options != nil {
-		options := make([]interface{}, 1)
-		optionsObjectMap := make(map[string]interface{})
-		optionsObjectMap["ignore_irregular"] = resp.Options.IgnoreIrregular
-		options[0] = optionsObjectMap
-		c.Set(data, "options", options)
+		c.Set(data, "options", []interface{}{
+			map[string]interface{}{
+				"ignore_irregular": resp.Options.IgnoreIrregular,
+			},
+		})
 	}
 
-	RegionAvailability := make([]interface{}, 1)
-	RegionAvailability[0] = resp.RegionAvailability
-	c.Set(data, "region_availability", RegionAvailability[0])
-
-	c.Set(data, "source", resp.Source)
-	c.Set(data, "filter_json", resp.FilterJSON)
-	c.Set(data, "live_events_sqs_arn", resp.LiveEventsSqsArn)
-
-	c.Set(data, "partition_by", resp.PartitionBy)
-	c.Set(data, "pattern", resp.Pattern)
-	c.Set(data, "source_bucket", resp.SourceBucket)
-	c.Set(data, "column_selection", resp.ColumnSelection)
-
-	compressionOrEmptyString := resp.Compression
-	if strings.ToLower(compressionOrEmptyString) == "none" {
-		compressionOrEmptyString = ""
+	if strings.ToLower(resp.Compression) == "none" {
+		c.Set(data, "compression", "")
+	} else {
+		c.Set(data, "compression", resp.Compression)
 	}
-
-	c.Set(data, "compression", compressionOrEmptyString)
-	c.Set(data, "partition_by", resp.PartitionBy)
-	c.Set(data, "pattern", resp.Pattern)
-	c.Set(data, "source_bucket", resp.SourceBucket)
-
-	c.Set(data, "column_selection", resp.ColumnSelection)
 
 	if resp.ArrayFlattenDepth == nil {
 		c.Set(data, "array_flatten_depth", -1)
 	} else {
 		c.Set(data, "array_flatten_depth", resp.ArrayFlattenDepth)
 	}
+
+	c.Set(data, "region_availability", []interface{}{
+		resp.RegionAvailability,
+	})
+
+	c.Set(data, "id", resp.ID)
+	c.Set(data, "name", data.Id())
+	c.Set(data, "public", resp.Public)
+	c.Set(data, "type", resp.Type)
+	c.Set(data, "content_type", resp.ContentType)
+	c.Set(data, "realtime", resp.Realtime)
+	c.Set(data, "bucket", resp.Bucket)
+	c.Set(data, "source", resp.Source)
+	c.Set(data, "filter_json", resp.FilterJSON)
+	c.Set(data, "live_events_sqs_arn", resp.LiveEventsSqsArn)
+	c.Set(data, "partition_by", resp.PartitionBy)
+	c.Set(data, "pattern", resp.Pattern)
+	c.Set(data, "source_bucket", resp.SourceBucket)
+	c.Set(data, "column_selection", resp.ColumnSelection)
 
 	return diags
 }

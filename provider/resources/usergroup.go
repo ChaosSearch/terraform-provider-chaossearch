@@ -140,102 +140,110 @@ func ResourceUserGroup() *schema.Resource {
 func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
-
-	var id, name string
-	var permissionList []client.Permission
-	var conditionList []client.Condition
-
-	GroupObjectDTO := GroupObjectDTO{
-		ID:             id,
-		Name:           name,
-		ConditionList:  conditionList,
-		PermissionList: permissionList,
-	}
-	id, name, permissionList = GroupObject(data, GroupObjectDTO)
-
-	createUserGroupRequest := &client.CreateUserGroupRequest{
-		AuthToken:  tokenValue,
-		ID:         id,
-		Name:       name,
-		Permission: permissionList,
-	}
-	resp, err := c.CreateUserGroup(ctx, createUserGroupRequest)
+	resp, err := c.CreateUserGroup(ctx, GroupObject(data, tokenValue))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	data.SetId(resp.ID)
 	return resourceGroupRead(ctx, data, meta)
 }
 
-type GroupObjectDTO struct {
-	ID             string
-	Name           string
-	ConditionList  []client.Condition
-	PermissionList []client.Permission
-}
+func GroupObject(data *schema.ResourceData, authToken string) *client.CreateUserGroupRequest {
+	var clientConditionGroup client.ConditionGroup
+	var clientEquals *client.Equals
+	var clientStartsWith *client.StartsWith
+	var clientNotEquals *client.NotEquals
+	var clientLike *client.Like
+	var permissionList []client.Permission
 
-func GroupObject(data *schema.ResourceData, dto GroupObjectDTO) (string, string, []client.Permission) {
-	if data.Get("user_groups").(*schema.Set).Len() > 0 {
-		userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
-		dto.ID = userGroupInterface["id"].(string)
-		dto.Name = userGroupInterface["name"].(string)
-		permissions := userGroupInterface["permissions"].(*schema.Set).List()
-		if len(permissions) > 0 {
-			for _, permissionsElement := range permissions {
-				permissionMap := permissionsElement.(map[string]interface{})
-				var ConditionGroup client.ConditionGroup
-				if len(permissionMap["conditions"].(*schema.Set).List()) > 0 {
-					conditionObj := permissionMap["conditions"].(*schema.Set).List()[0]
-					conditions := conditionObj.(map[string]interface{})["condition"].(*schema.Set).List()
-					conditionMap := conditions[0].(map[string]interface{})
-					equalObj := conditionMap["equals"].(*schema.Set).List()[0]
-					equal := equalObj.(map[string]interface{})["chaos_document_attributes_title"].(string)
-					startsWithObj := conditionMap["starts_with"].(*schema.Set).List()[0]
-					startsWith := startsWithObj.(map[string]interface{})["chaos_document_attributes_title"].(string)
-					notEqualsObj := conditionMap["not_equals"].(*schema.Set).List()[0]
-					notEquals := notEqualsObj.(map[string]interface{})["chaos_document_attributes_title"].(string)
-					likeObj := conditionMap["like"].(*schema.Set).List()[0]
-					like := likeObj.(map[string]interface{})["chaos_document_attributes_title"].(string)
+	userGroupList := data.Get("user_groups").(*schema.Set).List()
+	if len(userGroupList) > 0 {
+		userGroupMap := userGroupList[0].(map[string]interface{})
+		permissionsList := userGroupMap["permissions"].(*schema.Set).List()
+		if len(permissionsList) > 0 {
+			for _, permission := range permissionsList {
+				permissionMap := permission.(map[string]interface{})
+				conditionsList := permissionMap["conditions"].(*schema.Set).List()
+				if len(conditionsList) > 0 {
+					conditionsMap := conditionsList[0].(map[string]interface{})
+					conditionList := conditionsMap["condition"].(*schema.Set).List()
+					if len(conditionList) > 0 {
+						conditionMap := conditionList[0].(map[string]interface{})
+						equalsList := conditionMap["equals"].(*schema.Set).List()
+						if len(equalsList) > 0 {
+							equalsMap := equalsList[0].(map[string]interface{})
+							clientEquals = &client.Equals{
+								ChaosDocumentAttributesTitle: equalsMap["chaos_document_attributes_title"].(string),
+							}
+						}
 
-					equalObject := client.Equals{
-						ChaosDocumentAttributesTitle: equal,
+						startsWithList := conditionMap["starts_with"].(*schema.Set).List()
+						if len(startsWithList) > 0 {
+							startsWithMap := startsWithList[0].(map[string]interface{})
+							clientStartsWith = &client.StartsWith{
+								ChaosDocumentAttributesTitle: startsWithMap["chaos_document_attributes_title"].(string),
+							}
+						}
+
+						notEqualsList := conditionMap["not_equals"].(*schema.Set).List()
+						if len(notEqualsList) > 0 {
+							notEqualsMap := notEqualsList[0].(map[string]interface{})
+							clientNotEquals = &client.NotEquals{
+								ChaosDocumentAttributesTitle: notEqualsMap["chaos_document_attributes_title"].(string),
+							}
+						}
+
+						likeList := conditionMap["like"].(*schema.Set).List()
+						if len(likeList) > 0 {
+							likeMap := likeList[0].(map[string]interface{})
+							clientLike = &client.Like{
+								ChaosDocumentAttributesTitle: likeMap["chaos_document_attributes_title"].(string),
+							}
+						}
 					}
-					likeObject := client.Like{
-						ChaosDocumentAttributesTitle: like,
-					}
-					notEqualsObject := client.NotEquals{
-						ChaosDocumentAttributesTitle: notEquals,
-					}
-					startsWithObject := client.StartsWith{
-						ChaosDocumentAttributesTitle: startsWith,
-					}
-					dto.ConditionList = append(
-						dto.ConditionList,
-						client.Condition{
-							Equals:     equalObject,
-							StartsWith: startsWithObject,
-							NotEquals:  notEqualsObject,
-							Like:       likeObject,
-						})
-					ConditionGroup = client.ConditionGroup{
-						Condition: dto.ConditionList,
+
+					clientConditionGroup = client.ConditionGroup{
+						Condition: []client.Condition{
+							{
+								Equals:     *clientEquals,
+								StartsWith: *clientStartsWith,
+								NotEquals:  *clientNotEquals,
+								Like:       *clientLike,
+							},
+						},
 					}
 				}
 
-				dto.PermissionList = append(
-					dto.PermissionList,
+				permissionList = append(
+					permissionList,
 					client.Permission{
 						Effect:         permissionMap["effect"].(string),
 						Actions:        permissionMap["actions"].([]interface{}),
 						Resources:      permissionMap["resources"].([]interface{}),
 						Version:        permissionMap["version"].(string),
-						ConditionGroup: ConditionGroup,
-					})
-				dto.ConditionList = nil
+						ConditionGroup: clientConditionGroup,
+					},
+				)
 			}
 		}
+
+		var userGroupId string
+		if data.Id() != "" {
+			userGroupId = data.Id()
+		} else if userGroupMap["id"].(string) != "" {
+			userGroupId = userGroupMap["id"].(string)
+		}
+
+		return &client.CreateUserGroupRequest{
+			AuthToken:  authToken,
+			ID:         userGroupId,
+			Name:       userGroupMap["name"].(string),
+			Permission: permissionList,
+		}
 	}
-	return dto.ID, dto.Name, dto.PermissionList
+
+	return nil
 }
 
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -263,68 +271,51 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 }
 
 func CreateUserGroupResponse(resp *client.UserGroup) []map[string]interface{} {
-	permissionContent := make(map[string]interface{})
-	result := make([]map[string]interface{}, 1)
-	userGroupContentMap := make(map[string]interface{})
+	permissions := make([]interface{}, len(resp.Permissions))
 	if resp.Permissions != nil && len(resp.Permissions) > 0 {
-		permissions := make([]interface{}, len(resp.Permissions))
-		for i := 0; i < len(resp.Permissions); i++ {
-			permissionContent["effect"] = resp.Permissions[i].Effect
-			permissionContent["actions"] = resp.Permissions[i].Actions
-			permissionContent["resources"] = resp.Permissions[i].Resources
-			permissionContent["version"] = resp.Permissions[i].Version
-			permissions[i] = permissionContent
+		for i, permission := range resp.Permissions {
+			permissions[i] = map[string]interface{}{
+				"effect":    permission.Effect,
+				"actions":   permission.Actions,
+				"resources": permission.Resources,
+				"version":   permission.Version,
+			}
 		}
-		userGroupContentMap["permissions"] = permissions
 	}
-	userGroupContentMap["id"] = resp.ID
-	userGroupContentMap["name"] = resp.Name
-	result[0] = userGroupContentMap
 
-	return result
+	return []map[string]interface{}{
+		{
+			"id":          resp.ID,
+			"name":        resp.Name,
+			"permissions": permissions,
+		},
+	}
 }
 
 func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
-	var id, name string
-	var permissionList []client.Permission
-	var conditionList []client.Condition
-
-	GroupObjectDTO := GroupObjectDTO{
-		ID:             id,
-		Name:           name,
-		ConditionList:  conditionList,
-		PermissionList: permissionList,
-	}
-	id, name, permissionList = GroupObject(data, GroupObjectDTO)
-
-	createUserGroupRequest := &client.CreateUserGroupRequest{
-		AuthToken:  tokenValue,
-		ID:         id,
-		Name:       name,
-		Permission: permissionList,
-	}
-
-	resp, err := c.UpdateUserGroup(ctx, createUserGroupRequest)
+	resp, err := c.UpdateUserGroup(ctx, GroupObject(data, tokenValue))
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	data.SetId(resp.ID)
 	return nil
 }
 
 func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
-
 	tokenValue := meta.(*models.ProviderMeta).Token
 	deleteUserGroupRequest := &client.DeleteUserGroupRequest{
 		AuthToken: tokenValue,
 		ID:        data.Id(),
 	}
+
 	if err := c.DeleteUserGroup(ctx, deleteUserGroupRequest); err != nil {
 		return diag.FromErr(err)
 	}
+
 	data.SetId(data.Id())
 	return nil
 }

@@ -28,6 +28,36 @@ func (c *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest)
 	return &indexModelResponse, nil
 }
 
+func (c *CSClient) DeleteIndexModel(ctx context.Context, indexName, authToken string) error {
+	if indexName != "" {
+		url := fmt.Sprintf("%s/V1/%s", c.config.URL, indexName)
+		httpResp, err := c.createAndSendReq(ctx, authToken, url, DELETE, nil)
+		if err != nil {
+			return fmt.Errorf("Delete Index Model Failure => %s", err)
+		}
+
+		defer httpResp.Body.Close()
+	}
+
+	return nil
+}
+
+func (c *CSClient) ReadIndexModel(ctx context.Context, bucketName, authToken string) (*ListBucketResponse, error) {
+	var listBucketResponse ListBucketResponse
+	url := fmt.Sprintf(`%s/V1/%s?list-type=2&delimiter=/&max-keys=100`, c.config.URL, bucketName)
+	httpResp, err := c.createAndSendReq(ctx, authToken, url, GET, nil)
+	if err != nil {
+		return nil, fmt.Errorf("Read Index Model Failure => %s", err)
+	}
+
+	if err := c.unmarshalXMLBody(httpResp.Body, &listBucketResponse); err != nil {
+		return nil, err
+	}
+
+	defer httpResp.Body.Close()
+	return &listBucketResponse, nil
+}
+
 func marshalIndexModelRequest(req *IndexModelRequest) ([]byte, error) {
 	body := map[string]interface{}{
 		"BucketName": req.BucketName,

@@ -56,6 +56,8 @@ func DataSourceSubAccounts() *schema.Resource {
 
 func readAllSubAccounts(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
+	var result []map[string]interface{}
+
 	client := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
 	usersResponse, err := client.ListUsers(ctx, tokenValue)
@@ -63,21 +65,23 @@ func readAllSubAccounts(ctx context.Context, data *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	result := make([]map[string]interface{}, len(usersResponse.Users[0].SubAccounts))
-	for i := 0; i < len(usersResponse.Users[0].SubAccounts); i++ {
-		subAccount := usersResponse.Users[0].SubAccounts[i]
-		result[i] = map[string]interface{}{
-			"activated": subAccount.Activated,
-			"full_name": subAccount.FullName,
-			"hocon":     subAccount.Hocon,
-			"uid":       subAccount.UID,
-			"username":  subAccount.Username,
-			"group_ids": subAccount.GroupIds,
+	users := usersResponse.Users
+	if len(users) > 0 {
+		subAccounts := users[0].SubAccounts
+		result = make([]map[string]interface{}, len(subAccounts))
+		for i, subAccount := range subAccounts {
+			result[i] = map[string]interface{}{
+				"activated": subAccount.Activated,
+				"full_name": subAccount.FullName,
+				"hocon":     subAccount.Hocon,
+				"uid":       subAccount.UID,
+				"username":  subAccount.Username,
+				"group_ids": subAccount.GroupIds,
+			}
 		}
 	}
 
-	subAccounts := result
-	if err := data.Set("sub_accounts", subAccounts); err != nil {
+	if err := data.Set("sub_accounts", result); err != nil {
 		return diag.FromErr(err)
 	}
 	data.SetId(strconv.FormatInt(time.Now().Unix(), 10))

@@ -69,7 +69,7 @@ func (c *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 		return nil, err
 	}
 
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, PUT, bodyAsBytes)
 	if err != nil {
 		return nil, fmt.Errorf("Update User Group Failure => %s", err)
 	}

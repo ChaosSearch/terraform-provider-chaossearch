@@ -1,7 +1,9 @@
 /*  
   All CS prefix vars have a matching EnvDefaultFunc
   Ex, 'CS_URL' == export CS_URL='example.chaossearch.io'
-  Or use the TF_VAR_CS_URL if you'd like
+  
+  Or if you'd like to use vars.tf you can export as TF_VAR_CS_URL
+  Or add them to your .tfvars
 */
 
 variable "CS_USERNAME" {

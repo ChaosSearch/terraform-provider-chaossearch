@@ -26,75 +26,42 @@ provider "aws" {
   region  = var.CS_REGION
 }
 
-/* resource "chaossearch_user_group" "chaossearch_user_group_create_test" {
+resource "chaossearch_user_group" "chaossearch_user_group_create_test" {
   user_groups {
-    name = "kyle-riley-test-group"
+    name = "provider_test"
     permissions {
         effect    = "Allow"
-        actions    = ["*"]
-        resources = ["*"]
-        version   = "1.2"
+        actions    = [".*"]
+        resources = [".*"]
+        version   = "1.4"
       }
   }
 }
-
-data "chaossearch_retrieve_user_group" "user_group" {
-  user_groups {
-    id = chaossearch_user_group.chaossearch_user_group_create_test.id
-  }
-  depends_on = [
-    chaossearch_user_group.chaossearch_user_group_create_test
-  ]
-}
-
-output "object_group_retrieve_user_group" {
-  value = data.chaossearch_retrieve_user_group.user_group
-}
-
-data "chaossearch_retrieve_groups" "user_groups" {
-  depends_on = [
-    chaossearch_user_group.chaossearch_user_group_create_test
-  ]
-}
-
-output "chaossearch_retrieve_groups" {
-  value = data.chaossearch_retrieve_groups.user_groups
-}
 resource "chaossearch_sub_account" "sub-account" {
   user_info_block {
-    username  = "test_user2"
-    full_name = "Test User2"
-    email     = "testuser2@test.com"
+    username  = "provider_test"
+    full_name = "provider_test"
+    email     = "provider_test"
   }
-  group_ids = [
-    chaossearch_user_group.chaossearch_user_group_create_test.id
-  ]
   password  = "1234"
   hocon     = ["override.Services.worker.quota=50"]
-  depends_on = [
-    chaossearch_user_group.chaossearch_user_group_create_test
-  ]
 }
 
-data "chaossearch_retrieve_sub_accounts" "sub_accounts" {
-  depends_on = [
-    chaossearch_sub_account.sub-account
-  ]
-}
+data "chaossearch_retrieve_sub_accounts" "sub_accounts" {}
 
 output "object_group_retrieve_sub_accounts" {
   value = data.chaossearch_retrieve_sub_accounts.sub_accounts
-} */
+}
 
 
 resource "chaossearch_object_group" "create-object-group" {
-  bucket = "test-object-group-tera16"
+  bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
   format {
-    _type            = "CSV"
+    type            = "CSV"
     column_delimiter = ","
     row_delimiter    = "\n"
-    header_row       = false
+    header_row       = true
   }
   interval {
     mode   = 0
@@ -102,13 +69,9 @@ resource "chaossearch_object_group" "create-object-group" {
   }
   index_retention {
     for_partition = []
-    overall       = 1
+    overall       = 14
   }
   filter {
-    prefix_filter {
-      field  = "key"
-      prefix = "bluebike"
-    }
     regex_filter {
       field = "key"
       regex = ".*"
@@ -117,34 +80,34 @@ resource "chaossearch_object_group" "create-object-group" {
   options {
     ignore_irregular = true
   }
-  realtime = true
+  realtime = false
 }
 
 resource "chaossearch_index_model" "model-1" {
-  bucket_name = "test-object-group-tera16"
-  model_mode = -1
+  bucket_name = "tf-provider"
+  model_mode = 0
   depends_on = [
     chaossearch_object_group.create-object-group
   ]
 }
 
 resource "chaossearch_view" "chaossearch-create-view" {
-  bucket           = "test-view-tera16"
+  bucket           = "tf-provider-view"
   case_insensitive = false
   index_pattern    = ".*"
   index_retention  = -1
   overwrite        = true
-  sources          = ["test-object-group-tera16"]
+  sources          = ["tf-provider"]
   time_field_name  = "@timestamp"
   filter {
     predicate {
-      _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
+      type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
       pred {
-        _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
-        field = "cs_partition_key_0"
-        query = "*bluebike*"
+        type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+        field = "STATUS"
+        query = "*F*"
         state {
-          _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+          type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
         }
       }
     }
@@ -152,16 +115,6 @@ resource "chaossearch_view" "chaossearch-create-view" {
   depends_on = [
     chaossearch_index_model.model-1
   ]
-}
-
-data "chaossearch_retrieve_views" "views" {
-  depends_on = [
-    chaossearch_view.chaossearch-create-view
-  ]
-}
-
-output "views" {
-  value = data.chaossearch_retrieve_views.views
 }
 
 /*

@@ -21,19 +21,19 @@ func DataSourceView() *schema.Resource {
 				Required: true,
 				ForceNew: false,
 			},
-			"_cacheable": {
+			"cacheable": {
 				Type:     schema.TypeBool,
 				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
-			"_case_insensitive": {
+			"case_insensitive": {
 				Type:     schema.TypeBool,
 				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
-			"_type": {
+			"type": {
 				Type:     schema.TypeString,
 				Required: false,
 				ForceNew: false,
@@ -80,7 +80,7 @@ func DataSourceView() *schema.Resource {
 													Optional: true,
 													ForceNew: true,
 												},
-												"_type": {
+												"type": {
 													Type:     schema.TypeString,
 													Optional: true,
 													ForceNew: true,
@@ -96,7 +96,7 @@ func DataSourceView() *schema.Resource {
 													ForceNew: true,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"_type": {
+															"type": {
 																Type:     schema.TypeString,
 																Optional: true,
 																ForceNew: true,
@@ -107,7 +107,7 @@ func DataSourceView() *schema.Resource {
 											},
 										},
 									},
-									"_type": {
+									"type": {
 										Type:     schema.TypeString,
 										Optional: true,
 										ForceNew: true,
@@ -200,10 +200,10 @@ func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta in
 
 func GetBucketData(clientResponse *client.ListBucketsResponse) []map[string]interface{} {
 	result := make([]map[string]interface{}, len(clientResponse.BucketsCollection.Buckets))
-	for i := 0; i < len(clientResponse.BucketsCollection.Buckets); i++ {
+	for i, bucket := range clientResponse.BucketsCollection.Buckets {
 		result[i] = map[string]interface{}{
-			"name":          clientResponse.BucketsCollection.Buckets[i].Name,
-			"creation_date": clientResponse.BucketsCollection.Buckets[i].CreationDate,
+			"name":          bucket.Name,
+			"creation_date": bucket.CreationDate,
 		}
 	}
 	return result

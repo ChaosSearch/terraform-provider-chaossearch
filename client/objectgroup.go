@@ -86,6 +86,15 @@ func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroup
 }
 
 func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, error) {
+	var filter []interface{}
+	if req.Filter.PrefixFilter != nil {
+		filter = append(filter, req.Filter.PrefixFilter)
+	}
+
+	if req.Filter.RegexFilter != nil {
+		filter = append(filter, req.Filter.RegexFilter)
+	}
+
 	body := map[string]interface{}{
 		"bucket": req.Bucket,
 		"source": req.Source,
@@ -95,9 +104,7 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 			"rowDelimiter":    req.Format.RowDelimiter,
 			"headerRow":       req.Format.HeaderRow,
 		},
-		"filter": []interface{}{
-			req.Filter.PrefixFilter, req.Filter.RegexFilter,
-		},
+		"filter": filter,
 		"indexRetention": map[string]interface{}{
 			"forPartition": req.IndexRetention.ForPartition,
 			"overall":      req.IndexRetention.Overall,

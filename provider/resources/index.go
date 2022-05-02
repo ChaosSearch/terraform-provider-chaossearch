@@ -56,5 +56,53 @@ func readResourceIndexModel(ctx context.Context, data *schema.ResourceData, meta
 }
 
 func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return nil
+	var listBucketResp *client.ListBucketResponse
+	c := meta.(*models.ProviderMeta).CSClient
+	authToken := meta.(*models.ProviderMeta).Token
+	bucketName := data.Get("bucket_name").(string)
+	listBucketResp, err := c.ReadIndexModel(
+		ctx,
+		bucketName,
+		authToken,
+	)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diag.FromErr(fmt.Errorf("Contents: %v", listBucketResp.Contents))
+	/*
+		if contents != nil {
+			err = c.DeleteIndexModel(ctx, contents.Key, authToken)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			// await return until index confirmed deletion
+			quit := make(chan bool)
+			ticker := time.NewTicker(15 * time.Second)
+			go func() {
+				<-time.After(5 * time.Minute)
+				close(quit)
+			}()
+
+			func() {
+				for {
+					select {
+					case <-ticker.C:
+						listBucketResp, err = c.ReadIndexModel(ctx, bucketName, authToken)
+						contents = listBucketResp.ListBucketResult.Contents
+						if contents == nil {
+							close(quit)
+						} else if contents.Key == "" {
+							close(quit)
+						}
+					case <-quit:
+						ticker.Stop()
+						return
+					}
+				}
+			}()
+		}
+	*/
 }

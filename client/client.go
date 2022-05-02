@@ -159,7 +159,21 @@ func (client *CSClient) createAndSendReq(
 		return nil, utils.SubmitRequestError(requestType, url, err)
 	}
 
-	defer httpReq.Body.Close()
+	if httpResp.StatusCode < 200 || httpResp.StatusCode >= 300 {
+		respAsBytes, err := ioutil.ReadAll(httpResp.Body)
+		if err != nil {
+			return nil, utils.ReadResponseError(err)
+		}
+
+		return nil, utils.ResponseCodeError(httpResp, httpReq, body, respAsBytes)
+	}
+
+	defer func(httpReq *http.Request) {
+		if httpReq.Body != nil {
+			httpReq.Body.Close()
+		}
+	}(httpReq)
+
 	return httpResp, nil
 }
 
@@ -198,6 +212,7 @@ func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes
 	req.Header.Add("x-amz-chaossumo-route-token", routeToken)
 	req.Header.Add("x-amz-security-token", tokenValue)
 	req.Header.Add("X-Amz-Date", dateTime)
+	req.Header.Add("x-amz-chaossumo-bucket-transform", "indexed")
 
 	resp, e := c.httpClient.Do(req)
 	if e != nil {
