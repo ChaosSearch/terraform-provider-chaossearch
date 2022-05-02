@@ -1,12 +1,10 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"cs-tf-provider/client/utils"
 	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 func (c *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRequest) error {
@@ -16,17 +14,19 @@ func (c *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRe
 		return err
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
-	if err != nil {
-		return utils.CreateRequestError(err)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
 	}
 
-	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
-		return utils.SubmitRequestError(POST, url, err)
+		return fmt.Errorf("Create SubAccount Failure => %s", err)
 	}
+
 	defer httpResp.Body.Close()
-
 	return nil
 }
 
@@ -37,17 +37,19 @@ func (c *CSClient) DeleteSubAccount(ctx context.Context, req *DeleteSubAccountRe
 		return err
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
-	if err != nil {
-		return utils.CreateRequestError(err)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
 	}
 
-	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
-		return utils.SubmitRequestError(POST, url, err)
+		return fmt.Errorf("Delete SubAccount Failure => %s", err)
 	}
+
 	defer httpResp.Body.Close()
-
 	return nil
 }
 

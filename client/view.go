@@ -1,12 +1,10 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"cs-tf-provider/client/utils"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"net/url"
 )
 
@@ -17,77 +15,59 @@ func (c *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error
 		return err
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
-	if err != nil {
-		return utils.CreateRequestError(err)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
 	}
 
-	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
-		return utils.SubmitRequestError(POST, url, err)
+		return fmt.Errorf("Create View Failure => %s", err)
 	}
+
 	defer httpResp.Body.Close()
-
 	return nil
 }
 
 func (c *CSClient) ReadView(ctx context.Context, req *ReadViewRequest) (*ReadViewResponse, error) {
 	var resp ReadViewResponse
-	if err := c.readViewAttr(ctx, req, &resp); err != nil {
+	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, req.ID)
+	request := ClientRequest{
+		RequestType: GET,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
+	if err != nil {
+		return nil, fmt.Errorf("Read View Failure => %s", err)
+	}
+
+	if err := c.unmarshalJSONBody(httpResp.Body, &resp); err != nil {
 		return nil, err
 	}
-	return &resp, nil
-}
 
-func (c *CSClient) readViewAttr(x context.Context, e *ReadViewRequest, r *ReadViewResponse) error {
-	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, e.ID)
-	httpReq, err := http.NewRequestWithContext(x, GET, url, nil)
-	if err != nil {
-		return utils.CreateRequestError(err)
-	}
-
-	httpResp, err := c.signV2AndDo(e.AuthToken, httpReq, nil)
-	if err != nil {
-		return utils.SubmitRequestError(GET, url, err)
-	}
 	defer httpResp.Body.Close()
-
-	var read ReadViewResponse
-	if err := c.unmarshalJSONBody(httpResp.Body, &read); err != nil {
-		return err
-	}
-
-	r.FilterPredicate = read.FilterPredicate
-	r.Type = read.Type
-	r.MetaData = read.MetaData
-	r.RegionAvailability = read.RegionAvailability
-	r.ID = read.ID
-	r.Bucket = read.Bucket
-	r.Pattern = read.Pattern
-	r.Transforms = read.Transforms
-	r.TimeFieldName = read.TimeFieldName
-	r.Sources = read.Sources
-	r.Cacheable = read.Cacheable
-	r.CaseInsensitive = read.CaseInsensitive
-	r.IndexPattern = read.IndexPattern
-	return nil
+	return &resp, nil
 }
 
 func (c *CSClient) DeleteView(ctx context.Context, req *DeleteViewRequest) error {
 	safeViewName := url.PathEscape(req.Name)
-	deleteViewURL := fmt.Sprintf("%s/V1/%s", c.config.URL, safeViewName)
-	httpReq, err := http.NewRequestWithContext(ctx, DELETE, deleteViewURL, nil)
-	if err != nil {
-		return utils.CreateRequestError(err)
+	url := fmt.Sprintf("%s/V1/%s", c.config.URL, safeViewName)
+	request := ClientRequest{
+		RequestType: DELETE,
+		Url:         url,
+		AuthToken:   req.AuthToken,
 	}
 
-	sessionToken := req.AuthToken
-	httpResp, err := c.signV2AndDo(sessionToken, httpReq, nil)
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
-		return utils.SubmitRequestError(DELETE, deleteViewURL, err)
+		return fmt.Errorf("Delete View Failure => %s", err)
 	}
+
 	defer httpResp.Body.Close()
-
 	return nil
 }
 

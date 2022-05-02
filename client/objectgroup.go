@@ -1,12 +1,10 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"cs-tf-provider/client/utils"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"net/url"
 )
 
@@ -17,67 +15,42 @@ func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroup
 		return err
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
-	if err != nil {
-		return utils.CreateRequestError(err)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
 	}
 
-	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
-		return utils.SubmitRequestError(POST, url, err)
+		return fmt.Errorf("Create Object Group Failure => %s", err)
 	}
+
 	defer httpResp.Body.Close()
-
 	return nil
 }
 
-func (c *CSClient) ReadObjGroup(x context.Context, e *ReadObjGroupReq) (*ReadObjGroupResp, error) {
+func (c *CSClient) ReadObjGroup(ctx context.Context, req *ReadObjGroupReq) (*ReadObjGroupResp, error) {
 	var resp ReadObjGroupResp
-	if err := c.read(x, e, &resp); err != nil {
+	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, req.ID)
+	request := ClientRequest{
+		RequestType: GET,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
+	if err != nil {
+		return nil, fmt.Errorf("Read Object Group Failure => %s", err)
+	}
+
+	if err := c.unmarshalJSONBody(httpResp.Body, &resp); err != nil {
 		return nil, err
 	}
 
-	return &resp, nil
-}
-
-func (c *CSClient) read(x context.Context, e *ReadObjGroupReq, r *ReadObjGroupResp) error {
-	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, e.ID)
-	httpReq, err := http.NewRequestWithContext(x, GET, url, nil)
-	if err != nil {
-		return utils.CreateRequestError(err)
-	}
-
-	httpResp, err := c.signV2AndDo(e.AuthToken, httpReq, nil)
-	if err != nil {
-		return utils.SubmitRequestError(GET, url, err)
-	}
 	defer httpResp.Body.Close()
-
-	var ReadObjectGroup ReadObjGroupResp
-	if err := c.unmarshalJSONBody(httpResp.Body, &ReadObjectGroup); err != nil {
-		return err
-	}
-	r.Format = ReadObjectGroup.Format
-
-	r.ObjectFilter = ReadObjectGroup.ObjectFilter
-	r.Interval = ReadObjectGroup.Interval
-	r.Metadata = ReadObjectGroup.Metadata
-	r.Options = ReadObjectGroup.Options
-	r.RegionAvailability = ReadObjectGroup.RegionAvailability
-	r.Public = ReadObjectGroup.Public
-	r.Realtime = ReadObjectGroup.Realtime
-	r.Type = ReadObjectGroup.Type
-	r.Bucket = ReadObjectGroup.Bucket
-	r.ContentType = ReadObjectGroup.ContentType
-	r.ID = ReadObjectGroup.ID
-	r.Source = ReadObjectGroup.Source
-
-	r.Compression = ReadObjectGroup.Compression
-	r.PartitionBy = ReadObjectGroup.PartitionBy
-	r.Pattern = ReadObjectGroup.Pattern
-	r.SourceBucket = ReadObjectGroup.SourceBucket
-	r.ColumnSelection = ReadObjectGroup.ColumnSelection
-	return nil
+	return &resp, nil
 }
 
 func (c *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroupRequest) error {
@@ -87,17 +60,19 @@ func (c *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroup
 		return err
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
-	if err != nil {
-		return utils.CreateRequestError(err)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
 	}
 
-	httpResp, err := c.signV2AndDo(req.AuthToken, httpReq, bodyAsBytes)
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
-		return utils.SubmitRequestError(POST, url, err)
+		return fmt.Errorf("Update Object Group Failure => %s", err)
 	}
+
 	defer httpResp.Body.Close()
-
 	return nil
 }
 
@@ -121,18 +96,18 @@ func marshalUpdateObjectGroupRequest(req *UpdateObjectGroupRequest) ([]byte, err
 func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
 	safeObjectGroupName := url.PathEscape(req.Name)
 	url := fmt.Sprintf("%s/V1/%s", c.config.URL, safeObjectGroupName)
-	httpReq, err := http.NewRequestWithContext(ctx, DELETE, url, nil)
-	if err != nil {
-		return utils.CreateRequestError(err)
+	request := ClientRequest{
+		RequestType: DELETE,
+		Url:         url,
+		AuthToken:   req.AuthToken,
 	}
 
-	sessionToken := req.AuthToken
-	httpResp, err := c.signV2AndDo(sessionToken, httpReq, nil)
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
-		return utils.SubmitRequestError(DELETE, url, err)
+		return fmt.Errorf("Delete Object Group Failure => %s", err)
 	}
+
 	defer httpResp.Body.Close()
-
 	return nil
 }
 

@@ -26,69 +26,69 @@ provider "aws" {
   region  = var.CS_REGION
 }
 
-resource "chaossearch_sub_account" "sub-account" {
-  user_info_block {
-    username  = "test_user"
-    full_name = "Test User"
-    email     = "testusero@test.com"
-  }
-  group_ids = ["100", "101"]
-  password  = "1234"
-  hocon     = ["override.Services.worker.quota=50"]
-}
-
-data "chaossearch_retrieve_sub_accounts" "sub_accounts" {}
-
-output "object_group_retrieve_sub_accounts" {
-  value = data.chaossearch_retrieve_sub_accounts.sub_accounts
-}
-
-resource "chaossearch_user_group" "chaossearch_user_group_create_test" {
+/* resource "chaossearch_user_group" "chaossearch_user_group_create_test" {
   user_groups {
-    id   = "100221"
-    name = "user_group-1112"
+    name = "kyle-riley-test-group"
     permissions {
         effect    = "Allow"
         actions    = ["*"]
         resources = ["*"]
         version   = "1.2"
       }
-
   }
 }
 
 data "chaossearch_retrieve_user_group" "user_group" {
   user_groups {
-    id = "100221"
+    id = chaossearch_user_group.chaossearch_user_group_create_test.id
   }
-}
-
-resource "chaossearch_user_group" "chaossearch_user_group_update_test" {
-  user_groups {
-    id   = "100221"
-    name = "update-test"
-    permissions {
-      effect    = "Allow"
-      actions   = ["*."]
-      resources = ["*."]
-      version   = "1"
-
-    }
-  }
+  depends_on = [
+    chaossearch_user_group.chaossearch_user_group_create_test
+  ]
 }
 
 output "object_group_retrieve_user_group" {
   value = data.chaossearch_retrieve_user_group.user_group
 }
 
-data "chaossearch_retrieve_groups" "user_groups" {}
+data "chaossearch_retrieve_groups" "user_groups" {
+  depends_on = [
+    chaossearch_user_group.chaossearch_user_group_create_test
+  ]
+}
 
 output "chaossearch_retrieve_groups" {
   value = data.chaossearch_retrieve_groups.user_groups
 }
+resource "chaossearch_sub_account" "sub-account" {
+  user_info_block {
+    username  = "test_user2"
+    full_name = "Test User2"
+    email     = "testuser2@test.com"
+  }
+  group_ids = [
+    chaossearch_user_group.chaossearch_user_group_create_test.id
+  ]
+  password  = "1234"
+  hocon     = ["override.Services.worker.quota=50"]
+  depends_on = [
+    chaossearch_user_group.chaossearch_user_group_create_test
+  ]
+}
+
+data "chaossearch_retrieve_sub_accounts" "sub_accounts" {
+  depends_on = [
+    chaossearch_sub_account.sub-account
+  ]
+}
+
+output "object_group_retrieve_sub_accounts" {
+  value = data.chaossearch_retrieve_sub_accounts.sub_accounts
+} */
+
 
 resource "chaossearch_object_group" "create-object-group" {
-  bucket = "test-object-group-tera8"
+  bucket = "test-object-group-tera15"
   source = "chaossearch-tf-provider-test"
   format {
     _type            = "CSV"
@@ -118,6 +118,50 @@ resource "chaossearch_object_group" "create-object-group" {
     ignore_irregular = true
   }
   realtime = true
+}
+
+resource "chaossearch_index_model" "model-1" {
+  bucket_name = "test-object-group-tera15"
+  model_mode = -1
+  depends_on = [
+    chaossearch_object_group.create-object-group
+  ]
+}
+
+resource "chaossearch_view" "chaossearch-create-view" {
+  bucket           = "test-view-tera15"
+  case_insensitive = false
+  index_pattern    = ".*"
+  index_retention  = -1
+  overwrite        = true
+  sources          = ["test-object-group-tera15"]
+  time_field_name  = "@timestamp"
+  filter {
+    predicate {
+      _type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
+      pred {
+        _type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+        field = "cs_partition_key_0"
+        query = "*bluebike*"
+        state {
+          _type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+        }
+      }
+    }
+  }
+  depends_on = [
+    chaossearch_index_model.model-1
+  ]
+}
+
+data "chaossearch_retrieve_views" "views" {
+  depends_on = [
+    chaossearch_view.chaossearch-create-view
+  ]
+}
+
+output "views" {
+  value = data.chaossearch_retrieve_views.views
 }
 
 /*

@@ -8,6 +8,7 @@ import (
 	"cs-tf-provider/provider/models"
 	"cs-tf-provider/provider/resources"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -59,12 +60,11 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"chaossearch_object_group":   resources.ResourceObjectGroup(),
-			"chaossearch_view":           resources.ResourceView(),
-			"chaossearch_sub_account":    resources.ResourceSubAccount(),
-			"chaossearch_user_group":     resources.ResourceUserGroup(),
-			"chaossearch_index_model":    resources.ResourceIndexModel(),
-			"chaossearch_index_metadata": resources.ResourceIndexMetadata(),
+			"chaossearch_object_group": resources.ResourceObjectGroup(),
+			"chaossearch_view":         resources.ResourceView(),
+			"chaossearch_sub_account":  resources.ResourceSubAccount(),
+			"chaossearch_user_group":   resources.ResourceUserGroup(),
+			"chaossearch_index_model":  resources.ResourceIndexModel(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -136,7 +136,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	tokenData := models.AuthResponse{}
 
 	if err := json.Unmarshal([]byte(authResponseString), &tokenData); err != nil {
-		return utils.UnmarshalJsonError(err), nil
+		return fmt.Errorf("Provider Config Failure => %s", utils.UnmarshalJsonError(err)), nil
 	}
 
 	providerMeta := &models.ProviderMeta{

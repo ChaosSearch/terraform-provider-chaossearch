@@ -286,7 +286,7 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	return diags
 }
 
-func CreateUserGroupResponse(resp *client.Group) []map[string]interface{} {
+func CreateUserGroupResponse(resp *client.UserGroup) []map[string]interface{} {
 	permissionContent := make(map[string]interface{})
 	result := make([]map[string]interface{}, 1)
 	userGroupContentMap := make(map[string]interface{})
