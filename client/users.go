@@ -11,7 +11,13 @@ import (
 func (c *CSClient) ListUsers(ctx context.Context, authToken string) (*ListUsersResponse, error) {
 	var resp ListUsersResponse
 	url := fmt.Sprintf("%s/user/manifest", c.config.URL)
-	httpResp, err := c.createAndSendReq(ctx, authToken, url, POST, nil)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   authToken,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("List Users Failure => %s", err)
 	}
@@ -32,7 +38,14 @@ func (c *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 		return nil, err
 	}
 
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("Create User Group Failure => %s", err)
 	}
@@ -48,7 +61,13 @@ func (c *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 func (c *CSClient) ReadUserGroup(ctx context.Context, req *ReadUserGroupRequest) (*UserGroup, error) {
 	var readUserGroupResp UserGroup
 	url := fmt.Sprintf("%s/user/group/%s", c.config.URL, req.ID)
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, GET, nil)
+	request := ClientRequest{
+		RequestType: GET,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("Read User Group Failure => %s", err)
 	}
@@ -69,7 +88,14 @@ func (c *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 		return nil, err
 	}
 
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, PUT, bodyAsBytes)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("Update User Group Failure => %s", err)
 	}
@@ -85,7 +111,13 @@ func (c *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 func (c *CSClient) DeleteUserGroup(ctx context.Context, req *DeleteUserGroupRequest) error {
 	deleteUserGroupID := url.PathEscape(req.ID)
 	url := fmt.Sprintf("%s/user/group/%s", c.config.URL, deleteUserGroupID)
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, DELETE, nil)
+	request := ClientRequest{
+		RequestType: DELETE,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Delete User Group Failure => %s", err)
 	}

@@ -9,13 +9,18 @@ import (
 
 func (c *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest) (*IndexModelResponse, error) {
 	var indexModelResponse IndexModelResponse
-	url := fmt.Sprintf("%s/Bucket/model", c.config.URL)
 	bodyAsBytes, err := marshalIndexModelRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		RequestType: POST,
+		Url:         fmt.Sprintf("%s/Bucket/model", c.config.URL),
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
+	})
+
 	if err != nil {
 		return nil, fmt.Errorf("Create Index Model Failure => %s", err)
 	}
@@ -30,8 +35,13 @@ func (c *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest)
 
 func (c *CSClient) DeleteIndexModel(ctx context.Context, indexName, authToken string) error {
 	if indexName != "" {
-		url := fmt.Sprintf("%s/V1/%s", c.config.URL, indexName)
-		httpResp, err := c.createAndSendReq(ctx, authToken, url, DELETE, nil)
+		httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+			RequestType: DELETE,
+			Url:         fmt.Sprintf("%s/V1/%s", c.config.URL, indexName),
+			AuthToken:   authToken,
+			Body:        nil,
+		})
+
 		if err != nil {
 			return fmt.Errorf("Delete Index Model Failure => %s", err)
 		}
@@ -44,8 +54,13 @@ func (c *CSClient) DeleteIndexModel(ctx context.Context, indexName, authToken st
 
 func (c *CSClient) ReadIndexModel(ctx context.Context, bucketName, authToken string) (*ListBucketResponse, error) {
 	var listBucketResponse ListBucketResponse
-	url := fmt.Sprintf(`%s/V1/%s?list-type=2&delimiter=/&max-keys=100`, c.config.URL, bucketName)
-	httpResp, err := c.createAndSendReq(ctx, authToken, url, GET, nil)
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		RequestType: GET,
+		Url:         fmt.Sprintf(`%s/V1/%s?list-type=2&delimiter=/&max-keys=100`, c.config.URL, bucketName),
+		AuthToken:   authToken,
+		Body:        nil,
+	})
+
 	if err != nil {
 		return nil, fmt.Errorf("Read Index Model Failure => %s", err)
 	}

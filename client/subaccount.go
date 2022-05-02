@@ -14,7 +14,14 @@ func (c *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRe
 		return err
 	}
 
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Create SubAccount Failure => %s", err)
 	}
@@ -30,7 +37,14 @@ func (c *CSClient) DeleteSubAccount(ctx context.Context, req *DeleteSubAccountRe
 		return err
 	}
 
-	httpResp, err := c.createAndSendReq(ctx, req.AuthToken, url, POST, bodyAsBytes)
+	request := ClientRequest{
+		RequestType: POST,
+		Url:         url,
+		AuthToken:   req.AuthToken,
+		Body:        bodyAsBytes,
+	}
+
+	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Delete SubAccount Failure => %s", err)
 	}
