@@ -9,20 +9,18 @@ import (
 )
 
 func (c *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error {
-	url := fmt.Sprintf("%s/Bucket/createView", c.config.URL)
 	bodyAsBytes, err := marshalCreateViewRequest(req)
 	if err != nil {
 		return err
 	}
 
-	request := ClientRequest{
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/Bucket/createView", c.config.URL),
 		RequestType: POST,
-		Url:         url,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
-	}
+	})
 
-	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Create View Failure => %s", err)
 	}
@@ -33,14 +31,12 @@ func (c *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error
 
 func (c *CSClient) ReadView(ctx context.Context, req *ReadViewRequest) (*ReadViewResponse, error) {
 	var resp ReadViewResponse
-	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, req.ID)
-	request := ClientRequest{
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, req.ID),
 		RequestType: GET,
-		Url:         url,
 		AuthToken:   req.AuthToken,
-	}
+	})
 
-	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("Read View Failure => %s", err)
 	}
@@ -55,14 +51,12 @@ func (c *CSClient) ReadView(ctx context.Context, req *ReadViewRequest) (*ReadVie
 
 func (c *CSClient) DeleteView(ctx context.Context, req *DeleteViewRequest) error {
 	safeViewName := url.PathEscape(req.Name)
-	url := fmt.Sprintf("%s/V1/%s", c.config.URL, safeViewName)
-	request := ClientRequest{
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/V1/%s", c.config.URL, safeViewName),
 		RequestType: DELETE,
-		Url:         url,
 		AuthToken:   req.AuthToken,
-	}
+	})
 
-	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Delete View Failure => %s", err)
 	}

@@ -15,8 +15,8 @@ func (c *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest)
 	}
 
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		RequestType: POST,
 		Url:         fmt.Sprintf("%s/Bucket/model", c.config.URL),
+		RequestType: POST,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
 	})
@@ -36,10 +36,9 @@ func (c *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest)
 func (c *CSClient) DeleteIndexModel(ctx context.Context, indexName, authToken string) error {
 	if indexName != "" {
 		httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-			RequestType: DELETE,
 			Url:         fmt.Sprintf("%s/V1/%s", c.config.URL, indexName),
+			RequestType: DELETE,
 			AuthToken:   authToken,
-			Body:        nil,
 		})
 
 		if err != nil {
@@ -55,10 +54,12 @@ func (c *CSClient) DeleteIndexModel(ctx context.Context, indexName, authToken st
 func (c *CSClient) ReadIndexModel(ctx context.Context, bucketName, authToken string) (*ListBucketResponse, error) {
 	var listBucketResponse ListBucketResponse
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		RequestType: GET,
 		Url:         fmt.Sprintf(`%s/V1/%s?list-type=2&delimiter=/&max-keys=100`, c.config.URL, bucketName),
+		RequestType: GET,
 		AuthToken:   authToken,
-		Body:        nil,
+		Headers: map[string]string{
+			"x-amz-chaossumo-bucket-transform": "indexed",
+		},
 	})
 
 	if err != nil {

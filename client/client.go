@@ -103,7 +103,6 @@ func (c *CSClient) Auth(ctx context.Context) (token string, err error) {
 	}
 	defer res.Body.Close()
 
-	// TODO add a status call once successful login to ensure that the user is actually deployed
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", utils.ReadResponseError(err)
@@ -151,6 +150,12 @@ func (client *CSClient) createAndSendReq(
 		return nil, utils.CreateRequestError(err)
 	}
 
+	if request.Headers != nil {
+		for header, value := range request.Headers {
+			httpReq.Header.Add(header, value)
+		}
+	}
+
 	httpResp, err := client.signV2AndDo(request.AuthToken, httpReq, request.Body)
 	if err != nil {
 		return nil, utils.SubmitRequestError(request.RequestType, request.Url, err)
@@ -176,7 +181,7 @@ func (client *CSClient) createAndSendReq(
 
 func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
 	var routeToken string
-
+	var msg string
 	claims := jwt.MapClaims{}
 	_, _, err := new(jwt.Parser).ParseUnverified(tokenValue, claims)
 	if err != nil {
@@ -189,13 +194,24 @@ func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes
 		routeToken = claims["external_id"].(string)
 	}
 
+	indexHeader := "x-amz-chaossumo-bucket-transform"
 	dateTime := time.Now().UTC().String()
-	msg := fmt.Sprintf("%s\n\n", req.Method) +
-		"application/json\n\n" +
-		fmt.Sprintf("x-amz-chaossumo-route-token:%s\n", routeToken) +
-		fmt.Sprintf("x-amz-date:%s\n", dateTime) +
-		fmt.Sprintf("x-amz-security-token:%s\n", tokenValue) +
-		req.URL.Path
+	if req.Header.Get(indexHeader) != "" {
+		msg = fmt.Sprintf("%s\n\n", req.Method) +
+			"application/json\n\n" +
+			fmt.Sprintf("%s:indexed\n", indexHeader) +
+			fmt.Sprintf("x-amz-chaossumo-route-token:%s\n", routeToken) +
+			fmt.Sprintf("x-amz-date:%s\n", dateTime) +
+			fmt.Sprintf("x-amz-security-token:%s\n", tokenValue) +
+			req.URL.Path
+	} else {
+		msg = fmt.Sprintf("%s\n\n", req.Method) +
+			"application/json\n\n" +
+			fmt.Sprintf("x-amz-chaossumo-route-token:%s\n", routeToken) +
+			fmt.Sprintf("x-amz-date:%s\n", dateTime) +
+			fmt.Sprintf("x-amz-security-token:%s\n", tokenValue) +
+			req.URL.Path
+	}
 
 	auth := fmt.Sprintf(
 		"AWS %s:%s",
@@ -208,8 +224,7 @@ func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("x-amz-chaossumo-route-token", routeToken)
 	req.Header.Add("x-amz-security-token", tokenValue)
-	req.Header.Add("X-Amz-Date", dateTime)
-	req.Header.Add("x-amz-chaossumo-bucket-transform", "indexed")
+	req.Header.Add("x-amz-Date", dateTime)
 
 	resp, e := c.httpClient.Do(req)
 	if e != nil {
@@ -234,6 +249,23 @@ func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes
 
 	return resp, nil
 }
+
+/*
+func generateBaseHeaders(isIndexed bool, routeToken, authToken string) map[string]string {
+	headers := map[string]string{
+		"Content-Type":                "application/json",
+		"x-amz-chaossumo-route-token": routeToken,
+		"x-amz-security-token":        authToken,
+		"x-amz-date":                  time.Now().UTC().String(),
+	}
+
+	if isIndexed {
+		headers["x-amz-chaossumo-bucket-transform"] = "indexed"
+	}
+
+	return headers
+}
+*/
 
 func generateSignature(secretToken string, payloadBody string) string {
 	keyForSign := []byte(secretToken)

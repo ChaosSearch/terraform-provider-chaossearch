@@ -1,8 +1,18 @@
 package client
 
 type Bucket struct {
-	Name         string `xml:"Name"`
-	CreationDate string `xml:"CreationDate"`
+	Name         string  `xml:"Name"`
+	CreationDate string  `xml:"CreationDate"`
+	Tagging      Tagging `xml:"Tagging"`
+}
+
+type Tagging struct {
+	TagSet []Tag `xml:"TagSet"`
+}
+
+type Tag struct {
+	Key   string      `xml:"Key"`
+	Value interface{} `xml:"Value"`
 }
 
 type BucketCollection struct {
@@ -366,4 +376,5 @@ type ClientRequest struct {
 	Url         string
 	AuthToken   string
 	Body        []byte
+	Headers     map[string]string
 }

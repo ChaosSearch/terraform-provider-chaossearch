@@ -47,13 +47,6 @@ resource "chaossearch_sub_account" "sub-account" {
   hocon     = ["override.Services.worker.quota=50"]
 }
 
-data "chaossearch_retrieve_sub_accounts" "sub_accounts" {}
-
-output "object_group_retrieve_sub_accounts" {
-  value = data.chaossearch_retrieve_sub_accounts.sub_accounts
-}
-
-
 resource "chaossearch_object_group" "create-object-group" {
   bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
@@ -115,6 +108,40 @@ resource "chaossearch_view" "chaossearch-create-view" {
   depends_on = [
     chaossearch_index_model.model-1
   ]
+}
+
+data "chaossearch_retrieve_sub_accounts" "sub_accounts" {}
+
+output "object_group_retrieve_sub_accounts" {
+  value = data.chaossearch_retrieve_sub_accounts.sub_accounts
+}
+
+data "chaossearch_retrieve_object_group" "object-group" {
+  bucket = "tf-provider"
+  depends_on = [
+    chaossearch_object_group.create-object-group
+  ]
+}
+
+output "object_group" {
+  value = data.chaossearch_retrieve_object_group.object-group
+}
+
+data "chaossearch_retrieve_view" "retrieve_view" {
+  bucket = "tf-provider-view"
+  depends_on = [
+    chaossearch_view.chaossearch-create-view
+  ]
+}
+
+output "view" {
+  value = data.chaossearch_retrieve_view.retrieve_view
+}
+
+data "chaossearch_retrieve_views" "views" {}
+
+output "views" {
+  value = data.chaossearch_retrieve_views.views
 }
 
 /*

@@ -6,6 +6,7 @@ import (
 	"cs-tf-provider/provider/models"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -70,39 +71,42 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(fmt.Errorf("Contents: %v", listBucketResp.Contents))
-	/*
-		if contents != nil {
-			err = c.DeleteIndexModel(ctx, contents.Key, authToken)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			// await return until index confirmed deletion
-			quit := make(chan bool)
-			ticker := time.NewTicker(15 * time.Second)
-			go func() {
-				<-time.After(5 * time.Minute)
-				close(quit)
-			}()
-
-			func() {
-				for {
-					select {
-					case <-ticker.C:
-						listBucketResp, err = c.ReadIndexModel(ctx, bucketName, authToken)
-						contents = listBucketResp.ListBucketResult.Contents
-						if contents == nil {
-							close(quit)
-						} else if contents.Key == "" {
-							close(quit)
-						}
-					case <-quit:
-						ticker.Stop()
-						return
-					}
-				}
-			}()
+	if listBucketResp.Contents != nil {
+		err = c.DeleteIndexModel(ctx, listBucketResp.Contents.Key, authToken)
+		if err != nil {
+			return diag.FromErr(err)
 		}
-	*/
+
+		// await return until index confirmed deletion
+		quit := make(chan bool)
+		ticker := time.NewTicker(15 * time.Second)
+		go func() {
+			<-time.After(5 * time.Minute)
+			close(quit)
+			err = fmt.Errorf("Failure confirming index deletion => Timeout (5 Minutes)")
+		}()
+
+		func() {
+			for {
+				select {
+				case <-ticker.C:
+					listBucketResp, err = c.ReadIndexModel(ctx, bucketName, authToken)
+					if listBucketResp.Contents == nil {
+						close(quit)
+					} else if listBucketResp.Contents.Key == "" {
+						close(quit)
+					}
+				case <-quit:
+					ticker.Stop()
+					return
+				}
+			}
+		}()
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return nil
 }
