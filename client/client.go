@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type Configuration struct {
@@ -43,19 +42,20 @@ type CSClient struct {
 	Login      *Login
 }
 
+type ClientRequest struct {
+	RequestType string
+	Url         string
+	AuthToken   string
+	Body        []byte
+	Headers     map[string]string
+}
+
 const (
 	GET    string = "GET"
 	POST   string = "POST"
 	PUT    string = "PUT"
 	DELETE string = "DELETE"
 )
-
-func (c *CSClient) Set(data *schema.ResourceData, key string, value interface{}) {
-	err := data.Set(key, value)
-	if err != nil {
-		return
-	}
-}
 
 func NewConfiguration(url, accessKeyID, secretAccessKey, region string) *Configuration {
 	return &Configuration{
@@ -161,15 +161,6 @@ func (client *CSClient) createAndSendReq(
 		return nil, utils.SubmitRequestError(request.RequestType, request.Url, err)
 	}
 
-	if httpResp.StatusCode < 200 || httpResp.StatusCode >= 300 {
-		respAsBytes, err := ioutil.ReadAll(httpResp.Body)
-		if err != nil {
-			return nil, utils.ReadResponseError(err)
-		}
-
-		return nil, utils.ResponseCodeError(httpResp, httpReq, request.Body, respAsBytes)
-	}
-
 	defer func(httpReq *http.Request) {
 		if httpReq.Body != nil {
 			httpReq.Body.Close()
@@ -249,23 +240,6 @@ func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes
 
 	return resp, nil
 }
-
-/*
-func generateBaseHeaders(isIndexed bool, routeToken, authToken string) map[string]string {
-	headers := map[string]string{
-		"Content-Type":                "application/json",
-		"x-amz-chaossumo-route-token": routeToken,
-		"x-amz-security-token":        authToken,
-		"x-amz-date":                  time.Now().UTC().String(),
-	}
-
-	if isIndexed {
-		headers["x-amz-chaossumo-bucket-transform"] = "indexed"
-	}
-
-	return headers
-}
-*/
 
 func generateSignature(secretToken string, payloadBody string) string {
 	keyForSign := []byte(secretToken)

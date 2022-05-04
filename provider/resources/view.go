@@ -27,6 +27,10 @@ func ResourceView() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"bucket": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -43,14 +47,30 @@ func ResourceView() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"cacheable": {
+				Type:     schema.TypeBool,
+				ForceNew: false,
+				Optional: true,
+			},
 			"overwrite": {
 				Type:     schema.TypeBool,
 				Default:  false,
 				Optional: true,
 			},
+			"type": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"case_insensitive": {
 				Type:     schema.TypeBool,
 				Required: true,
+			},
+			"region_availability": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"index_retention": {
 				Type:        schema.TypeInt,
@@ -69,6 +89,22 @@ func ResourceView() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Optional: true,
+			},
+			"metadata": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"creation_date": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"array_flatten_depth": {
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 			"filter": {
 				Type:     schema.TypeSet,
@@ -239,16 +275,20 @@ func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 	}
 
 	if resp.MetaData != nil {
-		c.Set(data, "metadata", []interface{}{
+		err = data.Set("metadata", []interface{}{
 			map[string]interface{}{
 				"creation_date": resp.MetaData.CreationDate,
 			},
 		})
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if resp.FilterPredicate != nil {
 		if resp.FilterPredicate.Predicate != nil {
-			c.Set(data, "filter", []interface{}{
+			err = data.Set("filter", []interface{}{
 				map[string]interface{}{
 					"predicate": []interface{}{
 						map[string]interface{}{
@@ -269,26 +309,64 @@ func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 					},
 				},
 			})
+
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
 	if resp.ArrayFlattenDepth == nil {
-		c.Set(data, "array_flatten_depth", -1)
+		err = data.Set("array_flatten_depth", -1)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
-		c.Set(data, "array_flatten_depth", resp.ArrayFlattenDepth)
+		err = data.Set("array_flatten_depth", resp.ArrayFlattenDepth)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	c.Set(data, "name", data.Id())
-	c.Set(data, "view_id", resp.ID)
-	c.Set(data, "cacheable", resp.Cacheable)
-	c.Set(data, "case_insensitive", resp.CaseInsensitive)
-	c.Set(data, "type", resp.Type)
-	c.Set(data, "bucket", resp.Bucket)
-	c.Set(data, "index_pattern", resp.IndexPattern)
-	c.Set(data, "time_field_name", resp.TimeFieldName)
-	c.Set(data, "region_availability", []interface{}{
-		resp.RegionAvailability,
-	})
+	err = data.Set("id", resp.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("cacheable", resp.Cacheable)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("case_insensitive", resp.CaseInsensitive)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("type", resp.Type)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("bucket", resp.Bucket)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("index_pattern", resp.IndexPattern)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("time_field_name", resp.TimeFieldName)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("region_availability", resp.RegionAvailability)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }
@@ -297,8 +375,7 @@ func resourceViewUpdate(ctx context.Context, data *schema.ResourceData, meta int
 	ViewRequestDTO := setViewRequest(data, meta)
 
 	createViewRequest := &client.CreateViewRequest{
-		AuthToken: ViewRequestDTO.Token,
-
+		AuthToken:       ViewRequestDTO.Token,
 		Bucket:          data.Get("bucket").(string),
 		Sources:         ViewRequestDTO.Source,
 		IndexPattern:    data.Get("index_pattern").(string),

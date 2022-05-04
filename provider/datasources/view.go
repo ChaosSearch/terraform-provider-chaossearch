@@ -23,37 +23,31 @@ func DataSourceView() *schema.Resource {
 			},
 			"cacheable": {
 				Type:     schema.TypeBool,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
 			"case_insensitive": {
 				Type:     schema.TypeBool,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
 			"type": {
 				Type:     schema.TypeString,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
 			"id": {
 				Type:     schema.TypeString,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
 			"index_pattern": {
 				Type:     schema.TypeString,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
 			"time_field_name": {
 				Type:     schema.TypeString,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
@@ -149,6 +143,10 @@ func DataSourceView() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
+			},
+			"array_flatten_depth": {
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 		},
 	}

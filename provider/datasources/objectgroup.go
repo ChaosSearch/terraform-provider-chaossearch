@@ -15,6 +15,10 @@ func DataSourceObjectGroup() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: resources.ResourceObjectGroupRead,
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"bucket": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -34,6 +38,10 @@ func DataSourceObjectGroup() *schema.Resource {
 			"content_type": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"compression": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"source": {
 				Type:     schema.TypeString,
@@ -169,6 +177,10 @@ func DataSourceObjectGroup() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Optional: true,
+			},
+			"array_flatten_depth": {
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 		},
 	}

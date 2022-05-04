@@ -28,6 +28,18 @@ func ResourceObjectGroup() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"public": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"type": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"content_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"source": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -131,6 +143,18 @@ func ResourceObjectGroup() *schema.Resource {
 					},
 				},
 			},
+			"metadata": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"creation_date": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"options": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -141,6 +165,13 @@ func ResourceObjectGroup() *schema.Resource {
 							Required: true,
 						},
 					},
+				},
+			},
+			"region_availability": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"realtime": {
@@ -162,6 +193,14 @@ func ResourceObjectGroup() *schema.Resource {
 			"live_events_parallelism": {
 				Type:     schema.TypeInt,
 				Optional: true,
+			},
+			"compression": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"array_flatten_depth": {
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -314,30 +353,42 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 
 	objectFilter := resp.ObjectFilter
 	if len(objectFilter.And) > 0 {
-		for index, filters := range objectFilter.And {
-			for key, val := range filters.(map[string]interface{}) {
-				if index == 0 {
+		for _, filter := range objectFilter.And {
+			filterMap := filter.(map[string]interface{})
+			for key, val := range filterMap {
+				if _, ok := filterMap["prefix"]; ok {
 					prefixFilterMap[key] = val.(string)
-				} else if index == 1 {
+				} else if _, ok := filterMap["regex"]; ok {
 					regexFilterMap[key] = val.(string)
 				}
 			}
 		}
 	}
 
-	c.Set(data, "filter", []interface{}{
-		map[string]interface{}{
+	filterArr := []interface{}{}
+	if len(prefixFilterMap) > 0 {
+		filterArr = append(filterArr, map[string]interface{}{
 			"prefix_filter": []interface{}{
 				prefixFilterMap,
 			},
+		})
+	}
+
+	if len(regexFilterMap) > 0 {
+		filterArr = append(filterArr, map[string]interface{}{
 			"regex_filter": []interface{}{
 				regexFilterMap,
 			},
-		},
-	})
+		})
+	}
+
+	err = data.Set("filter", filterArr)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if resp.Format != nil {
-		c.Set(data, "format", []interface{}{
+		err = data.Set("format", []interface{}{
 			map[string]interface{}{
 				"type":             resp.Format.Type,
 				"header_row":       resp.Format.HeaderRow,
@@ -345,63 +396,112 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 				"row_delimiter":    resp.Format.RowDelimiter,
 			},
 		})
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if resp.Interval != nil {
-		c.Set(data, "interval", []interface{}{
+		err = data.Set("interval", []interface{}{
 			map[string]interface{}{
 				"column": resp.Interval.Column,
 				"mode":   resp.Interval.Mode,
 			},
 		})
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if resp.Metadata != nil {
-		c.Set(data, "metadata", []interface{}{
+		err = data.Set("metadata", []interface{}{
 			map[string]interface{}{
 				"creation_date": resp.Metadata.CreationDate,
 			},
 		})
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if resp.Options != nil {
-		c.Set(data, "options", []interface{}{
+		err = data.Set("options", []interface{}{
 			map[string]interface{}{
 				"ignore_irregular": resp.Options.IgnoreIrregular,
 			},
 		})
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if strings.ToLower(resp.Compression) == "none" {
-		c.Set(data, "compression", "")
+		err = data.Set("compression", "")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
-		c.Set(data, "compression", resp.Compression)
+		err = data.Set("compression", resp.Compression)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if resp.ArrayFlattenDepth == nil {
-		c.Set(data, "array_flatten_depth", -1)
+		err = data.Set("array_flatten_depth", -1)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
-		c.Set(data, "array_flatten_depth", resp.ArrayFlattenDepth)
+		err = data.Set("array_flatten_depth", resp.ArrayFlattenDepth)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	c.Set(data, "region_availability", []interface{}{
-		resp.RegionAvailability,
-	})
+	err = data.Set("region_availability", resp.RegionAvailability)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	c.Set(data, "id", resp.ID)
-	c.Set(data, "name", data.Id())
-	c.Set(data, "public", resp.Public)
-	c.Set(data, "type", resp.Type)
-	c.Set(data, "content_type", resp.ContentType)
-	c.Set(data, "realtime", resp.Realtime)
-	c.Set(data, "bucket", resp.Bucket)
-	c.Set(data, "source", resp.Source)
-	c.Set(data, "filter_json", resp.FilterJSON)
-	c.Set(data, "live_events_sqs_arn", resp.LiveEventsSqsArn)
-	c.Set(data, "partition_by", resp.PartitionBy)
-	c.Set(data, "pattern", resp.Pattern)
-	c.Set(data, "source_bucket", resp.SourceBucket)
-	c.Set(data, "column_selection", resp.ColumnSelection)
+	err = data.Set("id", resp.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("public", resp.Public)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("type", resp.Type)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("content_type", resp.ContentType)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("realtime", resp.Realtime)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("bucket", resp.Bucket)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = data.Set("source", resp.Source)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }

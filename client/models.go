@@ -73,9 +73,7 @@ type ReadObjGroupResp struct {
 	RegionAvailability []string     `json:"regionAvailability"`
 	Source             string       `json:"source"`
 	Compression        string
-	FilterJSON         string
 	Pattern            string
-	LiveEventsSqsArn   string
 	PartitionBy        string
 	SourceBucket       string
 	IndexRetention     int
@@ -259,7 +257,7 @@ type ConditionGroup struct {
 }
 
 type Permission struct {
-	Effect         string ``
+	Effect         string
 	Version        string
 	Actions        []interface{}
 	Resources      []interface{}
@@ -369,12 +367,4 @@ type IndexMetadataResponse struct {
 	Bucket        string  `json:"Bucket"`
 	LastIndexTime float64 `json:"LastIndexTime"`
 	State         string  `json:"State"`
-}
-
-type ClientRequest struct {
-	RequestType string
-	Url         string
-	AuthToken   string
-	Body        []byte
-	Headers     map[string]string
 }
