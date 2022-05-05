@@ -105,6 +105,7 @@ func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroup
 
 func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, error) {
 	var filter []interface{}
+	var indexRetention, format, options, interval map[string]interface{}
 	if req.Filter.PrefixFilter != nil {
 		filter = append(filter, req.Filter.PrefixFilter)
 	}
@@ -113,28 +114,44 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		filter = append(filter, req.Filter.RegexFilter)
 	}
 
-	body := map[string]interface{}{
-		"bucket": req.Bucket,
-		"source": req.Source,
-		"format": map[string]interface{}{
+	if req.IndexRetention != nil {
+		indexRetention = map[string]interface{}{
+			"forPartition": req.IndexRetention.ForPartition,
+			"overall":      req.IndexRetention.Overall,
+		}
+	}
+
+	if req.Format != nil {
+		format = map[string]interface{}{
 			"_type":           req.Format.Type,
 			"columnDelimiter": req.Format.ColumnDelimiter,
 			"rowDelimiter":    req.Format.RowDelimiter,
 			"headerRow":       req.Format.HeaderRow,
-		},
-		"filter": filter,
-		"indexRetention": map[string]interface{}{
-			"forPartition": req.IndexRetention.ForPartition,
-			"overall":      req.IndexRetention.Overall,
-		},
-		"options": map[string]interface{}{
+		}
+	}
+
+	if req.Options != nil {
+		options = map[string]interface{}{
 			"ignoreIrregular": req.Options.IgnoreIrregular,
-		},
-		"interval": map[string]interface{}{
+		}
+	}
+
+	if req.Interval != nil {
+		interval = map[string]interface{}{
 			"mode":   req.Interval.Mode,
 			"column": req.Interval.Column,
-		},
-		"realtime": req.Realtime,
+		}
+	}
+
+	body := map[string]interface{}{
+		"bucket":         req.Bucket,
+		"source":         req.Source,
+		"format":         format,
+		"filter":         filter,
+		"indexRetention": indexRetention,
+		"options":        options,
+		"interval":       interval,
+		"realtime":       req.Realtime,
 	}
 
 	bodyAsBytes, err := json.Marshal(body)

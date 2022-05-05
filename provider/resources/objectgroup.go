@@ -83,6 +83,7 @@ func ResourceObjectGroup() *schema.Resource {
 						"overall": {
 							Type:     schema.TypeInt,
 							Optional: true,
+							Default:  -1,
 						},
 					},
 				},
@@ -134,11 +135,13 @@ func ResourceObjectGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"column": {
 							Type:     schema.TypeInt,
-							Required: true,
+							Optional: true,
+							Default:  0,
 						},
 						"mode": {
 							Type:     schema.TypeInt,
 							Optional: true,
+							Default:  0,
 						},
 					},
 				},
@@ -162,7 +165,8 @@ func ResourceObjectGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"ignore_irregular": {
 							Type:     schema.TypeBool,
-							Required: true,
+							Optional: true,
+							Default:  true,
 						},
 					},
 				},

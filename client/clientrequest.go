@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 )
 
 type ClientRequest struct {
@@ -85,6 +86,7 @@ func (cr *ClientRequest) constructRequest(ctx context.Context) (*http.Request, e
 
 	cr.Headers["Authorization"] = signature
 	cr.Headers["x-amz-cs3-authorization"] = signature
+	cr.Headers["x-correlation-id"] = uuid.New().String()
 	for header, value := range cr.Headers {
 		httpReq.Header.Add(header, value)
 	}

@@ -52,7 +52,7 @@ resource "chaossearch_object_group" "create-object-group" {
   bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
   format {
-    type            = "CSV"
+    type             = "CSV"
     column_delimiter = ","
     row_delimiter    = "\n"
     header_row       = true
@@ -63,7 +63,7 @@ resource "chaossearch_object_group" "create-object-group" {
   }
   index_retention {
     for_partition = []
-    overall       = 14
+    overall       = -1
   }
   filter {
     regex_filter {
