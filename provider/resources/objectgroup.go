@@ -219,51 +219,93 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	var regexFilter *client.RegexFilter
 	var regexFilterField string
 	var regex string
+	var format *client.Format
+	var interval *client.Interval
+	var indexRetention *client.IndexRetention
+	var options *client.Options
 
 	c := meta.(*models.ProviderMeta).CSClient
 	formatList := data.Get("format").(*schema.Set).List()
-	formatMap := make(map[string]interface{}, 1)
 	if len(formatList) > 0 {
-		formatMap = formatList[0].(map[string]interface{})
-	}
+		var typeStr string
+		var columnDelimit string
+		var rowDelimit string
+		var headerRow bool
 
-	format := client.Format{
-		Type:            formatMap["type"].(string),
-		ColumnDelimiter: formatMap["column_delimiter"].(string),
-		RowDelimiter:    formatMap["row_delimiter"].(string),
-		HeaderRow:       formatMap["header_row"].(bool),
+		formatMap := formatList[0].(map[string]interface{})
+		if formatMap["type"] != nil {
+			typeStr = formatMap["type"].(string)
+		}
+
+		if formatMap["column_delimiter"] != nil {
+			columnDelimit = formatMap["column_delimiter"].(string)
+		}
+
+		if formatMap["row_delimiter"] != nil {
+			rowDelimit = formatMap["row_delimiter"].(string)
+		}
+
+		if formatMap["header_row"] != nil {
+			headerRow = formatMap["header_row"].(bool)
+		}
+		format = &client.Format{
+			Type:            typeStr,
+			ColumnDelimiter: columnDelimit,
+			RowDelimiter:    rowDelimit,
+			HeaderRow:       headerRow,
+		}
 	}
 
 	intervalList := data.Get("interval").(*schema.Set).List()
-	intervalMap := make(map[string]interface{})
 	if len(intervalList) > 0 {
-		intervalMap = intervalList[0].(map[string]interface{})
-	}
+		var mode int
+		var column int
+		intervalMap := intervalList[0].(map[string]interface{})
 
-	interval := client.Interval{
-		Mode:   intervalMap["mode"].(int),
-		Column: intervalMap["column"].(int),
+		if intervalMap["mode"] != nil {
+			mode = intervalMap["mode"].(int)
+		}
+
+		if intervalMap["column"] != nil {
+			column = intervalMap["column"].(int)
+		}
+
+		interval = &client.Interval{
+			Mode:   mode,
+			Column: column,
+		}
 	}
 
 	indexList := data.Get("index_retention").(*schema.Set).List()
-	indexMap := make(map[string]interface{})
 	if len(indexList) > 0 {
-		indexMap = indexList[0].(map[string]interface{})
-	}
+		var forPartition []interface{}
+		var overall int
 
-	indexRetention := client.IndexRetention{
-		ForPartition: indexMap["for_partition"].([]interface{}),
-		Overall:      indexMap["overall"].(int),
+		indexMap := indexList[0].(map[string]interface{})
+		if indexMap["for_partition"] != nil {
+			forPartition = indexMap["for_partition"].([]interface{})
+		}
+
+		if indexMap["overall"] != nil {
+			overall = indexMap["overall"].(int)
+		}
+		indexRetention = &client.IndexRetention{
+			ForPartition: forPartition,
+			Overall:      overall,
+		}
 	}
 
 	optionsList := data.Get("options").(*schema.Set).List()
-	optionsMap := make(map[string]interface{})
 	if len(optionsList) > 0 {
-		optionsMap = optionsList[0].(map[string]interface{})
-	}
+		var ignore bool
+		optionsMap := optionsList[0].(map[string]interface{})
+		if optionsMap["ignore_irregular"] != nil {
+			ignore = optionsMap["ignore_irregular"].(bool)
+		}
 
-	options := client.Options{
-		IgnoreIrregular: optionsMap["ignore_irregular"].(bool),
+		options = &client.Options{
+			IgnoreIrregular: ignore,
+		}
 	}
 
 	filterSet := data.Get("filter").(*schema.Set)
@@ -311,11 +353,11 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		AuthToken:      tokenValue,
 		Bucket:         data.Get("bucket").(string),
 		Source:         data.Get("source").(string),
-		Format:         &format,
-		Interval:       &interval,
-		IndexRetention: &indexRetention,
+		Format:         format,
+		Interval:       interval,
+		IndexRetention: indexRetention,
 		Filter:         filter,
-		Options:        &options,
+		Options:        options,
 		Realtime:       data.Get("realtime").(bool),
 	}
 

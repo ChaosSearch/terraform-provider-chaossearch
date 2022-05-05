@@ -80,13 +80,12 @@ resource "chaossearch_object_group" "create-object-group" {
 resource "chaossearch_index_model" "model" {
   bucket_name = "tf-provider"
   model_mode = 0
-  delete_enabled = false
+  delete_enabled = true
   depends_on = [
     chaossearch_object_group.create-object-group
   ]
 }
 
-/*
 resource "chaossearch_view" "chaossearch-create-view" {
   bucket           = "tf-provider-view"
   case_insensitive = false
@@ -146,4 +145,3 @@ data "chaossearch_retrieve_views" "views" {}
 output "views" {
   value = data.chaossearch_retrieve_views.views
 }
-*/

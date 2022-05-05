@@ -24,12 +24,12 @@ func ResourceIndexModel() *schema.Resource {
 			"bucket_name": {
 				Type:     schema.TypeString,
 				ForceNew: true,
-				Optional: true,
+				Required: true,
 			},
 			"model_mode": {
 				Type:     schema.TypeInt,
 				ForceNew: true,
-				Optional: true,
+				Required: true,
 			},
 			"delete_enabled": {
 				Type:     schema.TypeBool,
@@ -42,11 +42,21 @@ func ResourceIndexModel() *schema.Resource {
 }
 
 func createResourceIndexModel(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var bucketName string
+	var modelMode int
 	c := meta.(*models.ProviderMeta).CSClient
+	if data.Get("bucket_name") != nil {
+		bucketName = data.Get("bucket_name").(string)
+	}
+
+	if data.Get("model_mode") != nil {
+		modelMode = data.Get("model_mode").(int)
+	}
+
 	indexModel := &client.IndexModelRequest{
 		AuthToken:  meta.(*models.ProviderMeta).Token,
-		BucketName: data.Get("bucket_name").(string),
-		ModelMode:  data.Get("model_mode").(int),
+		BucketName: bucketName,
+		ModelMode:  modelMode,
 	}
 
 	resp, err := c.CreateIndexModel(ctx, indexModel)
@@ -86,30 +96,26 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 			}
 
 			// await return until index confirmed deletion
-			quit := make(chan bool)
-			ticker := time.NewTicker(15 * time.Second)
-			go func() {
-				<-time.After(5 * time.Minute)
-				close(quit)
-				err = fmt.Errorf("Failure confirming index deletion => Timeout (5 Minutes)")
-			}()
-
-			func() {
-				for {
-					select {
-					case <-ticker.C:
-						listBucketResp, err = c.ReadIndexModel(ctx, bucketName, authToken)
-						if listBucketResp.Contents == nil {
-							close(quit)
-						} else if listBucketResp.Contents.Key == "" {
-							close(quit)
-						}
-					case <-quit:
-						ticker.Stop()
-						return
-					}
+			tickerCounter := 0
+			for tickerCounter <= 300 {
+				listBucketResp, err = c.ReadIndexModel(ctx, bucketName, authToken)
+				if listBucketResp.Contents == nil {
+					break
+				} else if listBucketResp.Contents.Key == "" {
+					break
 				}
-			}()
+
+				time.Sleep(15 * time.Second)
+				tickerCounter += 15
+				if tickerCounter >= 300 {
+					err = fmt.Errorf(`
+						Failure confirming index deletion => Timeout (5 Minutes)
+						Note:
+							This does not mean there was a failure with index deletion.
+							Please confirm the state of the index within ChaosSearch.
+					`)
+				}
+			}
 
 			if err != nil {
 				return diag.FromErr(err)
@@ -124,6 +130,7 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 				Enabling will allow for all index data within an Object Group to be deleted, 
 				default is set to false as a safeguard.
 				If you're sure, you can set 'delete_enabled' to true.
+				This is also persisted in your .tfstate
 			Note: 
 				Index data existing will block Object Group deletion.
 		`)
