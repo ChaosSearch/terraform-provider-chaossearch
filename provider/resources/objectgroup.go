@@ -178,10 +178,6 @@ func ResourceObjectGroup() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"realtime": {
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
 			"index_parallelism": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -362,7 +358,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		IndexRetention: indexRetention,
 		Filter:         filter,
 		Options:        options,
-		Realtime:       data.Get("realtime").(bool),
+		Realtime:       false,
 	}
 
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {
@@ -530,11 +526,6 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	}
 
 	err = data.Set("content_type", resp.ContentType)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = data.Set("realtime", resp.Realtime)
 	if err != nil {
 		return diag.FromErr(err)
 	}

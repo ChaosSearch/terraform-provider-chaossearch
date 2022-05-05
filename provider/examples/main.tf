@@ -74,7 +74,6 @@ resource "chaossearch_object_group" "create-object-group" {
   options {
     ignore_irregular = true
   }
-  realtime = false
 }
 
 resource "chaossearch_index_model" "model" {
