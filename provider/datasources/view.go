@@ -21,39 +21,33 @@ func DataSourceView() *schema.Resource {
 				Required: true,
 				ForceNew: false,
 			},
-			"_cacheable": {
+			"cacheable": {
 				Type:     schema.TypeBool,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
-			"_case_insensitive": {
+			"case_insensitive": {
 				Type:     schema.TypeBool,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
-			"_type": {
+			"type": {
 				Type:     schema.TypeString,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
 			"id": {
 				Type:     schema.TypeString,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
 			"index_pattern": {
 				Type:     schema.TypeString,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
 			"time_field_name": {
 				Type:     schema.TypeString,
-				Required: false,
 				ForceNew: false,
 				Optional: true,
 			},
@@ -80,7 +74,7 @@ func DataSourceView() *schema.Resource {
 													Optional: true,
 													ForceNew: true,
 												},
-												"_type": {
+												"type": {
 													Type:     schema.TypeString,
 													Optional: true,
 													ForceNew: true,
@@ -96,7 +90,7 @@ func DataSourceView() *schema.Resource {
 													ForceNew: true,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"_type": {
+															"type": {
 																Type:     schema.TypeString,
 																Optional: true,
 																ForceNew: true,
@@ -107,7 +101,7 @@ func DataSourceView() *schema.Resource {
 											},
 										},
 									},
-									"_type": {
+									"type": {
 										Type:     schema.TypeString,
 										Optional: true,
 										ForceNew: true,
@@ -150,6 +144,10 @@ func DataSourceView() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
+			"array_flatten_depth": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -158,11 +156,15 @@ func DataSourceViews() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceViewsRead,
 		Schema: map[string]*schema.Schema{
-			"object_groups": {
+			"views": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
@@ -171,8 +173,46 @@ func DataSourceViews() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						// TODO BucketType (object group, view, native s3 bucket)
-						// TODO Predicate
+						"filter": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"transform": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"case_insensitive": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"index_retention": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"bucket_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"visible": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"time_field": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"index_pattern": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"cacheable": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"parent_object_groups": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -181,6 +221,7 @@ func DataSourceViews() *schema.Resource {
 }
 
 func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	client := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
 	clientResponse, err := client.ListBuckets(ctx, tokenValue)
@@ -188,23 +229,43 @@ func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	result := GetBucketData(clientResponse)
-	var diags diag.Diagnostics
-	objectGroups := result
-	if err := data.Set("object_groups", objectGroups); err != nil {
+	objectGroups := GetBucketData(clientResponse)
+	if err := data.Set("views", objectGroups); err != nil {
 		return diag.FromErr(err)
 	}
+
 	data.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 	return diags
 }
 
 func GetBucketData(clientResponse *client.ListBucketsResponse) []map[string]interface{} {
 	result := make([]map[string]interface{}, len(clientResponse.BucketsCollection.Buckets))
-	for i := 0; i < len(clientResponse.BucketsCollection.Buckets); i++ {
+	for i, bucket := range clientResponse.BucketsCollection.Buckets {
+		tagMap := convertTagSetToMap(bucket.Tagging.TagSet)
 		result[i] = map[string]interface{}{
-			"name":          clientResponse.BucketsCollection.Buckets[i].Name,
-			"creation_date": clientResponse.BucketsCollection.Buckets[i].CreationDate,
+			"name":                 bucket.Name,
+			"creation_date":        bucket.CreationDate,
+			"filter":               tagMap["cs3.filter"],
+			"transform":            tagMap["cs3.transform"],
+			"case_insensitive":     tagMap["cs3.case-insensitive"],
+			"index_retention":      tagMap["cs3.index-retention"],
+			"bucket_type":          tagMap["cs3.bucket-type"],
+			"visible":              tagMap["cs3.visible"],
+			"time_field":           tagMap["cs3.time-field"],
+			"id":                   tagMap["cs3.dataset-id"],
+			"index_pattern":        tagMap["cs3.index-pattern"],
+			"cacheable":            tagMap["cs3.cacheable"],
+			"parent_object_groups": tagMap["cs3.parent"],
 		}
 	}
 	return result
+}
+
+func convertTagSetToMap(tags []client.Tag) map[string]interface{} {
+	tagMap := make(map[string]interface{})
+	for _, tag := range tags {
+		tagMap[tag.Key] = tag.Value
+	}
+
+	return tagMap
 }

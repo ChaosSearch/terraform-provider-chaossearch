@@ -47,16 +47,16 @@ func Provider() *schema.Provider {
 							Type:     schema.TypeString,
 							Required: true,
 							ForceNew: true,
-						}, "parent_user_id": {
+						},
+						"parent_user_id": {
 							Type:     schema.TypeString,
 							Optional: true,
 							ForceNew: true,
 						},
 					},
 				},
-				Required:    true,
-				ForceNew:    true,
-				Description: "",
+				Required: true,
+				ForceNew: true,
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -81,22 +81,46 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	url := d.Get("url").(string)
-	accessKeyID := d.Get("access_key_id").(string)
-	secretAccessKey := d.Get("secret_access_key").(string)
-	region := d.Get("region").(string)
-
 	var username string
 	var password string
 	var parentUserID string
+	var authResp models.AuthResponse
 
-	if d.Get("login").(*schema.Set).Len() > 0 {
-		columnSelectionInterfaces := d.Get("login").(*schema.Set).List()[0]
-		columnSelectionInterface := columnSelectionInterfaces.(map[string]interface{})
-		username = columnSelectionInterface["user_name"].(string)
-		password = columnSelectionInterface["password"].(string)
-		if columnSelectionInterface["parent_user_id"] != nil {
-			parentUserID = columnSelectionInterface["parent_user_id"].(string)
+	url, diagErr := getConfig(ctx, d, "url")
+	if diagErr != nil {
+		return nil, diagErr
+	}
+
+	accessKeyID, diagErr := getConfig(ctx, d, "access_key_id")
+	if diagErr != nil {
+		return nil, diagErr
+	}
+
+	secretAccessKey, diagErr := getConfig(ctx, d, "secret_access_key")
+	if diagErr != nil {
+		return nil, diagErr
+	}
+
+	region, diagErr := getConfig(ctx, d, "region")
+	if diagErr != nil {
+		return nil, diagErr
+	}
+
+	loginList := d.Get("login").(*schema.Set).List()
+	if len(loginList) > 0 {
+		loginMap := loginList[0].(map[string]interface{})
+		username = loginMap["user_name"].(string)
+		if username == "" {
+			return nil, diag.Errorf("Failed to configure provider => Expected 'user_name' to be defined")
+		}
+
+		password = loginMap["password"].(string)
+		if password == "" {
+			return nil, diag.Errorf("Failed to configure provider => Expected 'password' to be defined")
+		}
+
+		if loginMap["parent_user_id"] != nil {
+			parentUserID = loginMap["parent_user_id"].(string)
 		}
 	}
 
@@ -106,43 +130,32 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		ParentUserID: parentUserID,
 	}
 
-	if url == "" {
-		return nil, diag.Errorf("Expected 'url' to be defined in provider configuration, but it was not")
-	}
-	if accessKeyID == "" {
-		return nil, diag.Errorf("Expected 'access_key_id' to be defined in provider configuration, but it was not")
-	}
-	if secretAccessKey == "" {
-		return nil, diag.Errorf("Expected 'secret_access_key' to be defined in provider configuration, but it was not")
-	}
-	if region == "" {
-		return nil, diag.Errorf("Expected 'region' to be defined in provider configuration, but it was not")
-	}
-
-	config := client.NewConfiguration()
-	config.URL = url
-	config.AccessKeyID = accessKeyID
-	config.SecretAccessKey = secretAccessKey
-	config.Region = region
-
+	config := client.NewConfiguration(url, accessKeyID, secretAccessKey, region)
 	csClient := client.NewClient(config, &login)
-
 	authResponseString, err := csClient.Auth(ctx)
-
 	if err != nil {
-		return nil, diag.Errorf("Token generation fail..")
+		return nil, diag.Errorf("Failed to configure provider => %s", err)
 
 	}
-	tokenData := models.AuthResponse{}
 
-	if err := json.Unmarshal([]byte(authResponseString), &tokenData); err != nil {
-		return fmt.Errorf("Provider Config Failure => %s", utils.UnmarshalJsonError(err)), nil
+	if err := json.Unmarshal([]byte(authResponseString), &authResp); err != nil {
+		return fmt.Errorf("Failed to configure provider => %s", utils.UnmarshalJsonError(err)), nil
 	}
 
 	providerMeta := &models.ProviderMeta{
 		CSClient: csClient,
-		Token:    tokenData.Token,
+		Token:    authResp.Token,
 	}
+
 	return providerMeta, nil
 
+}
+
+func getConfig(ctx context.Context, data *schema.ResourceData, value string) (string, diag.Diagnostics) {
+	cred := data.Get(value).(string)
+	if cred == "" {
+		return "", diag.Errorf("Failed to configure provider => Expected '%s' to be defined", value)
+	}
+
+	return cred, nil
 }

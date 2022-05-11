@@ -3,10 +3,7 @@ package client
 import (
 	"bytes"
 	"context"
-	"crypto/hmac"
-	"crypto/sha1"
 	"cs-tf-provider/client/utils"
-	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -14,11 +11,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
-	"time"
-
-	"github.com/dgrijalva/jwt-go"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type Configuration struct {
@@ -50,19 +42,14 @@ const (
 	DELETE string = "DELETE"
 )
 
-func (c *CSClient) Set(data *schema.ResourceData, key string, value interface{}) {
-	err := data.Set(key, value)
-	if err != nil {
-		return
+func NewConfiguration(url, accessKeyID, secretAccessKey, region string) *Configuration {
+	return &Configuration{
+		AWSServiceName:  "s3",
+		URL:             url,
+		AccessKeyID:     accessKeyID,
+		SecretAccessKey: secretAccessKey,
+		Region:          region,
 	}
-}
-
-func NewConfiguration() *Configuration {
-	cfg := &Configuration{
-		AWSServiceName: "s3",
-	}
-
-	return cfg
 }
 
 func NewClient(config *Configuration, login *Login) *CSClient {
@@ -101,7 +88,6 @@ func (c *CSClient) Auth(ctx context.Context) (token string, err error) {
 	}
 	defer res.Body.Close()
 
-	// TODO add a status call once successful login to ensure that the user is actually deployed
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", utils.ReadResponseError(err)
@@ -137,21 +123,30 @@ func (client *CSClient) createAndSendReq(
 	ctx context.Context,
 	request ClientRequest,
 ) (*http.Response, error) {
-	var httpReq *http.Request
-	var err error
-	if request.Body == nil {
-		httpReq, err = http.NewRequestWithContext(ctx, request.RequestType, request.Url, nil)
-	} else {
-		httpReq, err = http.NewRequestWithContext(ctx, request.RequestType, request.Url, bytes.NewReader(request.Body))
-	}
-
+	httpReq, err := request.constructRequest(ctx)
 	if err != nil {
 		return nil, utils.CreateRequestError(err)
 	}
 
-	httpResp, err := client.signV2AndDo(request.AuthToken, httpReq, request.Body)
+	httpResp, err := client.httpClient.Do(httpReq)
 	if err != nil {
-		return nil, utils.SubmitRequestError(request.RequestType, request.Url, err)
+		return nil, fmt.Errorf("Failed to execute request => Error: %s", err)
+	}
+
+	if httpResp.Body == http.NoBody {
+		_, err := ioutil.ReadAll(httpResp.Body)
+		if err != nil {
+			return nil, utils.ReadResponseError(err)
+		}
+	}
+
+	if httpResp.StatusCode < 200 || httpResp.StatusCode >= 300 {
+		respAsBytes, err := ioutil.ReadAll(httpResp.Body)
+		if err != nil {
+			return nil, utils.ReadResponseError(err)
+		}
+
+		return nil, utils.ResponseCodeError(httpResp, httpReq, request.Body, respAsBytes)
 	}
 
 	defer func(httpReq *http.Request) {
@@ -161,81 +156,6 @@ func (client *CSClient) createAndSendReq(
 	}(httpReq)
 
 	return httpResp, nil
-}
-
-func (c *CSClient) signV2AndDo(tokenValue string, req *http.Request, bodyAsBytes []byte) (*http.Response, error) {
-	var routeToken string
-
-	claims := jwt.MapClaims{}
-	_, _, err := new(jwt.Parser).ParseUnverified(tokenValue, claims)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to parse JWT => Error: %s", err)
-	}
-
-	if isAdminAPI(req.URL.Path) {
-		routeToken = "login"
-	} else {
-		routeToken = claims["external_id"].(string)
-	}
-
-	dateTime := time.Now().UTC().String()
-	msg := fmt.Sprintf("%s\n\n", req.Method) +
-		"application/json\n\n" +
-		fmt.Sprintf("x-amz-chaossumo-route-token:%s\n", routeToken) +
-		fmt.Sprintf("x-amz-date:%s\n", dateTime) +
-		fmt.Sprintf("x-amz-security-token:%s\n", tokenValue) +
-		req.URL.Path
-
-	auth := fmt.Sprintf(
-		"AWS %s:%s",
-		claims["AccessKeyId"].(string),
-		generateSignature(claims["SecretAccessKey"].(string), msg),
-	)
-
-	req.Header.Add("Authorization", auth)
-	req.Header.Add("x-amz-cs3-authorization", auth)
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("x-amz-chaossumo-route-token", routeToken)
-	req.Header.Add("x-amz-security-token", tokenValue)
-	req.Header.Add("X-Amz-Date", dateTime)
-
-	resp, e := c.httpClient.Do(req)
-	if e != nil {
-		return nil, fmt.Errorf("Failed to execute request => Error: %s", e)
-	}
-
-	if resp.Body == http.NoBody {
-		_, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, utils.ReadResponseError(err)
-		}
-	}
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		respAsBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, utils.ReadResponseError(err)
-		}
-
-		return nil, utils.ResponseCodeError(resp, req, bodyAsBytes, respAsBytes)
-	}
-
-	return resp, nil
-}
-
-func generateSignature(secretToken string, payloadBody string) string {
-	keyForSign := []byte(secretToken)
-	h := hmac.New(sha1.New, keyForSign)
-	h.Write([]byte(payloadBody))
-	return base64.StdEncoding.EncodeToString(h.Sum(nil))
-}
-
-func isAdminAPI(url string) bool {
-	return strings.HasSuffix(url, "/createSubAccount") ||
-		strings.HasSuffix(url, "/deleteSubAccount") ||
-		strings.HasSuffix(url, "/user/manifest") ||
-		strings.HasSuffix(url, "/user/groups") ||
-		strings.Contains(url, "/user/group/")
 }
 
 func (c *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {

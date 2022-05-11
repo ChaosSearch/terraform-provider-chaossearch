@@ -8,14 +8,12 @@ import (
 
 func (c *CSClient) ListBuckets(ctx context.Context, authToken string) (*ListBucketsResponse, error) {
 	var resp ListBucketsResponse
-	url := fmt.Sprintf("%s/V1/", c.config.URL)
-	request := ClientRequest{
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/V1/", c.config.URL),
 		RequestType: GET,
-		Url:         url,
 		AuthToken:   authToken,
-	}
+	})
 
-	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("List Bucket Failure => %s", err)
 	}

@@ -9,20 +9,18 @@ import (
 )
 
 func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroupRequest) error {
-	url := fmt.Sprintf("%s/Bucket/createObjectGroup", c.config.URL)
 	bodyAsBytes, err := marshalCreateObjectGroupRequest(req)
 	if err != nil {
 		return err
 	}
 
-	request := ClientRequest{
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/Bucket/createObjectGroup", c.config.URL),
 		RequestType: POST,
-		Url:         url,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
-	}
+	})
 
-	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Create Object Group Failure => %s", err)
 	}
@@ -33,14 +31,12 @@ func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroup
 
 func (c *CSClient) ReadObjGroup(ctx context.Context, req *ReadObjGroupReq) (*ReadObjGroupResp, error) {
 	var resp ReadObjGroupResp
-	url := fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, req.ID)
-	request := ClientRequest{
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, req.ID),
 		RequestType: GET,
-		Url:         url,
 		AuthToken:   req.AuthToken,
-	}
+	})
 
-	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("Read Object Group Failure => %s", err)
 	}
@@ -54,20 +50,18 @@ func (c *CSClient) ReadObjGroup(ctx context.Context, req *ReadObjGroupReq) (*Rea
 }
 
 func (c *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroupRequest) error {
-	url := fmt.Sprintf("%s/Bucket/updateObjectGroup", c.config.URL)
 	bodyAsBytes, err := marshalUpdateObjectGroupRequest(req)
 	if err != nil {
 		return err
 	}
 
-	request := ClientRequest{
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/Bucket/updateObjectGroup", c.config.URL),
 		RequestType: POST,
-		Url:         url,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
-	}
+	})
 
-	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Update Object Group Failure => %s", err)
 	}
@@ -95,14 +89,12 @@ func marshalUpdateObjectGroupRequest(req *UpdateObjectGroupRequest) ([]byte, err
 
 func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
 	safeObjectGroupName := url.PathEscape(req.Name)
-	url := fmt.Sprintf("%s/V1/%s", c.config.URL, safeObjectGroupName)
-	request := ClientRequest{
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/V1/%s", c.config.URL, safeObjectGroupName),
 		RequestType: DELETE,
-		Url:         url,
 		AuthToken:   req.AuthToken,
-	}
+	})
 
-	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Delete Object Group Failure => %s", err)
 	}
@@ -112,30 +104,54 @@ func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroup
 }
 
 func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, error) {
-	body := map[string]interface{}{
-		"bucket": req.Bucket,
-		"source": req.Source,
-		"format": map[string]interface{}{
+	var filter []interface{}
+	var indexRetention, format, options, interval map[string]interface{}
+	if req.Filter.PrefixFilter != nil {
+		filter = append(filter, req.Filter.PrefixFilter)
+	}
+
+	if req.Filter.RegexFilter != nil {
+		filter = append(filter, req.Filter.RegexFilter)
+	}
+
+	if req.IndexRetention != nil {
+		indexRetention = map[string]interface{}{
+			"forPartition": req.IndexRetention.ForPartition,
+			"overall":      req.IndexRetention.Overall,
+		}
+	}
+
+	if req.Format != nil {
+		format = map[string]interface{}{
 			"_type":           req.Format.Type,
 			"columnDelimiter": req.Format.ColumnDelimiter,
 			"rowDelimiter":    req.Format.RowDelimiter,
 			"headerRow":       req.Format.HeaderRow,
-		},
-		"filter": []interface{}{
-			req.Filter.PrefixFilter, req.Filter.RegexFilter,
-		},
-		"indexRetention": map[string]interface{}{
-			"forPartition": req.IndexRetention.ForPartition,
-			"overall":      req.IndexRetention.Overall,
-		},
-		"options": map[string]interface{}{
+		}
+	}
+
+	if req.Options != nil {
+		options = map[string]interface{}{
 			"ignoreIrregular": req.Options.IgnoreIrregular,
-		},
-		"interval": map[string]interface{}{
+		}
+	}
+
+	if req.Interval != nil {
+		interval = map[string]interface{}{
 			"mode":   req.Interval.Mode,
 			"column": req.Interval.Column,
-		},
-		"realtime": req.Realtime,
+		}
+	}
+
+	body := map[string]interface{}{
+		"bucket":         req.Bucket,
+		"source":         req.Source,
+		"format":         format,
+		"filter":         filter,
+		"indexRetention": indexRetention,
+		"options":        options,
+		"interval":       interval,
+		"realtime":       req.Realtime,
 	}
 
 	bodyAsBytes, err := json.Marshal(body)

@@ -1,8 +1,18 @@
 package client
 
 type Bucket struct {
-	Name         string `xml:"Name"`
-	CreationDate string `xml:"CreationDate"`
+	Name         string  `xml:"Name"`
+	CreationDate string  `xml:"CreationDate"`
+	Tagging      Tagging `xml:"Tagging"`
+}
+
+type Tagging struct {
+	TagSet []Tag `xml:"TagSet"`
+}
+
+type Tag struct {
+	Key   string      `xml:"Key"`
+	Value interface{} `xml:"Value"`
 }
 
 type BucketCollection struct {
@@ -11,6 +21,23 @@ type BucketCollection struct {
 
 type ListBucketsResponse struct {
 	BucketsCollection BucketCollection `xml:"Buckets"`
+}
+
+type ListBucketResponse struct {
+	Name        string    `xml:"Name"`
+	KeyCount    int       `xml:"KeyCount"`
+	MaxKeys     int       `xml:"MaxKeys"`
+	Delimiter   string    `xml:"Delimiter"`
+	IsTruncated bool      `xml:"IsTruncated"`
+	Contents    *Contents `xml:"Contents"`
+}
+
+type Contents struct {
+	Key          string `xml:"Key"`
+	LastModified string `xml:"LastModified"`
+	ETag         string `xml:"ETag"`
+	Size         int    `xml:"Size"`
+	StorageClass string `xml:"StorageClass"`
 }
 
 type ReadObjGroupReq struct {
@@ -46,9 +73,7 @@ type ReadObjGroupResp struct {
 	RegionAvailability []string     `json:"regionAvailability"`
 	Source             string       `json:"source"`
 	Compression        string
-	FilterJSON         string
 	Pattern            string
-	LiveEventsSqsArn   string
 	PartitionBy        string
 	SourceBucket       string
 	IndexRetention     int
@@ -276,17 +301,34 @@ type ListUsersResponse struct {
 }
 
 type User struct {
-	SubAccounts []SubAccount `json:"SubAccounts"`
+	Activated   bool         `json:"Activated"`
+	Deployed    bool         `json:"Deployed"`
+	Email       string       `json:"Email"`
+	FullName    string       `json:"FullName"`
 	UserGroups  []UserGroup  `json:"Groups"`
+	Hocon       string       `json:"Hocon"`
+	InternalUid string       `json:"InternalUid"`
+	IsHead      bool         `json:"IsHead"`
+	Readonly    bool         `json:"Readonly"`
+	Regions     []Region     `json:"Regions"`
+	ServiceType string       `json:"ServiceType"`
+	SubAccounts []SubAccount `json:"SubAccounts"`
+	Uid         string       `json:"Uid"`
+	Username    string       `json:"Username"`
+}
+
+type Region struct {
+	Region string `json:"Region"`
+	Uid    string `json:"Uid"`
 }
 
 type SubAccount struct {
-	FullName  string        `json:"FullName"`
-	Hocon     string        `json:"Hocon"`
-	UID       string        `json:"Uid"`
-	Username  string        `json:"Username"`
-	GroupIds  []interface{} `json:"GroupIds"`
-	Activated bool          `json:"Activated"`
+	FullName  string   `json:"FullName"`
+	Hocon     string   `json:"Hocon"`
+	UID       string   `json:"Uid"`
+	Username  string   `json:"Username"`
+	GroupIds  []string `json:"GroupIds"`
+	Activated bool     `json:"Activated"`
 }
 
 type UserGroup struct {
@@ -325,11 +367,4 @@ type IndexMetadataResponse struct {
 	Bucket        string  `json:"Bucket"`
 	LastIndexTime float64 `json:"LastIndexTime"`
 	State         string  `json:"State"`
-}
-
-type ClientRequest struct {
-	RequestType string
-	Url         string
-	AuthToken   string
-	Body        []byte
 }

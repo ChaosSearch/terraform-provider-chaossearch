@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/google/uuid v1.1.2
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.10.1
 	github.com/sirupsen/logrus v1.8.1
 )

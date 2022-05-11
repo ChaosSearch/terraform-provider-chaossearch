@@ -16,7 +16,6 @@ func DataSourceUserGroup() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceUserGroupRead,
 		Schema: map[string]*schema.Schema{
-
 			"user_groups": {
 				Type:     schema.TypeSet,
 				Required: true,
@@ -73,7 +72,7 @@ func DataSourceUserGroups() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: readAllUserGroups,
 		Schema: map[string]*schema.Schema{
-			"groups": {
+			"user_groups": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -126,6 +125,7 @@ func DataSourceUserGroups() *schema.Resource {
 }
 
 func readAllUserGroups(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	client := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
 	usersResponse, err := client.ListUsers(ctx, tokenValue)
@@ -133,31 +133,29 @@ func readAllUserGroups(ctx context.Context, data *schema.ResourceData, meta inte
 		return diag.FromErr(err)
 	}
 
-	result := make([]map[string]interface{}, len(usersResponse.Users[0].UserGroups))
-	for i := 0; i < len(usersResponse.Users[0].UserGroups); i++ {
-		permissionArr := make([]interface{}, 1)
-		permissionMap := make(map[string]interface{})
+	users := usersResponse.Users
+	if len(users) > 0 {
+		userGroups := make([]map[string]interface{}, len(users[0].UserGroups))
+		for i, userGroup := range users[0].UserGroups {
+			userGroups[i] = map[string]interface{}{
+				"id":   userGroup.ID,
+				"name": userGroup.Name,
+				"permissions": []interface{}{
+					map[string]interface{}{
+						"version":   userGroup.Permissions[0].Version,
+						"resources": userGroup.Permissions[0].Resources,
+						"effect":    userGroup.Permissions[0].Effect,
+						"actions":   userGroup.Permissions[0].Actions,
+					},
+				},
+			}
+		}
 
-		group := usersResponse.Users[0].UserGroups[i]
-
-		permissionMap["version"] = group.Permissions[0].Version
-		permissionMap["resources"] = group.Permissions[0].Resources
-		permissionMap["effect"] = group.Permissions[0].Effect
-		permissionMap["actions"] = group.Permissions[0].Actions
-		permissionArr[0] = permissionMap
-
-		result[i] = map[string]interface{}{
-			"id":          group.ID,
-			"name":        group.Name,
-			"permissions": permissionArr,
+		if err := data.Set("user_groups", userGroups); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
-	var diags diag.Diagnostics
-	userGroups := result
-	if err := data.Set("groups", userGroups); err != nil {
-		return diag.FromErr(err)
-	}
 	data.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 	return diags
 }

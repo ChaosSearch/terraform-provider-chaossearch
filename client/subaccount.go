@@ -8,20 +8,18 @@ import (
 )
 
 func (c *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRequest) error {
-	url := fmt.Sprintf("%s/user/createSubAccount", c.config.URL)
 	bodyAsBytes, err := marshalCreateSubAccountRequest(req)
 	if err != nil {
 		return err
 	}
 
-	request := ClientRequest{
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/user/createSubAccount", c.config.URL),
 		RequestType: POST,
-		Url:         url,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
-	}
+	})
 
-	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Create SubAccount Failure => %s", err)
 	}
@@ -31,20 +29,18 @@ func (c *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRe
 }
 
 func (c *CSClient) DeleteSubAccount(ctx context.Context, req *DeleteSubAccountRequest) error {
-	url := fmt.Sprintf("%s/user/deleteSubAccount", c.config.URL)
 	bodyAsBytes, err := marshalDeleteSubAccountRequest(req)
 	if err != nil {
 		return err
 	}
 
-	request := ClientRequest{
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/user/deleteSubAccount", c.config.URL),
 		RequestType: POST,
-		Url:         url,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
-	}
+	})
 
-	httpResp, err := c.createAndSendReq(ctx, request)
 	if err != nil {
 		return fmt.Errorf("Delete SubAccount Failure => %s", err)
 	}

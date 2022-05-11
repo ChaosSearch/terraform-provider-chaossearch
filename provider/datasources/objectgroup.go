@@ -15,49 +15,45 @@ func DataSourceObjectGroup() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: resources.ResourceObjectGroupRead,
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"bucket": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: false,
 			},
-			"_public": {
+			"public": {
 				Type:     schema.TypeBool,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
-			"_realtime": {
+			"realtime": {
 				Type:     schema.TypeBool,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
-			"_type": {
+			"type": {
 				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
 			"content_type": {
 				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
+			},
+			"compression": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"source": {
 				Type:     schema.TypeString,
-				Required: false,
-				ForceNew: false,
 				Optional: true,
 			},
 			"format": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "",
+				Type:     schema.TypeSet,
+				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"_type": {
+						"type": {
 							Type:     schema.TypeString,
 							Optional: true,
 							ForceNew: true,
@@ -80,7 +76,6 @@ func DataSourceObjectGroup() *schema.Resource {
 					},
 				},
 			},
-
 			"filter": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -178,8 +173,14 @@ func DataSourceObjectGroup() *schema.Resource {
 			"region_availability": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 				Optional: true,
+			},
+			"array_flatten_depth": {
+				Type:     schema.TypeInt,
+				Computed: true,
 			},
 		},
 	}
@@ -210,6 +211,7 @@ func DataSourceObjectGroups() *schema.Resource {
 }
 
 func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	client := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
 	clientResponse, err := client.ListBuckets(ctx, tokenValue)
@@ -217,10 +219,7 @@ func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	result := GetBucketData(clientResponse)
-	var diags diag.Diagnostics
-	objectGroups := result
-	if err := data.Set("object_groups", objectGroups); err != nil {
+	if err := data.Set("object_groups", GetBucketData(clientResponse)); err != nil {
 		return diag.FromErr(err)
 	}
 	data.SetId(strconv.FormatInt(time.Now().Unix(), 10))
