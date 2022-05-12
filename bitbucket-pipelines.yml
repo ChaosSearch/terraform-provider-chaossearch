@@ -21,4 +21,4 @@ pipelines:
             - git pull origin master
             - git remote add github git@github.com:ChaosSearch/ChaosSearch-Terraform-Provider.git
             - git tag ${VERSION} && git push github ${VERSION}
-            - git push --force github master
+            - git push github master
