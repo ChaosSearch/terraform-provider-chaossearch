@@ -20,7 +20,6 @@ pipelines:
           script:
             - git pull origin master
             - git remote add github git@github.com:ChaosSearch/ChaosSearch-Terraform-Provider.git
-            - git push -u github main
-            - git tag STAGING_${VERSION} && git push github STAGING_${VERSION}
-
+            - git tag ${VERSION}
+            - git push -u github master
 
