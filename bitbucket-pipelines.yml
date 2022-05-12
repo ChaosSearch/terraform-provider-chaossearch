@@ -1,0 +1,26 @@
+image: chaossumo/tf-provider-pipeline-runner:2022-05-11
+
+pipelines:
+  default:
+    - step:
+        name: Go Lint
+        script:
+          - golangci-lint run -c .golangci.yml
+    - step:
+        name: Acceptance Test
+        script:
+          - TF_ACC=1 go test -v ./provider/tests/
+  custom:
+    PUBLISH_RELEASE_VERSION_GITHUB:
+      - variables:
+        - name: VERSION
+      - step:
+          image:
+            hashicorp/terraform:latest
+          script:
+            - git pull origin master
+            - git remote add github git@github.com:ChaosSearch/ChaosSearch-Terraform-Provider.git
+            - git push -u github main
+            - git tag STAGING_${VERSION} && git push github STAGING_${VERSION}
+
+
