@@ -14,11 +14,28 @@ pipelines:
     PUBLISH_RELEASE_VERSION_GITHUB:
       - variables:
         - name: VERSION
+
       - step:
           image:
             hashicorp/terraform:latest
           script:
+            - $BRANCH_NAME=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
+            - if [[ $BRANCH_NAME != master ]]; then echo "This can only be performed on master branch" && exit 1; fi
             - git pull origin master
             - git remote add github git@github.com:ChaosSearch/ChaosSearch-Terraform-Provider.git
             - git tag ${VERSION} && git push github ${VERSION}
             - git push github master
+
+    SYNC_RELEASE_VERSION_BITBUCKET:
+      - variables:
+        - name: VERSION
+      - step:
+          image:
+            hashicorp/terraform:latest
+          script:
+            - $BRANCH_NAME=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
+            - if [[ $BRANCH_NAME != master ]]; then echo "This can only be performed on master branch" && exit 1; fi
+            - git remote add github git@github.com:ChaosSearch/ChaosSearch-Terraform-Provider.git
+            - git pull github master
+            - git tag ${VERSION} && git push github ${VERSION}
+            - git push origin master
