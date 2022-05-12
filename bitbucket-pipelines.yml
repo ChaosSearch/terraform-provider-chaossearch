@@ -22,7 +22,7 @@ pipelines:
             - BRANCH_NAME=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
             - if [[ $BRANCH_NAME != master ]]; then echo "This can only be performed on master branch" && exit 1; fi
             - git pull origin master
-            - git remote add github git@github.com:ChaosSearch/ChaosSearch-Terraform-Provider.git
+            - git remote add github https://github.com/ChaosSearch/terraform-provider-chaos.git
             - git tag ${VERSION} && git push github ${VERSION}
             - git push github master
 
@@ -35,7 +35,7 @@ pipelines:
           script:
             - BRANCH_NAME=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
             - if [[ $BRANCH_NAME != master ]]; then echo "This can only be performed on master branch" && exit 1; fi
-            - git remote add github git@github.com:ChaosSearch/ChaosSearch-Terraform-Provider.git
+            - git remote add github https://github.com/ChaosSearch/terraform-provider-chaos.git
             - git pull github master
             - git tag ${VERSION} && git push github ${VERSION}
             - git push origin master
