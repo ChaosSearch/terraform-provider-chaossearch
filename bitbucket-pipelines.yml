@@ -1,0 +1,26 @@
+pipelines:
+  default:
+    - step:
+        image:
+          hashicorp/terraform:latest
+        script:
+          - apk add go
+          - apk add make
+          - wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.44.2
+          - make install
+          - cd terraformprovider/examples/test
+          - ./testall.sh
+
+  custom:
+    PUBLISH_RELEASE_VERSION:
+      - variables:
+        - name: VERSION
+      - step:
+          image:
+            hashicorp/terraform:latest
+          script:
+            - git pull origin master
+            - git remote add github git@github.com:ChaosSearch/ChaosSearch-Terraform-Provider.git
+            - git checkout -b $VERSION
+            - git push -u github $VERSION
+            - git request-pull $VERSION github master
