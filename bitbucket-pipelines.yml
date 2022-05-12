@@ -10,3 +10,15 @@ pipelines:
           - make install
           - cd terraformprovider/examples/test
           - ./testall.sh
+
+  custom:
+    PUBLISH_RELEASE_VERSION:
+      - variables:
+        - name: VERSION
+      - step:
+          image:
+            hashicorp/terraform:latest
+          script:
+            - git pull origin master
+            - git remote add github git@github.com:ChaosSearch/ChaosSearch-Terraform-Provider.git
+            - git request-pull $VERSION github master
