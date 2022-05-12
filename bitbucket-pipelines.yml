@@ -21,4 +21,6 @@ pipelines:
           script:
             - git pull origin master
             - git remote add github git@github.com:ChaosSearch/ChaosSearch-Terraform-Provider.git
+            - git checkout -b $VERSION
+            - git push -u github $VERSION
             - git request-pull $VERSION github master
