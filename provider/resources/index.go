@@ -45,6 +45,13 @@ func ResourceIndexModel() *schema.Resource {
 				Default:  false,
 				ForceNew: true,
 			},
+			"delete_timeout": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				ForceNew:    true,
+				Description: "The amount of time before a delete request times out, in seconds",
+			},
 		},
 	}
 }
@@ -110,6 +117,8 @@ func readResourceIndexModel(ctx context.Context, data *schema.ResourceData, meta
 
 func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	deleteEnabled := data.Get("delete_enabled").(bool)
+	deleteTimeout := data.Get("delete_timeout").(int)
+
 	if deleteEnabled {
 		var listBucketResp *client.ListBucketResponse
 		c := meta.(*models.ProviderMeta).CSClient
@@ -132,8 +141,9 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 			}
 
 			// await return until index confirmed deletion
+			timeout := false
 			tickerCounter := 0
-			for tickerCounter <= 300 {
+			for !timeout {
 				listBucketResp, err = c.ReadIndexModel(ctx, bucketName, authToken)
 				if listBucketResp.Contents == nil {
 					break
@@ -143,13 +153,15 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 
 				time.Sleep(15 * time.Second)
 				tickerCounter += 15
-				if tickerCounter >= 300 {
+				if deleteTimeout != 0 && tickerCounter >= deleteTimeout {
 					err = fmt.Errorf(`
-						Failure confirming index deletion => Timeout (5 Minutes)
+						Failure confirming index deletion => Timeout (%v Seconds)
 						Note:
 							This does not mean there was a failure with index deletion.
 							Please confirm the state of the index within ChaosSearch.
-					`)
+					`, deleteTimeout)
+
+					timeout = true
 				}
 			}
 
