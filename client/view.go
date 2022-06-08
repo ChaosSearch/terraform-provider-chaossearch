@@ -76,6 +76,7 @@ func marshalCreateViewRequest(req *CreateViewRequest) ([]byte, error) {
 		"timeFieldName":   req.TimeFieldName,
 		"transforms":      req.Transforms,
 		"filter":          req.FilterPredicate,
+		"cacheable":       req.Cacheable,
 	}
 
 	bodyAsBytes, err := json.Marshal(body)
