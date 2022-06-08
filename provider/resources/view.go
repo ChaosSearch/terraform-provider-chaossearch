@@ -50,6 +50,7 @@ func ResourceView() *schema.Resource {
 			"cacheable": {
 				Type:     schema.TypeBool,
 				ForceNew: false,
+				Default:  false,
 				Optional: true,
 			},
 			"overwrite": {
@@ -173,6 +174,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 		CaseInsensitive: data.Get("case_insensitive").(bool),
 		IndexRetention:  data.Get("index_retention").(int),
 		TimeFieldName:   data.Get("time_field_name").(string),
+		Cacheable:       data.Get("cacheable").(bool),
 		Transforms:      ViewRequestDTO.Transforms,
 		FilterPredicate: ViewRequestDTO.FilterPredicate,
 	}

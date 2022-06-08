@@ -76,7 +76,6 @@ resource "chaossearch_object_group" "create-object-group" {
 resource "chaossearch_index_model" "model" {
   bucket_name = "tf-provider"
   model_mode = 0
-  delete_enabled = true
   depends_on = [
     chaossearch_object_group.create-object-group
   ]
