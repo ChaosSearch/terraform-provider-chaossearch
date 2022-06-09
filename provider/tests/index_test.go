@@ -12,7 +12,7 @@ import (
 
 func TestAccIndex(t *testing.T) {
 	resourceName := "chaossearch_object_group.create-object-group"
-	bucketName := "acc-test-tf-provider-index"
+	bucketName := generateName("acc-test-tf-provider-index")
 	resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
 		ExternalProviders: testAccExternalProviders,

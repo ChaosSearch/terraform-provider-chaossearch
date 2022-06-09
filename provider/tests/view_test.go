@@ -12,8 +12,8 @@ import (
 )
 
 func TestAccView(t *testing.T) {
-	bucketName := "acc-test-tf-provider-view-og"
-	viewName := "acc-test-tf-provider-view"
+	bucketName := generateName("acc-test-tf-provider-view-og")
+	viewName := generateName("acc-test-tf-provider-view")
 	resourceName := "chaossearch_view.create-view"
 	resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,

@@ -2,9 +2,11 @@ package tests
 
 import (
 	cs "cs-tf-provider/provider"
+	"fmt"
 	"os"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -63,4 +65,8 @@ func testAccProviderConfigBlock() string {
 		  login {}
 	    }
 	`
+}
+
+func generateName(bucketName string) string {
+	return fmt.Sprintf("%s-%s", bucketName, uuid.New())
 }
