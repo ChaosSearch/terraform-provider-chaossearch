@@ -35,16 +35,14 @@ func testAccUserGroupConfig(groupName string) string {
 	return fmt.Sprintf(`
 		%s
 	    resource "chaossearch_user_group" "user_group_create" {
-			user_groups {
-			  name = "%s"
-			  permissions {
-				  effect    = "Allow"
-				  actions    = ["*"]
-				  resources = ["*"]
-				  version   = "1.2"
-			  }
+			name = "%s"
+			permissions {
+				effect    = "Allow"
+				actions    = ["*"]
+				resources = ["*"]
+				version   = "1.2"
 			}
-		  }
+		}
 	`, testAccProviderConfigBlock(), groupName)
 }
 
