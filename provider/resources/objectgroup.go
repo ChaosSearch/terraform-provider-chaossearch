@@ -188,6 +188,7 @@ func ResourceObjectGroup() *schema.Resource {
 			"target_active_index": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				Default:  -1,
 			},
 			"live_events_parallelism": {
 				Type:     schema.TypeInt,
