@@ -19,110 +19,97 @@ func ResourceUserGroup() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"user_groups": {
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"permissions": {
 				Type:     schema.TypeSet,
-				Computed: true,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"actions": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"effect": {
 							Type:     schema.TypeString,
+							Optional: true,
 							Computed: true,
 						},
-						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+						"resources": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
 						},
-						"permissions": {
+						"version": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"conditions": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"actions": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-										Optional: true,
-									},
-									"effect": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
-									},
-									"resources": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-										Optional: true,
-									},
-									"version": {
-										Type:     schema.TypeString,
-										Optional: true,
-										Computed: true,
-									},
-									"conditions": {
+									"condition": {
 										Type:     schema.TypeSet,
 										Optional: true,
-										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
-												"condition": {
+												"starts_with": {
 													Type:     schema.TypeSet,
 													Optional: true,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
-															"starts_with": {
-																Type:     schema.TypeSet,
+															"chaos_document_attributes_title": {
+																Type:     schema.TypeString,
 																Optional: true,
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"chaos_document_attributes_title": {
-																			Type:     schema.TypeString,
-																			Optional: true,
-																		},
-																	},
-																},
 															},
-															"equals": {
-																Type:     schema.TypeSet,
+														},
+													},
+												},
+												"equals": {
+													Type:     schema.TypeSet,
+													Optional: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"chaos_document_attributes_title": {
+																Type:     schema.TypeString,
 																Optional: true,
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"chaos_document_attributes_title": {
-																			Type:     schema.TypeString,
-																			Optional: true,
-																		},
-																	},
-																},
 															},
-															"not_equals": {
-																Type:     schema.TypeSet,
+														},
+													},
+												},
+												"not_equals": {
+													Type:     schema.TypeSet,
+													Optional: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"chaos_document_attributes_title": {
+																Type:     schema.TypeString,
 																Optional: true,
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"chaos_document_attributes_title": {
-																			Type:     schema.TypeString,
-																			Optional: true,
-																		},
-																	},
-																},
 															},
-															"like": {
-																Type:     schema.TypeSet,
+														},
+													},
+												},
+												"like": {
+													Type:     schema.TypeSet,
+													Optional: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"chaos_document_attributes_title": {
+																Type:     schema.TypeString,
 																Optional: true,
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"chaos_document_attributes_title": {
-																			Type:     schema.TypeString,
-																			Optional: true,
-																		},
-																	},
-																},
 															},
 														},
 													},
@@ -159,92 +146,81 @@ func GroupObject(data *schema.ResourceData, authToken string) *client.CreateUser
 	var clientNotEquals *client.NotEquals
 	var clientLike *client.Like
 	var permissionList []client.Permission
-	var userGroupId string
 
-	userGroupList := data.Get("user_groups").(*schema.Set).List()
-	if len(userGroupList) > 0 {
-		userGroupMap := userGroupList[0].(map[string]interface{})
-		permissionsList := userGroupMap["permissions"].(*schema.Set).List()
-		if len(permissionsList) > 0 {
-			for _, permission := range permissionsList {
-				permissionMap := permission.(map[string]interface{})
-				conditionsList := permissionMap["conditions"].(*schema.Set).List()
-				if len(conditionsList) > 0 {
-					conditionsMap := conditionsList[0].(map[string]interface{})
-					conditionList := conditionsMap["condition"].(*schema.Set).List()
-					if len(conditionList) > 0 {
-						conditionMap := conditionList[0].(map[string]interface{})
-						equalsList := conditionMap["equals"].(*schema.Set).List()
-						if len(equalsList) > 0 {
-							equalsMap := equalsList[0].(map[string]interface{})
-							clientEquals = &client.Equals{
-								ChaosDocumentAttributesTitle: equalsMap["chaos_document_attributes_title"].(string),
-							}
-						}
-
-						startsWithList := conditionMap["starts_with"].(*schema.Set).List()
-						if len(startsWithList) > 0 {
-							startsWithMap := startsWithList[0].(map[string]interface{})
-							clientStartsWith = &client.StartsWith{
-								ChaosDocumentAttributesTitle: startsWithMap["chaos_document_attributes_title"].(string),
-							}
-						}
-
-						notEqualsList := conditionMap["not_equals"].(*schema.Set).List()
-						if len(notEqualsList) > 0 {
-							notEqualsMap := notEqualsList[0].(map[string]interface{})
-							clientNotEquals = &client.NotEquals{
-								ChaosDocumentAttributesTitle: notEqualsMap["chaos_document_attributes_title"].(string),
-							}
-						}
-
-						likeList := conditionMap["like"].(*schema.Set).List()
-						if len(likeList) > 0 {
-							likeMap := likeList[0].(map[string]interface{})
-							clientLike = &client.Like{
-								ChaosDocumentAttributesTitle: likeMap["chaos_document_attributes_title"].(string),
-							}
+	permissionsList := data.Get("permissions").(*schema.Set).List()
+	if len(permissionsList) > 0 {
+		for _, permission := range permissionsList {
+			permissionMap := permission.(map[string]interface{})
+			conditionsList := permissionMap["conditions"].(*schema.Set).List()
+			if len(conditionsList) > 0 {
+				conditionsMap := conditionsList[0].(map[string]interface{})
+				conditionList := conditionsMap["condition"].(*schema.Set).List()
+				if len(conditionList) > 0 {
+					conditionMap := conditionList[0].(map[string]interface{})
+					equalsList := conditionMap["equals"].(*schema.Set).List()
+					if len(equalsList) > 0 {
+						equalsMap := equalsList[0].(map[string]interface{})
+						clientEquals = &client.Equals{
+							ChaosDocumentAttributesTitle: equalsMap["chaos_document_attributes_title"].(string),
 						}
 					}
 
-					clientConditionGroup = client.ConditionGroup{
-						Condition: []client.Condition{
-							{
-								Equals:     *clientEquals,
-								StartsWith: *clientStartsWith,
-								NotEquals:  *clientNotEquals,
-								Like:       *clientLike,
-							},
-						},
+					startsWithList := conditionMap["starts_with"].(*schema.Set).List()
+					if len(startsWithList) > 0 {
+						startsWithMap := startsWithList[0].(map[string]interface{})
+						clientStartsWith = &client.StartsWith{
+							ChaosDocumentAttributesTitle: startsWithMap["chaos_document_attributes_title"].(string),
+						}
+					}
+
+					notEqualsList := conditionMap["not_equals"].(*schema.Set).List()
+					if len(notEqualsList) > 0 {
+						notEqualsMap := notEqualsList[0].(map[string]interface{})
+						clientNotEquals = &client.NotEquals{
+							ChaosDocumentAttributesTitle: notEqualsMap["chaos_document_attributes_title"].(string),
+						}
+					}
+
+					likeList := conditionMap["like"].(*schema.Set).List()
+					if len(likeList) > 0 {
+						likeMap := likeList[0].(map[string]interface{})
+						clientLike = &client.Like{
+							ChaosDocumentAttributesTitle: likeMap["chaos_document_attributes_title"].(string),
+						}
 					}
 				}
 
-				permissionList = append(
-					permissionList,
-					client.Permission{
-						Effect:         permissionMap["effect"].(string),
-						Actions:        permissionMap["actions"].([]interface{}),
-						Resources:      permissionMap["resources"].([]interface{}),
-						Version:        permissionMap["version"].(string),
-						ConditionGroup: clientConditionGroup,
+				clientConditionGroup = client.ConditionGroup{
+					Condition: []client.Condition{
+						{
+							Equals:     *clientEquals,
+							StartsWith: *clientStartsWith,
+							NotEquals:  *clientNotEquals,
+							Like:       *clientLike,
+						},
 					},
-				)
+				}
 			}
-		}
 
-		if userGroupMap["id"] != nil {
-			userGroupId = userGroupMap["id"].(string)
-		}
-
-		return &client.CreateUserGroupRequest{
-			AuthToken:  authToken,
-			ID:         userGroupId,
-			Name:       userGroupMap["name"].(string),
-			Permission: permissionList,
+			permissionList = append(
+				permissionList,
+				client.Permission{
+					Effect:         permissionMap["effect"].(string),
+					Actions:        permissionMap["actions"].([]interface{}),
+					Resources:      permissionMap["resources"].([]interface{}),
+					Version:        permissionMap["version"].(string),
+					ConditionGroup: clientConditionGroup,
+				},
+			)
 		}
 	}
 
-	return nil
+	return &client.CreateUserGroupRequest{
+		AuthToken:  authToken,
+		ID:         data.Id(),
+		Name:       data.Get("name").(string),
+		Permission: permissionList,
+	}
 }
 
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -266,9 +242,15 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	}
 
 	userGroupContent := CreateUserGroupResponse(resp)
-	if err := data.Set("user_groups", userGroupContent); err != nil {
+	data.SetId(userGroupContent[0]["id"].(string))
+	if err := data.Set("name", userGroupContent[0]["name"]); err != nil {
 		return diag.FromErr(err)
 	}
+
+	if err := data.Set("permissions", userGroupContent[0]["permissions"]); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 
@@ -318,6 +300,5 @@ func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	data.SetId(data.Id())
 	return nil
 }

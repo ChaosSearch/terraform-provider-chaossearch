@@ -83,7 +83,7 @@ func (c *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
 		Url:         fmt.Sprintf("%s/user/groups", c.config.URL),
-		RequestType: POST,
+		RequestType: PUT,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
 	})
