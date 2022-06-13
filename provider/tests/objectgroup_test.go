@@ -14,7 +14,7 @@ import (
 
 func TestAccObjectGroup(t *testing.T) {
 	resourceName := "chaossearch_object_group.create-object-group"
-	bucketName := "acc-test-tf-provider-og"
+	bucketName := generateName("acc-test-tf-provider-og")
 	resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
 		ExternalProviders: testAccExternalProviders,

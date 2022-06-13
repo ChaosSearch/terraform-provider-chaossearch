@@ -185,13 +185,10 @@ func ResourceObjectGroup() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"index_retention_value": {
-				Type:     schema.TypeInt,
-				Optional: true,
-			},
 			"target_active_index": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				Default:  -1,
 			},
 			"live_events_parallelism": {
 				Type:     schema.TypeInt,
@@ -539,14 +536,42 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 }
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var indexRetention int
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
+
+	indexList := data.Get("index_retention").(*schema.Set).List()
+	if len(indexList) > 0 {
+		indexMap := indexList[0].(map[string]interface{})
+		if indexMap["overall"] != nil {
+			indexRetention = indexMap["overall"].(int)
+		}
+	}
+
+	if indexRetention == 0 || indexRetention < -1 {
+		return diag.Errorf(`
+			Failure Updating Object Group => Invalid Index Retention
+			Note:
+				index_retention.overall cannot == 0 or < -1 during update
+		`)
+	}
+
+	activeIndex := data.Get("target_active_index").(int)
+	if activeIndex == 0 || activeIndex < -1 {
+		return diag.Errorf(`
+			Failure Updating Object Group => Invalid Active Index
+			Note:
+				target_active_index cannot == 0 or < -1 during update
+				This value is optional on create, but required on update.
+		`)
+	}
+
 	updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
 		AuthToken:             tokenValue,
 		Bucket:                data.Get("bucket").(string),
 		IndexParallelism:      data.Get("index_parallelism").(int),
-		IndexRetention:        data.Get("index_retention_value").(int),
-		TargetActiveIndex:     data.Get("target_active_index").(int),
+		IndexRetention:        indexRetention,
+		TargetActiveIndex:     activeIndex,
 		LiveEventsParallelism: data.Get("live_events_parallelism").(int),
 	}
 
