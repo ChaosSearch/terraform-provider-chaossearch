@@ -13,7 +13,7 @@ import (
 
 func TestAccUserGroup(t *testing.T) {
 	resourceName := "chaossearch_user_group.user_group_create"
-	groupName := "acc-test-tf-provider-ug"
+	groupName := generateName("acc-test-tf-provider-ug")
 	resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
 		ExternalProviders: testAccExternalProviders,

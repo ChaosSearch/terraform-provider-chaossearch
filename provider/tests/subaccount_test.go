@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccSubAccount(t *testing.T) {
-	testUser := "acc-test-tf-provider-user"
+	testUser := generateName("acc-test-tf-provider-user")
 	resourceName := "chaossearch_sub_account.sub-account"
 	resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
