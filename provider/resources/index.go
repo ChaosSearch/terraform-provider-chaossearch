@@ -145,6 +145,10 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 			tickerCounter := 0
 			for !timeout {
 				listBucketResp, err = c.ReadIndexModel(ctx, bucketName, authToken)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
 				if listBucketResp.Contents == nil {
 					break
 				} else if listBucketResp.Contents.Key == "" {
