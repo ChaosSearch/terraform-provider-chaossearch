@@ -28,13 +28,13 @@ resource "chaossearch_user_group" "user_group" {
       "Condition" = {
         "Conditions" = [
           {
-            "Equals" = {
+            "Equals"     = {
               "chaos:document/attributes.title" = ""
             },
-            "Like" = {
+            "Like"       = {
               "chaos:document/attributes.title" = ""
             },
-            "NotEquals" = {
+            "NotEquals"  = {
               "chaos:document/attributes.title" = ""
             },
             "StartsWith" = {
@@ -85,9 +85,8 @@ resource "chaossearch_object_group" "create-object-group" {
 
 resource "chaossearch_index_model" "model" {
   bucket_name = "tf-provider"
-  model_mode = 0
-  delete_enabled = true
-  depends_on = [
+  model_mode  = 0
+  depends_on  = [
     chaossearch_object_group.create-object-group
   ]
 }
@@ -104,7 +103,7 @@ resource "chaossearch_view" "chaossearch-create-view" {
     predicate {
       type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
       pred {
-        type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+        type  = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
         field = "STATUS"
         query = "*F*"
         state {
@@ -126,7 +125,7 @@ output "object_group_retrieve_sub_accounts" {
 }
 
 data "chaossearch_retrieve_object_group" "object-group" {
-  bucket = "tf-provider"
+  bucket     = "tf-provider"
   depends_on = [
     chaossearch_object_group.create-object-group
   ]
@@ -137,7 +136,7 @@ output "object_group" {
 }
 
 data "chaossearch_retrieve_view" "retrieve_view" {
-  bucket = "tf-provider-view"
+  bucket     = "tf-provider-view"
   depends_on = [
     chaossearch_view.chaossearch-create-view
   ]
@@ -160,7 +159,7 @@ output "user_groups" {
 }
 
 data "chaossearch_retrieve_user_group" "user_group"{
-  id = chaossearch_user_group.user_group.id
+  id         = chaossearch_user_group.user_group.id
   depends_on = [
     chaossearch_user_group.user_group
   ]
