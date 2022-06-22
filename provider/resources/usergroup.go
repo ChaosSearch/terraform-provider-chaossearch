@@ -3,10 +3,14 @@ package resources
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/client/utils"
 	"cs-tf-provider/provider/models"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceUserGroup() *schema.Resource {
@@ -18,111 +22,21 @@ func ResourceUserGroup() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"permissions": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"actions": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"effect": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-						"resources": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"version": {
-							Type:     schema.TypeString,
-							Optional: true,
-							Computed: true,
-						},
-						"conditions": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"condition": {
-										Type:     schema.TypeSet,
-										Optional: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"starts_with": {
-													Type:     schema.TypeSet,
-													Optional: true,
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"chaos_document_attributes_title": {
-																Type:     schema.TypeString,
-																Optional: true,
-															},
-														},
-													},
-												},
-												"equals": {
-													Type:     schema.TypeSet,
-													Optional: true,
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"chaos_document_attributes_title": {
-																Type:     schema.TypeString,
-																Optional: true,
-															},
-														},
-													},
-												},
-												"not_equals": {
-													Type:     schema.TypeSet,
-													Optional: true,
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"chaos_document_attributes_title": {
-																Type:     schema.TypeString,
-																Optional: true,
-															},
-														},
-													},
-												},
-												"like": {
-													Type:     schema.TypeSet,
-													Optional: true,
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"chaos_document_attributes_title": {
-																Type:     schema.TypeString,
-																Optional: true,
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+		Schema: userGroupSchema(),
+	}
+}
+
+func userGroupSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:     schema.TypeString,
+			Required: true,
+		},
+		"permissions": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.StringIsJSON,
 		},
 	}
 }
@@ -130,7 +44,12 @@ func ResourceUserGroup() *schema.Resource {
 func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
-	resp, err := c.CreateUserGroup(ctx, GroupObject(data, tokenValue))
+	userGroup, err := GroupObject(data, tokenValue)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	resp, err := c.CreateUserGroup(ctx, userGroup)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -139,88 +58,25 @@ func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta in
 	return resourceGroupRead(ctx, data, meta)
 }
 
-func GroupObject(data *schema.ResourceData, authToken string) *client.CreateUserGroupRequest {
-	var clientConditionGroup client.ConditionGroup
-	var clientEquals *client.Equals
-	var clientStartsWith *client.StartsWith
-	var clientNotEquals *client.NotEquals
-	var clientLike *client.Like
-	var permissionList []client.Permission
+func GroupObject(data *schema.ResourceData, authToken string) (*client.CreateUserGroupRequest, error) {
+	var policy []client.Permission
 
-	permissionsList := data.Get("permissions").(*schema.Set).List()
-	if len(permissionsList) > 0 {
-		for _, permission := range permissionsList {
-			permissionMap := permission.(map[string]interface{})
-			conditionsList := permissionMap["conditions"].(*schema.Set).List()
-			if len(conditionsList) > 0 {
-				conditionsMap := conditionsList[0].(map[string]interface{})
-				conditionList := conditionsMap["condition"].(*schema.Set).List()
-				if len(conditionList) > 0 {
-					conditionMap := conditionList[0].(map[string]interface{})
-					equalsList := conditionMap["equals"].(*schema.Set).List()
-					if len(equalsList) > 0 {
-						equalsMap := equalsList[0].(map[string]interface{})
-						clientEquals = &client.Equals{
-							ChaosDocumentAttributesTitle: equalsMap["chaos_document_attributes_title"].(string),
-						}
-					}
+	permissions, err := structure.NormalizeJsonString(data.Get("permissions").(string))
+	if err != nil {
+		return nil, utils.NormalizingJsonError(err)
+	}
 
-					startsWithList := conditionMap["starts_with"].(*schema.Set).List()
-					if len(startsWithList) > 0 {
-						startsWithMap := startsWithList[0].(map[string]interface{})
-						clientStartsWith = &client.StartsWith{
-							ChaosDocumentAttributesTitle: startsWithMap["chaos_document_attributes_title"].(string),
-						}
-					}
-
-					notEqualsList := conditionMap["not_equals"].(*schema.Set).List()
-					if len(notEqualsList) > 0 {
-						notEqualsMap := notEqualsList[0].(map[string]interface{})
-						clientNotEquals = &client.NotEquals{
-							ChaosDocumentAttributesTitle: notEqualsMap["chaos_document_attributes_title"].(string),
-						}
-					}
-
-					likeList := conditionMap["like"].(*schema.Set).List()
-					if len(likeList) > 0 {
-						likeMap := likeList[0].(map[string]interface{})
-						clientLike = &client.Like{
-							ChaosDocumentAttributesTitle: likeMap["chaos_document_attributes_title"].(string),
-						}
-					}
-				}
-
-				clientConditionGroup = client.ConditionGroup{
-					Condition: []client.Condition{
-						{
-							Equals:     *clientEquals,
-							StartsWith: *clientStartsWith,
-							NotEquals:  *clientNotEquals,
-							Like:       *clientLike,
-						},
-					},
-				}
-			}
-
-			permissionList = append(
-				permissionList,
-				client.Permission{
-					Effect:         permissionMap["effect"].(string),
-					Actions:        permissionMap["actions"].([]interface{}),
-					Resources:      permissionMap["resources"].([]interface{}),
-					Version:        permissionMap["version"].(string),
-					ConditionGroup: clientConditionGroup,
-				},
-			)
-		}
+	err = json.Unmarshal([]byte(permissions), &policy)
+	if err != nil {
+		return nil, utils.UnmarshalJsonError(err)
 	}
 
 	return &client.CreateUserGroupRequest{
-		AuthToken:  authToken,
-		ID:         data.Id(),
-		Name:       data.Get("name").(string),
-		Permission: permissionList,
-	}
+		AuthToken:   authToken,
+		ID:          data.Id(),
+		Name:        data.Get("name").(string),
+		Permissions: policy,
+	}, nil
 }
 
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -241,8 +97,11 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 		return diag.Errorf("Couldn't find User Group: %s", err)
 	}
 
-	userGroupContent := CreateUserGroupResponse(resp)
-	data.SetId(userGroupContent[0]["id"].(string))
+	userGroupContent, err := CreateUserGroupResponse(resp)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if err := data.Set("name", userGroupContent[0]["name"]); err != nil {
 		return diag.FromErr(err)
 	}
@@ -254,17 +113,15 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	return diags
 }
 
-func CreateUserGroupResponse(resp *client.UserGroup) []map[string]interface{} {
-	permissions := make([]interface{}, len(resp.Permissions))
-	if resp.Permissions != nil && len(resp.Permissions) > 0 {
-		for i, permission := range resp.Permissions {
-			permissions[i] = map[string]interface{}{
-				"effect":    permission.Effect,
-				"actions":   permission.Actions,
-				"resources": permission.Resources,
-				"version":   permission.Version,
-			}
-		}
+func CreateUserGroupResponse(resp *client.UserGroup) ([]map[string]interface{}, error) {
+	permission_json, err := json.Marshal(resp.Permissions)
+	if err != nil {
+		return nil, utils.MarshalJsonError(err)
+	}
+
+	permissions, err := structure.NormalizeJsonString(string(permission_json))
+	if err != nil {
+		return nil, utils.NormalizingJsonError(err)
 	}
 
 	return []map[string]interface{}{
@@ -273,13 +130,18 @@ func CreateUserGroupResponse(resp *client.UserGroup) []map[string]interface{} {
 			"name":        resp.Name,
 			"permissions": permissions,
 		},
-	}
+	}, nil
 }
 
 func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
-	resp, err := c.UpdateUserGroup(ctx, GroupObject(data, tokenValue))
+	userGroup, err := GroupObject(data, tokenValue)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	resp, err := c.UpdateUserGroup(ctx, userGroup)
 	if err != nil {
 		return diag.FromErr(err)
 	}

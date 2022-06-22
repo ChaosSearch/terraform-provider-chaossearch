@@ -253,7 +253,7 @@ type Condition struct {
 }
 
 type ConditionGroup struct {
-	Condition []Condition `json:"Condition"`
+	Conditions []Condition `json:"Conditions"`
 }
 
 type Permission struct {
@@ -265,10 +265,10 @@ type Permission struct {
 }
 
 type CreateUserGroupRequest struct {
-	AuthToken  string
-	ID         string
-	Name       string
-	Permission []Permission `json:"GroupIds"`
+	AuthToken   string
+	ID          string
+	Name        string
+	Permissions []Permission
 }
 
 type UserInfoBlock struct {
