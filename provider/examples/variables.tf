@@ -4,7 +4,6 @@
   
   Or if you'd like to use vars.tf you can export as TF_VAR_CS_URL
   Or add them to your .tfvars
-*/
 
 variable "CS_USERNAME" {
   type = string
@@ -45,3 +44,4 @@ variable "AWS_PROFILE" {
   type = string
   description = "AWS profile"
 }
+*/

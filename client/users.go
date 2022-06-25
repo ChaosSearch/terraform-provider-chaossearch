@@ -121,7 +121,7 @@ func marshalCreateUserGroupRequest(req *CreateUserGroupRequest) ([]byte, error) 
 		map[string]interface{}{
 			"id":          req.ID,
 			"name":        req.Name,
-			"permissions": req.Permission,
+			"permissions": req.Permissions,
 		},
 	}
 
