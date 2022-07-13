@@ -38,10 +38,9 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("CS_REGION", ""),
 			},
 			"login": {
-				Type:        schema.TypeSet,
-				Required:    true,
-				ForceNew:    true,
-				Description: "",
+				Type:     schema.TypeSet,
+				Required: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"user_name": {

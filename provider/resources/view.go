@@ -3,16 +3,19 @@ package resources
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/client/utils"
 	"cs-tf-provider/provider/models"
+	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-type ViewRequestDTO struct {
+type ViewData struct {
 	FilterPredicate *client.FilterPredicate
-	CSClient        *client.CSClient
-	Token           string
 	Source          []interface{}
 	Transforms      []interface{}
 }
@@ -27,10 +30,6 @@ func ResourceView() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"bucket": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -75,10 +74,9 @@ func ResourceView() *schema.Resource {
 				},
 			},
 			"index_retention": {
-				Type:        schema.TypeInt,
-				Default:     14,
-				Description: "",
-				Optional:    true,
+				Type:     schema.TypeInt,
+				Default:  -1,
+				Optional: true,
 			},
 			"time_field_name": {
 				Type:     schema.TypeString,
@@ -110,6 +108,7 @@ func ResourceView() *schema.Resource {
 			"filter": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"predicate": {
@@ -117,9 +116,18 @@ func ResourceView() *schema.Resource {
 							Required: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"preds": {
+										Type:     schema.TypeList,
+										Optional: true,
+										Computed: true,
+										Elem: &schema.Schema{
+											Type:         schema.TypeString,
+											ValidateFunc: validation.StringIsJSON,
+										},
+									},
 									"pred": {
 										Type:     schema.TypeSet,
-										Required: true,
+										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"field": {
@@ -164,36 +172,42 @@ func ResourceView() *schema.Resource {
 }
 
 func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ViewRequestDTO := setViewRequest(data, meta)
+	c := meta.(*models.ProviderMeta).CSClient
+	tokenValue := meta.(*models.ProviderMeta).Token
+
+	viewData, err := setViewRequest(data, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createViewRequest := &client.CreateViewRequest{
-		AuthToken:       ViewRequestDTO.Token,
+		AuthToken:       tokenValue,
 		Bucket:          data.Get("bucket").(string),
-		Sources:         ViewRequestDTO.Source,
+		Sources:         viewData.Source,
 		IndexPattern:    data.Get("index_pattern").(string),
 		Overwrite:       data.Get("overwrite").(bool),
 		CaseInsensitive: data.Get("case_insensitive").(bool),
 		IndexRetention:  data.Get("index_retention").(int),
 		TimeFieldName:   data.Get("time_field_name").(string),
 		Cacheable:       data.Get("cacheable").(bool),
-		Transforms:      ViewRequestDTO.Transforms,
-		FilterPredicate: ViewRequestDTO.FilterPredicate,
+		Transforms:      viewData.Transforms,
+		FilterPredicate: viewData.FilterPredicate,
 	}
 
-	if err := ViewRequestDTO.CSClient.CreateView(ctx, createViewRequest); err != nil {
+	if err := c.CreateView(ctx, createViewRequest); err != nil {
 		return diag.FromErr(err)
 	}
-
-	data.SetId(data.Get("bucket").(string))
 
 	return ResourceViewRead(ctx, data, meta)
 
 }
 
-func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO {
+func setViewRequest(data *schema.ResourceData, meta interface{}) (*ViewData, error) {
 	var sourcesStrings []interface{}
 	var transforms []interface{}
 	var state *client.State
 	var pred *client.Pred
+	var preds []client.Pred
 	var predicate *client.Predicate
 	var filter *client.FilterPredicate
 
@@ -204,6 +218,12 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO
 		if len(predicateList) > 0 {
 			predicateMap := predicateList[0].(map[string]interface{})
 			predList := predicateMap["pred"].(*schema.Set).List()
+			predsArr := predicateMap["preds"].([]interface{})
+
+			if (len(predsArr) == 0 && len(predList) == 0) || (len(predsArr) > 0 && len(predList) > 0) {
+				return nil, fmt.Errorf("Either 'preds' or 'pred' need to be defined (Not both or none).")
+			}
+
 			if len(predList) > 0 {
 				predMap := predList[0].(map[string]interface{})
 				stateList := predMap["state"].(*schema.Set).List()
@@ -217,14 +237,34 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO
 				pred = &client.Pred{
 					Field: predMap["field"].(string),
 					Query: predMap["query"].(string),
-					State: *state,
+					State: state,
 					Type:  predMap["type"].(string),
 				}
 			}
 
+			if len(predsArr) > 0 {
+				preds = make([]client.Pred, len(predsArr))
+				for index, predItem := range predsArr {
+					var predHolder client.Pred
+
+					predJson, err := structure.NormalizeJsonString(predItem)
+					if err != nil {
+						return nil, utils.NormalizingJsonError(err)
+					}
+
+					err = json.Unmarshal([]byte(predJson), &predHolder)
+					if err != nil {
+						return nil, utils.UnmarshalJsonError(err)
+					}
+
+					preds[index] = predHolder
+				}
+			}
+
 			predicate = &client.Predicate{
-				Type: predicateMap["type"].(string),
-				Pred: *pred,
+				Type:  predicateMap["type"].(string),
+				Pred:  pred,
+				Preds: preds,
 			}
 		}
 
@@ -233,8 +273,6 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO
 		}
 	}
 
-	c := meta.(*models.ProviderMeta).CSClient
-	tokenValue := meta.(*models.ProviderMeta).Token
 	sources, _ := data.GetOk("sources")
 	if sources != nil {
 		sourcesStrings = sources.([]interface{})
@@ -245,15 +283,11 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) *ViewRequestDTO
 		transforms = transformElem.([]interface{})
 	}
 
-	ViewRequestDTO := ViewRequestDTO{
+	return &ViewData{
 		FilterPredicate: filter,
-		CSClient:        c,
-		Token:           tokenValue,
 		Source:          sourcesStrings,
 		Transforms:      transforms,
-	}
-
-	return &ViewRequestDTO
+	}, nil
 }
 
 func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -289,25 +323,61 @@ func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 	}
 
 	if resp.FilterPredicate != nil {
-		if resp.FilterPredicate.Predicate != nil {
+		predicate := resp.FilterPredicate.Predicate
+		if predicate != nil {
+			var preds []string
+
+			predicateMap := map[string]interface{}{
+				"type": predicate.Type,
+			}
+
+			if predicate.Pred != nil {
+				predicateMap["pred"] = []interface{}{
+					map[string]interface{}{
+						"field": predicate.Pred.Field,
+						"type":  predicate.Pred.Type,
+						"query": predicate.Pred.Query,
+						"state": []interface{}{
+							map[string]interface{}{
+								"type": predicate.Pred.State.Type,
+							},
+						},
+					},
+				}
+			}
+
+			if predicate.Preds != nil {
+				preds = make([]string, len(predicate.Preds))
+				for index, predItem := range predicate.Preds {
+					predMap := map[string]interface{}{
+						"field": predItem.Field,
+						"_type": predItem.Type,
+						"query": predItem.Query,
+						"state": map[string]interface{}{
+							"_type": predItem.State.Type,
+						},
+					}
+
+					predBytes, err := json.Marshal(predMap)
+					if err != nil {
+						return diag.FromErr(utils.MarshalJsonError(err))
+					}
+
+					predJson, err := structure.NormalizeJsonString(string(predBytes))
+					if err != nil {
+						return diag.FromErr(utils.NormalizingJsonError(err))
+					}
+
+					preds[index] = predJson
+				}
+
+				predicateMap["preds"] = preds
+			}
+
 			err = data.Set("filter", []interface{}{
 				map[string]interface{}{
 					"predicate": []interface{}{
-						map[string]interface{}{
-							"type": resp.FilterPredicate.Predicate.Type,
-							"pred": []interface{}{
-								map[string]interface{}{
-									"field": resp.FilterPredicate.Predicate.Pred.Field,
-									"type":  resp.FilterPredicate.Predicate.Pred.Type,
-									"query": resp.FilterPredicate.Predicate.Pred.Query,
-									"state": []interface{}{
-										map[string]interface{}{
-											"type": resp.FilterPredicate.Predicate.Pred.State.Type,
-										},
-									},
-								},
-							},
-						},
+						predicateMap,
 					},
 				},
 			})
@@ -369,33 +439,36 @@ func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 }
 
 func resourceViewUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	ViewRequestDTO := setViewRequest(data, meta)
+	c := meta.(*models.ProviderMeta).CSClient
+	tokenValue := meta.(*models.ProviderMeta).Token
+
+	viewData, err := setViewRequest(data, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	createViewRequest := &client.CreateViewRequest{
-		AuthToken:       ViewRequestDTO.Token,
+		AuthToken:       tokenValue,
 		Bucket:          data.Get("bucket").(string),
-		Sources:         ViewRequestDTO.Source,
+		Sources:         viewData.Source,
 		IndexPattern:    data.Get("index_pattern").(string),
 		Overwrite:       true,
 		CaseInsensitive: data.Get("case_insensitive").(bool),
 		IndexRetention:  data.Get("index_retention").(int),
 		TimeFieldName:   data.Get("time_field_name").(string),
-		Transforms:      ViewRequestDTO.Transforms,
-		FilterPredicate: ViewRequestDTO.FilterPredicate,
+		Transforms:      viewData.Transforms,
+		FilterPredicate: viewData.FilterPredicate,
 	}
 
-	if err := ViewRequestDTO.CSClient.CreateView(ctx, createViewRequest); err != nil {
+	if err := c.CreateView(ctx, createViewRequest); err != nil {
 		return diag.FromErr(err)
 	}
-
-	data.SetId(data.Get("bucket").(string))
 
 	return ResourceViewRead(ctx, data, meta)
 }
 
 func resourceViewDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
-
 	tokenValue := meta.(*models.ProviderMeta).Token
 	deleteViewRequest := &client.DeleteViewRequest{
 		AuthToken: tokenValue,
@@ -406,6 +479,5 @@ func resourceViewDelete(ctx context.Context, data *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	data.SetId(data.Get("bucket").(string))
 	return nil
 }

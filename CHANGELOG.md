@@ -1,3 +1,12 @@
+## 1.0.4
+
+### Features:
+* provider/resources/view.go: Enable users to provide multiple `preds` in views
+
+### Enhancements:
+* provider/resources/view.go: Simplify `ViewRequestDTO`, rename to `ViewData`
+* client/clientrequest.go: Add a note to JWT parsing error indicating failed authentication
+
 ## 1.0.3
 
 ### Enhancements:

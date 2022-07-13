@@ -91,7 +91,7 @@ resource "chaossearch_index_model" "model" {
   ]
 }
 
-resource "chaossearch_view" "chaossearch-create-view" {
+resource "chaossearch_view" "view-pred" {
   bucket           = "tf-provider-view"
   case_insensitive = false
   index_pattern    = ".*"
@@ -110,6 +110,46 @@ resource "chaossearch_view" "chaossearch-create-view" {
           type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
         }
       }
+    }
+  }
+  depends_on = [
+    chaossearch_index_model.model
+  ]
+}
+
+resource "chaossearch_view" "view-preds" {
+  bucket           = "tf-provider-view-preds"
+  case_insensitive = false
+  index_pattern    = ".*"
+  index_retention  = -1
+  overwrite        = true
+  sources          = ["tf-provider"]
+  time_field_name  = "@timestamp"
+  filter {
+    predicate {
+      type = "chaossumo.query.NIRFrontend.Request.Predicate.Or"
+      preds = [
+        jsonencode(
+          {
+            "state": {
+              "_type": "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+            },
+            "_type": "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch",
+            "field": "Subject",
+            "query": "subject"
+          }
+        ),
+        jsonencode(
+          {
+            "state": {
+              "_type": "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+            },
+            "_type": "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch",
+            "field": "Series_title_1",
+            "query": "title"
+          }
+        )
+      ]
     }
   }
   depends_on = [
@@ -138,7 +178,7 @@ output "object_group" {
 data "chaossearch_retrieve_view" "retrieve_view" {
   bucket     = "tf-provider-view"
   depends_on = [
-    chaossearch_view.chaossearch-create-view
+    chaossearch_view.view-pred
   ]
 }
 
