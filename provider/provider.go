@@ -8,7 +8,6 @@ import (
 	"cs-tf-provider/provider/models"
 	"cs-tf-provider/provider/resources"
 	"encoding/json"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -37,11 +36,15 @@ func Provider() *schema.Provider {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_REGION", ""),
 			},
+			"parent_user_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("CS_PARENT_USER_ID", ""),
+			},
 			"login": {
-				Type:        schema.TypeSet,
-				Required:    true,
-				ForceNew:    true,
-				Description: "",
+				Type:     schema.TypeSet,
+				ForceNew: true,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"user_name": {
@@ -55,12 +58,6 @@ func Provider() *schema.Provider {
 							Required:    true,
 							ForceNew:    true,
 							DefaultFunc: schema.EnvDefaultFunc("CS_PASSWORD", ""),
-						},
-						"parent_user_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
-							DefaultFunc: schema.EnvDefaultFunc("CS_PARENT_USER_ID", ""),
 						},
 					},
 				},
@@ -90,8 +87,8 @@ func Provider() *schema.Provider {
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	var username string
 	var password string
-	var parentUserID string
 	var authResp models.AuthResponse
+	keyAuthEnabled := true
 
 	url, diagErr := getConfig(ctx, d, "url")
 	if diagErr != nil {
@@ -113,22 +110,39 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		return nil, diagErr
 	}
 
+	parentUserID := d.Get("parent_user_id").(string)
 	loginList := d.Get("login").(*schema.Set).List()
 	if len(loginList) > 0 {
 		loginMap := loginList[0].(map[string]interface{})
 		username = loginMap["user_name"].(string)
 		if username == "" {
-			return nil, diag.Errorf("Failed to configure provider => Expected 'user_name' to be defined")
+			return nil, utils.ConfigurationError("user_name")
 		}
 
 		password = loginMap["password"].(string)
 		if password == "" {
-			return nil, diag.Errorf("Failed to configure provider => Expected 'password' to be defined")
+			return nil, utils.ConfigurationError("password")
 		}
 
-		if loginMap["parent_user_id"] != nil {
-			parentUserID = loginMap["parent_user_id"].(string)
-		}
+		keyAuthEnabled = false
+	}
+
+	if keyAuthEnabled && parentUserID == "" {
+		return nil, diag.Errorf(`
+		Failed to configure provider => 'parent_user_id' must be defined for API Key Auth
+		Note: 
+			This can be populated with the account's UID, regardless of being a subaccount
+		`)
+	}
+
+	config := &client.Configuration{
+		URL:             url,
+		AccessKeyID:     accessKeyID,
+		SecretAccessKey: secretAccessKey,
+		AWSServiceName:  "s3",
+		Region:          region,
+		UserID:          parentUserID,
+		KeyAuthEnabled:  keyAuthEnabled,
 	}
 
 	login := client.Login{
@@ -137,7 +151,6 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		ParentUserID: parentUserID,
 	}
 
-	config := client.NewConfiguration(url, accessKeyID, secretAccessKey, region)
 	csClient := client.NewClient(config, &login)
 	authResponseString, err := csClient.Auth(ctx)
 	if err != nil {
@@ -145,8 +158,10 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	}
 
-	if err := json.Unmarshal([]byte(authResponseString), &authResp); err != nil {
-		return fmt.Errorf("Failed to configure provider => %s", utils.UnmarshalJsonError(err)), nil
+	if !keyAuthEnabled {
+		if err := json.Unmarshal([]byte(authResponseString), &authResp); err != nil {
+			return nil, diag.Errorf("Failed to configure provider => %s", utils.UnmarshalJsonError(err))
+		}
 	}
 
 	providerMeta := &models.ProviderMeta{
@@ -161,7 +176,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 func getConfig(ctx context.Context, data *schema.ResourceData, value string) (string, diag.Diagnostics) {
 	cred := data.Get(value).(string)
 	if cred == "" {
-		return "", diag.Errorf("Failed to configure provider => Expected '%s' to be defined", value)
+		return "", utils.ConfigurationError(value)
 	}
 
 	return cred, nil

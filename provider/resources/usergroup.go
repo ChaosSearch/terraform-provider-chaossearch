@@ -39,6 +39,11 @@ func ResourceUserGroup() *schema.Resource {
 
 func resourceGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(c.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	tokenValue := meta.(*models.ProviderMeta).Token
 	userGroup, err := GroupObject(data, tokenValue)
 	if err != nil {
@@ -78,6 +83,11 @@ func GroupObject(data *schema.ResourceData, authToken string) (*client.CreateUse
 func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	c := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(c.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	tokenValue := meta.(*models.ProviderMeta).Token
 	req := &client.ReadUserGroupRequest{
 		AuthToken: tokenValue,
@@ -131,6 +141,11 @@ func CreateUserGroupResponse(resp *client.UserGroup) ([]map[string]interface{}, 
 
 func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(c.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	tokenValue := meta.(*models.ProviderMeta).Token
 	userGroup, err := GroupObject(data, tokenValue)
 	if err != nil {
@@ -148,6 +163,11 @@ func resourceGroupUpdate(ctx context.Context, data *schema.ResourceData, meta in
 
 func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(c.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	tokenValue := meta.(*models.ProviderMeta).Token
 	deleteUserGroupRequest := &client.DeleteUserGroupRequest{
 		AuthToken: tokenValue,

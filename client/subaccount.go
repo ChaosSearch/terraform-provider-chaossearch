@@ -14,7 +14,7 @@ func (c *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRe
 	}
 
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/user/createSubAccount", c.config.URL),
+		Url:         fmt.Sprintf("%s/user/createSubAccount", c.Config.URL),
 		RequestType: POST,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
@@ -35,7 +35,7 @@ func (c *CSClient) DeleteSubAccount(ctx context.Context, req *DeleteSubAccountRe
 	}
 
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/user/deleteSubAccount", c.config.URL),
+		Url:         fmt.Sprintf("%s/user/deleteSubAccount", c.Config.URL),
 		RequestType: POST,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
