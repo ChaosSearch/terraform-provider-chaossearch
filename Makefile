@@ -14,8 +14,11 @@ lintProvider:
 build: lintProvider
 	 go build -o ${BINARY}
 
-runExample: install
-	cd provider/examples && rm -rf .terraform && terraform init && terraform apply
+runEx: install
+	cd provider/examples && terraform init && terraform apply --auto-approve
+
+runExDeleteTF: install
+	cd provider/examples && rm -rf .terraform .terraform* *.tfstate* && terraform init && terraform apply --auto-approve
 
 release:
 	GOOS=darwin GOARCH=arm64 go build -o ./bin/${BINARY}_${VERSION}_${OS_ARCH}
