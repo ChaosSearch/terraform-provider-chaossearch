@@ -9,7 +9,7 @@ import (
 func (c *CSClient) ListBuckets(ctx context.Context, authToken string) (*ListBucketsResponse, error) {
 	var resp ListBucketsResponse
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/V1/", c.config.URL),
+		Url:         fmt.Sprintf("%s/V1/", c.Config.URL),
 		RequestType: GET,
 		AuthToken:   authToken,
 	})

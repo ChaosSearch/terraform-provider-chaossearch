@@ -19,7 +19,8 @@ type Configuration struct {
 	SecretAccessKey string
 	AWSServiceName  string
 	Region          string
-	Login           *Login
+	KeyAuthEnabled  bool
+	UserID          string
 }
 
 type Login struct {
@@ -29,7 +30,7 @@ type Login struct {
 }
 
 type CSClient struct {
-	config     *Configuration
+	Config     *Configuration
 	httpClient *http.Client
 	userAgent  string
 	Login      *Login
@@ -42,13 +43,14 @@ const (
 	DELETE string = "DELETE"
 )
 
-func NewConfiguration(url, accessKeyID, secretAccessKey, region string) *Configuration {
+func NewConfiguration(url, accessKeyID, secretAccessKey, region string, keyAuth bool) *Configuration {
 	return &Configuration{
 		AWSServiceName:  "s3",
 		URL:             url,
 		AccessKeyID:     accessKeyID,
 		SecretAccessKey: secretAccessKey,
 		Region:          region,
+		KeyAuthEnabled:  keyAuth,
 	}
 }
 
@@ -60,7 +62,7 @@ func NewClient(config *Configuration, login *Login) *CSClient {
 	userAgent := fmt.Sprintf("%s/%s %s/%s/%s", binaryName, version, hostName, namespace, binaryName)
 
 	return &CSClient{
-		config:     config,
+		Config:     config,
 		httpClient: http.DefaultClient,
 		userAgent:  userAgent,
 		Login:      login,
@@ -68,32 +70,35 @@ func NewClient(config *Configuration, login *Login) *CSClient {
 }
 
 func (c *CSClient) Auth(ctx context.Context) (token string, err error) {
-	url := fmt.Sprintf("%s/user/login", c.config.URL)
-	login := c.Login
-	bodyAsBytes, err := marshalLoginRequest(login)
-	if err != nil {
-		return "", err
+	if !c.Config.KeyAuthEnabled {
+		url := fmt.Sprintf("%s/user/login", c.Config.URL)
+		bodyAsBytes, err := marshalLoginRequest(c.Login)
+		if err != nil {
+			return "", err
+		}
+
+		req, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
+		if err != nil {
+			return "", utils.CreateRequestError(err)
+		}
+
+		req.Header.Add("x-amz-chaossumo-route-token", "login")
+		req.Header.Add("Content-Type", "text/plain")
+		res, err := c.httpClient.Do(req)
+		if err != nil {
+			return "", utils.SubmitRequestError(POST, url, err)
+		}
+		defer res.Body.Close()
+
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return "", utils.ReadResponseError(err)
+		}
+
+		return string(body), nil
 	}
 
-	req, err := http.NewRequestWithContext(ctx, POST, url, bytes.NewReader(bodyAsBytes))
-	if err != nil {
-		return "", utils.CreateRequestError(err)
-	}
-
-	req.Header.Add("x-amz-chaossumo-route-token", "login")
-	req.Header.Add("Content-Type", "text/plain")
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return "", utils.SubmitRequestError(POST, url, err)
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return "", utils.ReadResponseError(err)
-	}
-
-	return string(body), nil
+	return "", nil
 }
 
 func marshalLoginRequest(req *Login) ([]byte, error) {
@@ -123,7 +128,7 @@ func (client *CSClient) createAndSendReq(
 	ctx context.Context,
 	request ClientRequest,
 ) (*http.Response, error) {
-	httpReq, err := request.constructRequest(ctx)
+	httpReq, err := request.constructRequest(ctx, *client.Config)
 	if err != nil {
 		return nil, utils.CreateRequestError(err)
 	}

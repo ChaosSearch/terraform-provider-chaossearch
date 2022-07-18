@@ -11,7 +11,7 @@ import (
 func (c *CSClient) ListUsers(ctx context.Context, authToken string) (*ListUsersResponse, error) {
 	var resp ListUsersResponse
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/user/manifest", c.config.URL),
+		Url:         fmt.Sprintf("%s/user/manifest", c.Config.URL),
 		RequestType: POST,
 		AuthToken:   authToken,
 	})
@@ -36,7 +36,7 @@ func (c *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 	}
 
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/user/groups", c.config.URL),
+		Url:         fmt.Sprintf("%s/user/groups", c.Config.URL),
 		RequestType: POST,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
@@ -57,7 +57,7 @@ func (c *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 func (c *CSClient) ReadUserGroup(ctx context.Context, req *ReadUserGroupRequest) (*UserGroup, error) {
 	var readUserGroupResp UserGroup
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/user/group/%s", c.config.URL, req.ID),
+		Url:         fmt.Sprintf("%s/user/group/%s", c.Config.URL, req.ID),
 		RequestType: GET,
 		AuthToken:   req.AuthToken,
 	})
@@ -82,7 +82,7 @@ func (c *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 	}
 
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/user/groups", c.config.URL),
+		Url:         fmt.Sprintf("%s/user/groups", c.Config.URL),
 		RequestType: PUT,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
@@ -103,7 +103,7 @@ func (c *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 func (c *CSClient) DeleteUserGroup(ctx context.Context, req *DeleteUserGroupRequest) error {
 	deleteUserGroupID := url.PathEscape(req.ID)
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/user/group/%s", c.config.URL, deleteUserGroupID),
+		Url:         fmt.Sprintf("%s/user/group/%s", c.Config.URL, deleteUserGroupID),
 		RequestType: DELETE,
 		AuthToken:   req.AuthToken,
 	})

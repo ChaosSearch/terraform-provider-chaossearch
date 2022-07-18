@@ -65,6 +65,11 @@ func DataSourceUserGroups() *schema.Resource {
 func readUserGroups(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	client := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(client.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	tokenValue := meta.(*models.ProviderMeta).Token
 	usersResponse, err := client.ListUsers(ctx, tokenValue)
 	if err != nil {
@@ -97,10 +102,15 @@ func readUserGroups(ctx context.Context, data *schema.ResourceData, meta interfa
 }
 
 func readUserGroup(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(c.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	id := data.Get("id").(string)
 	data.SetId(id)
 	diags := diag.Diagnostics{}
-	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
 	req := &client.ReadUserGroupRequest{
 		AuthToken: tokenValue,

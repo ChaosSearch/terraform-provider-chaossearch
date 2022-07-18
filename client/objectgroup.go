@@ -15,7 +15,7 @@ func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroup
 	}
 
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/Bucket/createObjectGroup", c.config.URL),
+		Url:         fmt.Sprintf("%s/Bucket/createObjectGroup", c.Config.URL),
 		RequestType: POST,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
@@ -32,7 +32,7 @@ func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroup
 func (c *CSClient) ReadObjGroup(ctx context.Context, req *ReadObjGroupReq) (*ReadObjGroupResp, error) {
 	var resp ReadObjGroupResp
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/Bucket/dataset/name/%s", c.config.URL, req.ID),
+		Url:         fmt.Sprintf("%s/Bucket/dataset/name/%s", c.Config.URL, req.ID),
 		RequestType: GET,
 		AuthToken:   req.AuthToken,
 	})
@@ -56,7 +56,7 @@ func (c *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroup
 	}
 
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/Bucket/updateObjectGroup", c.config.URL),
+		Url:         fmt.Sprintf("%s/Bucket/updateObjectGroup", c.Config.URL),
 		RequestType: POST,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
@@ -90,7 +90,7 @@ func marshalUpdateObjectGroupRequest(req *UpdateObjectGroupRequest) ([]byte, err
 func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
 	safeObjectGroupName := url.PathEscape(req.Name)
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/V1/%s", c.config.URL, safeObjectGroupName),
+		Url:         fmt.Sprintf("%s/V1/%s", c.Config.URL, safeObjectGroupName),
 		RequestType: DELETE,
 		AuthToken:   req.AuthToken,
 	})

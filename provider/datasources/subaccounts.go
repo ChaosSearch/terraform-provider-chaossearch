@@ -2,6 +2,7 @@ package datasources
 
 import (
 	"context"
+	"cs-tf-provider/client/utils"
 	"cs-tf-provider/provider/models"
 	"strconv"
 	"time"
@@ -59,6 +60,11 @@ func readAllSubAccounts(ctx context.Context, data *schema.ResourceData, meta int
 	var result []map[string]interface{}
 
 	client := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(client.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	tokenValue := meta.(*models.ProviderMeta).Token
 	usersResponse, err := client.ListUsers(ctx, tokenValue)
 	if err != nil {

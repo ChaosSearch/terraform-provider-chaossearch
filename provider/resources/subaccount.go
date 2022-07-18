@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/client/utils"
 	"cs-tf-provider/provider/models"
 	"fmt"
 	"sort"
@@ -57,6 +58,11 @@ func ResourceSubAccount() *schema.Resource {
 
 func resourceSubAccountCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(c.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	createSubAccountRequest := &client.CreateSubAccountRequest{
 		AuthToken: meta.(*models.ProviderMeta).Token,
 		UserInfoBlock: client.UserInfoBlock{
@@ -81,6 +87,11 @@ func resourceSubAccountCreate(ctx context.Context, data *schema.ResourceData, me
 func resourceSubAccountRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var username string
 	client := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(client.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	userResp, err := client.ListUsers(ctx, meta.(*models.ProviderMeta).Token)
 	if err != nil {
 		return diag.FromErr(err)
@@ -121,6 +132,10 @@ func resourceSubAccountRead(ctx context.Context, data *schema.ResourceData, meta
 func resourceSubAccountDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var username string
 	c := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(c.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if data.Get("username") != nil {
 		username = data.Get("username").(string)
