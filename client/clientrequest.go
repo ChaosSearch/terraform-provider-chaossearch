@@ -44,7 +44,10 @@ func (cr *ClientRequest) constructRequest(ctx context.Context) (*http.Request, e
 	claims := jwt.MapClaims{}
 	_, _, err = new(jwt.Parser).ParseUnverified(cr.AuthToken, claims)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse JWT => Error: %s", err)
+		return nil, fmt.Errorf(`
+			Failed to parse JWT => Error: %s
+				Note: This is usually a symptom of failed auth. Please ensure your credentials are correct
+		`, err)
 	}
 
 	if cr.isAdminAPI(httpReq.URL.Path) {
