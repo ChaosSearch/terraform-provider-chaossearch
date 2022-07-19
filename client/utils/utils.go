@@ -51,3 +51,15 @@ func MarshalJsonError(err error) error {
 func ConfigurationError(value string) diag.Diagnostics {
 	return diag.Errorf("Failed to configure provider => Expected '%s' to be defined", value)
 }
+
+func NormalizingJsonError(err error) error {
+	return fmt.Errorf("Failed to normalize JSON structure => Error: %s", err)
+}
+
+func ValidateAuthType(keyAuthEnabled bool) error {
+	if keyAuthEnabled {
+		return fmt.Errorf("Failed to authenticate => API Keys used with incompatible resource")
+	}
+
+	return nil
+}

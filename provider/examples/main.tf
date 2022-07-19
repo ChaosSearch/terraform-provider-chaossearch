@@ -1,47 +1,57 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 0.1.1"
+      version = "~> 1.0.4"
       source  = "chaossearch/chaossearch"
-    }
-    aws = {
-      source = "hashicorp/aws"
     }
   }
 }
 
 provider "chaossearch" {
-  url               = var.CS_URL
-  access_key_id     = var.CS_ACCESS_KEY
-  secret_access_key = var.CS_SECRET_KEY
-  region            = var.CS_REGION
-  login {
-    user_name = var.CS_USERNAME
-    password  = var.CS_PASSWORD
-  }
+  login {}
 }
 
-provider "aws" {
-  profile = var.AWS_PROFILE
-  region  = var.CS_REGION
-}
-
-
-resource "chaossearch_user_group" "chaossearch_user_group_create_test" {
-  user_groups {
-    name = "provider_test"
-    permissions {
-        effect    = "Allow"
-        actions    = [".*"]
-        resources = [".*"]
-        version   = "1.4"
+resource "chaossearch_user_group" "user_group" {
+  name = "provider_test"
+  permissions = jsonencode([
+    {
+      "Version"   = "1.0",
+      "Effect"    = "Allow",
+      "Actions"   = ["ui:analytics"],
+      "Resources" = ["*"],
+    },
+    {
+      "Version"   = "1.0",
+      "Effect"    = "Allow",
+      "Actions"   = ["ui:storage"]
+      "Resources" = ["*"],
+      "Condition" = {
+        "Conditions" = [
+          {
+            "Equals"     = {
+              "chaos:document/attributes.title" = ""
+            },
+            "Like"       = {
+              "chaos:document/attributes.title" = ""
+            },
+            "NotEquals"  = {
+              "chaos:document/attributes.title" = ""
+            },
+            "StartsWith" = {
+              "chaos:document/attributes.title" = "test"
+            },
+          }
+        ]
       }
-  }
+    }
+  ])
 }
+
 resource "chaossearch_sub_account" "sub-account" {
   username  = "provider_test"
   full_name = "provider_test"
   password  = "1234"
+  group_ids = [chaossearch_user_group.user_group.id]
   hocon     = ["override.Services.worker.quota=50"]
 }
 
@@ -67,13 +77,13 @@ resource "chaossearch_object_group" "create-object-group" {
 
 resource "chaossearch_index_model" "model" {
   bucket_name = "tf-provider"
-  model_mode = 0
-  depends_on = [
+  model_mode  = 0
+  depends_on  = [
     chaossearch_object_group.create-object-group
   ]
 }
 
-resource "chaossearch_view" "chaossearch-create-view" {
+resource "chaossearch_view" "view-pred" {
   bucket           = "tf-provider-view"
   case_insensitive = false
   index_pattern    = ".*"
@@ -85,7 +95,7 @@ resource "chaossearch_view" "chaossearch-create-view" {
     predicate {
       type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
       pred {
-        type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+        type  = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
         field = "STATUS"
         query = "*F*"
         state {
@@ -99,6 +109,47 @@ resource "chaossearch_view" "chaossearch-create-view" {
   ]
 }
 
+resource "chaossearch_view" "view-preds" {
+  bucket           = "tf-provider-view-preds"
+  case_insensitive = false
+  index_pattern    = ".*"
+  index_retention  = -1
+  overwrite        = true
+  sources          = ["tf-provider"]
+  time_field_name  = "@timestamp"
+  filter {
+    predicate {
+      type = "chaossumo.query.NIRFrontend.Request.Predicate.Or"
+      preds = [
+        jsonencode(
+          {
+            "state": {
+              "_type": "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+            },
+            "_type": "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch",
+            "field": "Subject",
+            "query": "subject"
+          }
+        ),
+        jsonencode(
+          {
+            "state": {
+              "_type": "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+            },
+            "_type": "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch",
+            "field": "Series_title_1",
+            "query": "title"
+          }
+        )
+      ]
+    }
+  }
+  depends_on = [
+    chaossearch_index_model.model
+  ]
+}
+
+
 data "chaossearch_retrieve_sub_accounts" "sub_accounts" {}
 
 output "object_group_retrieve_sub_accounts" {
@@ -106,7 +157,7 @@ output "object_group_retrieve_sub_accounts" {
 }
 
 data "chaossearch_retrieve_object_group" "object-group" {
-  bucket = "tf-provider"
+  bucket     = "tf-provider"
   depends_on = [
     chaossearch_object_group.create-object-group
   ]
@@ -117,9 +168,9 @@ output "object_group" {
 }
 
 data "chaossearch_retrieve_view" "retrieve_view" {
-  bucket = "tf-provider-view"
+  bucket     = "tf-provider-view"
   depends_on = [
-    chaossearch_view.chaossearch-create-view
+    chaossearch_view.view-pred
   ]
 }
 
@@ -131,4 +182,17 @@ data "chaossearch_retrieve_views" "views" {}
 
 output "views" {
   value = data.chaossearch_retrieve_views.views
+}
+
+data "chaossearch_retrieve_groups" "user_groups"{}
+
+output "user_groups" {
+  value = data.chaossearch_retrieve_groups.user_groups
+}
+
+data "chaossearch_retrieve_user_group" "user_group"{
+  id         = chaossearch_user_group.user_group.id
+  depends_on = [
+    chaossearch_user_group.user_group
+  ]
 }

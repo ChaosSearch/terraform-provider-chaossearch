@@ -1,3 +1,14 @@
+## 1.0.4
+
+### Features:
+* provider/resources/view.go: Enable users to provide multiple `preds` in views
+* provider/provider.go: Enable the usage of API Key driven Auth
+
+### Enhancements:
+* provider/resources/view.go: Simplify `ViewRequestDTO`, rename to `ViewData`
+* client/clientrequest.go: Add a note to JWT parsing error indicating failed authentication
+* client/clientrequest.go: Break up request construction to allow for API Key driven auth 
+  
 ## 1.0.3
 
 ### Enhancements:

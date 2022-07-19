@@ -3,8 +3,10 @@ package datasources
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/client/utils"
 	"cs-tf-provider/provider/models"
 	"cs-tf-provider/provider/resources"
+	"encoding/json"
 	"strconv"
 	"time"
 
@@ -14,55 +16,19 @@ import (
 
 func DataSourceUserGroup() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceUserGroupRead,
+		ReadContext: readUserGroup,
 		Schema: map[string]*schema.Schema{
-			"user_groups": {
-				Type:     schema.TypeSet,
+			"id": {
+				Type:     schema.TypeString,
 				Required: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"permissions": {
-							Type:     schema.TypeSet,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"actions": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-										Optional: true,
-									},
-									"effect": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"resources": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-										Optional: true,
-									},
-									"version": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
-						},
-					},
-				},
+			},
+			"name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"permissions": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -70,7 +36,7 @@ func DataSourceUserGroup() *schema.Resource {
 
 func DataSourceUserGroups() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: readAllUserGroups,
+		ReadContext: readUserGroups,
 		Schema: map[string]*schema.Schema{
 			"user_groups": {
 				Type:     schema.TypeList,
@@ -86,36 +52,8 @@ func DataSourceUserGroups() *schema.Resource {
 							Computed: true,
 						},
 						"permissions": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeString,
 							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"actions": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-										Optional: true,
-									},
-									"effect": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-									"resources": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-										Optional: true,
-									},
-									"version": {
-										Type:     schema.TypeString,
-										Computed: true,
-									},
-								},
-							},
 						},
 					},
 				},
@@ -124,9 +62,14 @@ func DataSourceUserGroups() *schema.Resource {
 	}
 }
 
-func readAllUserGroups(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readUserGroups(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 	client := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(client.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	tokenValue := meta.(*models.ProviderMeta).Token
 	usersResponse, err := client.ListUsers(ctx, tokenValue)
 	if err != nil {
@@ -137,17 +80,15 @@ func readAllUserGroups(ctx context.Context, data *schema.ResourceData, meta inte
 	if len(users) > 0 {
 		userGroups := make([]map[string]interface{}, len(users[0].UserGroups))
 		for i, userGroup := range users[0].UserGroups {
+			permissions, err := json.Marshal(userGroup.Permissions)
+			if err != nil {
+				return diag.FromErr(utils.MarshalJsonError(err))
+			}
+
 			userGroups[i] = map[string]interface{}{
-				"id":   userGroup.ID,
-				"name": userGroup.Name,
-				"permissions": []interface{}{
-					map[string]interface{}{
-						"version":   userGroup.Permissions[0].Version,
-						"resources": userGroup.Permissions[0].Resources,
-						"effect":    userGroup.Permissions[0].Effect,
-						"actions":   userGroup.Permissions[0].Actions,
-					},
-				},
+				"id":          userGroup.ID,
+				"name":        userGroup.Name,
+				"permissions": string(permissions),
 			}
 		}
 
@@ -160,26 +101,43 @@ func readAllUserGroups(ctx context.Context, data *schema.ResourceData, meta inte
 	return diags
 }
 
-func dataSourceUserGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	userGroupInterface := data.Get("user_groups").(*schema.Set).List()[0].(map[string]interface{})
-	data.SetId(userGroupInterface["id"].(string))
-	diags := diag.Diagnostics{}
+func readUserGroup(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(c.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	id := data.Get("id").(string)
+	data.SetId(id)
+	diags := diag.Diagnostics{}
 	tokenValue := meta.(*models.ProviderMeta).Token
 	req := &client.ReadUserGroupRequest{
 		AuthToken: tokenValue,
-		ID:        data.Id(),
+		ID:        id,
 	}
+
 	resp, err := c.ReadUserGroup(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if resp == nil {
 		return diag.Errorf("Couldn't find User Group: %s", err)
 	}
-	userGroupContent := resources.CreateUserGroupResponse(resp)
-	if err := data.Set("user_groups", userGroupContent); err != nil {
+
+	userGroupContent, err := resources.CreateUserGroupResponse(resp)
+	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	if err := data.Set("name", userGroupContent[0]["name"]); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := data.Set("permissions", userGroupContent[0]["permissions"]); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }

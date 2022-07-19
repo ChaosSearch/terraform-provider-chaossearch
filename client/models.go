@@ -212,19 +212,21 @@ type FilterPredicate struct {
 }
 
 type Pred struct {
-	Field string `json:"field"`
-	Query string `json:"query"`
-	State State  `json:"state"`
-	Type  string `json:"_type"`
+	Preds []Pred `json:"preds,omitempty"`
+	Field string `json:"field,omitempty"`
+	Query string `json:"query,omitempty"`
+	State *State `json:"state,omitempty"`
+	Type  string `json:"_type,omitempty"`
 }
 
 type Predicate struct {
-	Pred Pred   `json:"pred"`
-	Type string `json:"_type"`
+	Pred  *Pred  `json:"pred,omitempty"`
+	Preds []Pred `json:"preds,omitempty"`
+	Type  string `json:"_type,omitempty"`
 }
 
 type State struct {
-	Type string `json:"_type"`
+	Type string `json:"_type,omitempty"`
 }
 
 //user group create related models
@@ -253,7 +255,7 @@ type Condition struct {
 }
 
 type ConditionGroup struct {
-	Condition []Condition `json:"Condition"`
+	Conditions []Condition `json:"Conditions"`
 }
 
 type Permission struct {
@@ -265,10 +267,10 @@ type Permission struct {
 }
 
 type CreateUserGroupRequest struct {
-	AuthToken  string
-	ID         string
-	Name       string
-	Permission []Permission `json:"GroupIds"`
+	AuthToken   string
+	ID          string
+	Name        string
+	Permissions []Permission
 }
 
 type UserInfoBlock struct {

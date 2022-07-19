@@ -36,12 +36,41 @@ func testAccUserGroupConfig(groupName string) string {
 		%s
 	    resource "chaossearch_user_group" "user_group_create" {
 			name = "%s"
-			permissions {
-				effect    = "Allow"
-				actions    = ["*"]
-				resources = ["*"]
-				version   = "1.2"
-			}
+			permissions = jsonencode([
+				{
+					"Actions"   = ["ui:analytics"]
+					"Condition" = {
+						"Conditions" = null
+					},
+					"Effect"    = "Allow"
+					"Resources" = ["*"]
+					"Version"   = "1.0"
+				},
+				{
+					"Actions"   = ["ui:storage"]
+					"Condition" = {
+						"Conditions" = [
+							{
+								"Equals" = {
+									"chaos:document/attributes.title" = ""
+								},
+								"Like" = {
+									"chaos:document/attributes.title" = ""
+								},
+								"NotEquals" = {
+									"chaos:document/attributes.title" = ""
+								},
+								"StartsWith" = {
+									"chaos:document/attributes.title" = "test"
+								}
+							},
+						]
+					}
+					"Effect"    = "Allow",
+					"Resources" = ["*"]
+					"Version"   = "1.0"
+				},
+			])
 		}
 	`, testAccProviderConfigBlock(), groupName)
 }

@@ -15,7 +15,7 @@ func (c *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest)
 	}
 
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/Bucket/model", c.config.URL),
+		Url:         fmt.Sprintf("%s/Bucket/model", c.Config.URL),
 		RequestType: POST,
 		AuthToken:   req.AuthToken,
 		Body:        bodyAsBytes,
@@ -36,7 +36,7 @@ func (c *CSClient) CreateIndexModel(ctx context.Context, req *IndexModelRequest)
 func (c *CSClient) DeleteIndexModel(ctx context.Context, indexName, authToken string) error {
 	if indexName != "" {
 		httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-			Url:         fmt.Sprintf("%s/V1/%s", c.config.URL, indexName),
+			Url:         fmt.Sprintf("%s/V1/%s", c.Config.URL, indexName),
 			RequestType: DELETE,
 			AuthToken:   authToken,
 		})
@@ -54,7 +54,7 @@ func (c *CSClient) DeleteIndexModel(ctx context.Context, indexName, authToken st
 func (c *CSClient) ReadIndexModel(ctx context.Context, bucketName, authToken string) (*ListBucketResponse, error) {
 	var listBucketResponse ListBucketResponse
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf(`%s/V1/%s?list-type=2&delimiter=/&max-keys=100`, c.config.URL, bucketName),
+		Url:         fmt.Sprintf(`%s/V1/%s?list-type=2&delimiter=/&max-keys=100`, c.Config.URL, bucketName),
 		RequestType: GET,
 		AuthToken:   authToken,
 		Headers: map[string]string{
@@ -77,7 +77,7 @@ func (c *CSClient) ReadIndexModel(ctx context.Context, bucketName, authToken str
 func (c *CSClient) CheckIndexModel(ctx context.Context, bucketName, authToken string) (*IndexStatusResponse, error) {
 	var indexStatusResponse IndexStatusResponse
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/Bucket/index/name/%s?state=true", c.config.URL, bucketName),
+		Url:         fmt.Sprintf("%s/Bucket/index/name/%s?state=true", c.Config.URL, bucketName),
 		RequestType: GET,
 		AuthToken:   authToken,
 	})

@@ -25,50 +25,79 @@ type ClientRequest struct {
 	Headers     map[string]string
 }
 
-func (cr *ClientRequest) constructRequest(ctx context.Context) (*http.Request, error) {
-	var httpReq *http.Request
+func (cr *ClientRequest) constructRequest(ctx context.Context, config Configuration) (*http.Request, error) {
 	var routeToken string
-	var msg string
-	var err error
-
-	if cr.Body == nil {
-		httpReq, err = http.NewRequestWithContext(ctx, cr.RequestType, cr.Url, nil)
-	} else {
-		httpReq, err = http.NewRequestWithContext(ctx, cr.RequestType, cr.Url, bytes.NewReader(cr.Body))
-	}
-
+	httpReq, err := cr.newRequest(ctx)
 	if err != nil {
 		return nil, utils.CreateRequestError(err)
 	}
 
-	claims := jwt.MapClaims{}
-	_, _, err = new(jwt.Parser).ParseUnverified(cr.AuthToken, claims)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to parse JWT => Error: %s", err)
-	}
-
-	if cr.isAdminAPI(httpReq.URL.Path) {
-		routeToken = "login"
+	if config.KeyAuthEnabled {
+		return cr.constructHeaders(
+			config.AccessKeyID,
+			config.SecretAccessKey,
+			config.UserID,
+			httpReq,
+		), nil
 	} else {
-		routeToken = claims["external_id"].(string)
-	}
+		claims := jwt.MapClaims{}
+		_, _, err = new(jwt.Parser).ParseUnverified(cr.AuthToken, claims)
+		if err != nil {
+			return nil, fmt.Errorf(`
+			Failed to parse JWT => Error: %s
+			Note: 
+				This is usually a symptom of failed auth. Please ensure your credentials are correct
+			`, err)
+		}
 
+		if cr.isAdminAPI(httpReq.URL.Path) {
+			routeToken = "login"
+		} else {
+			routeToken = claims["external_id"].(string)
+		}
+
+		return cr.constructHeaders(
+			claims["AccessKeyId"].(string),
+			claims["SecretAccessKey"].(string),
+			routeToken,
+			httpReq,
+		), nil
+	}
+}
+
+func (cr *ClientRequest) newRequest(ctx context.Context) (*http.Request, error) {
+	if cr.Body == nil {
+		return http.NewRequestWithContext(ctx, cr.RequestType, cr.Url, nil)
+	} else {
+		return http.NewRequestWithContext(ctx, cr.RequestType, cr.Url, bytes.NewReader(cr.Body))
+	}
+}
+
+func (cr *ClientRequest) constructHeaders(
+	accessKey,
+	secretAccessKey,
+	routeToken string,
+	httpReq *http.Request,
+) *http.Request {
 	if cr.Headers == nil {
 		cr.Headers = make(map[string]string)
 	}
 
+	if cr.AuthToken != "" {
+		cr.Headers["x-amz-security-token"] = cr.AuthToken
+	}
+
 	dateTime := time.Now().UTC().String()
+	cr.Headers["x-amz-date"] = dateTime
 	cr.Headers["Content-Type"] = "*/*"
 	cr.Headers["x-amz-chaossumo-route-token"] = routeToken
-	cr.Headers["x-amz-date"] = dateTime
-	cr.Headers["x-amz-security-token"] = cr.AuthToken
 	keys := make([]string, 0, len(cr.Headers))
 	for key := range cr.Headers {
 		keys = append(keys, key)
 	}
 
 	sort.Strings(keys)
-	msg = fmt.Sprintf("%s\n\n", cr.RequestType)
+	msg := fmt.Sprintf("%s\n\n", cr.RequestType)
 	for _, key := range keys {
 		if key == "Content-Type" {
 			msg += fmt.Sprintf("%s\n\n", cr.Headers[key])
@@ -80,8 +109,8 @@ func (cr *ClientRequest) constructRequest(ctx context.Context) (*http.Request, e
 	msg += httpReq.URL.Path
 	signature := fmt.Sprintf(
 		"AWS %s:%s",
-		claims["AccessKeyId"].(string),
-		cr.generateSignature(claims["SecretAccessKey"].(string), msg),
+		accessKey,
+		cr.generateSignature(secretAccessKey, msg),
 	)
 
 	cr.Headers["Authorization"] = signature
@@ -91,7 +120,7 @@ func (cr *ClientRequest) constructRequest(ctx context.Context) (*http.Request, e
 		httpReq.Header.Add(header, value)
 	}
 
-	return httpReq, nil
+	return httpReq
 }
 
 func (cr *ClientRequest) generateSignature(secretToken string, payloadBody string) string {
