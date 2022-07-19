@@ -46,12 +46,7 @@ func testAccObjectGroupConfig(bucket string) string {
 			  row_delimiter    = "\n"
 			  header_row       = false
 		  }
-		  interval {
-			  mode   = 0
-			  column = 0
-		  }
 		  index_retention {
-			  for_partition = []
 			  overall       = -1
 		  }
 		  filter {

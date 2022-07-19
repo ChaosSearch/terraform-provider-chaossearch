@@ -3,7 +3,7 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=chaossearch
 NAME=chaossearch
 BINARY=terraform-provider-${NAME}
-VERSION=1.0.4
+VERSION=1.0.5
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 
 default: install

@@ -1,3 +1,9 @@
+## 1.0.5
+
+### Enhancements:
+* docs/resources/*: Documentation has been included for resources
+* provider/resources/objectgroup.go: Removed `interval` and `index_retention.for_partition` for simplicity and redundancy
+
 ## 1.0.4
 
 ### Features:

@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 1.0.4"
+      version = "~> 1.0.5"
       source  = "chaossearch/chaossearch"
     }
   }
@@ -64,12 +64,7 @@ resource "chaossearch_object_group" "create-object-group" {
     row_delimiter    = "\n"
     header_row       = true
   }
-  interval {
-    mode   = 0
-    column = 0
-  }
   index_retention {
-    for_partition = []
     overall       = -1
   }
   filter {
@@ -77,9 +72,6 @@ resource "chaossearch_object_group" "create-object-group" {
       field = "key"
       regex = ".*"
     }
-  }
-  options {
-    ignore_irregular = true
   }
 }
 
