@@ -17,12 +17,7 @@ resource "chaossearch_object_group" "create-object-group" {
     row_delimiter    = "\n"
     header_row       = true
   }
-  interval {
-    mode   = 0
-    column = 0
-  }
   index_retention {
-    for_partition = []
     overall       = -1
   }
   filter {
@@ -35,12 +30,25 @@ resource "chaossearch_object_group" "create-object-group" {
       regex = ".*"
     }
   }
-  options {
-    ignore_irregular = true
-  }
 }
 ```
 
 ## Argument Reference
-
-## Attribute Reference
+* `bucket` - **(Required)** Name of the object group
+* `source` - **(Required)** Name of the bucket where your data is stored
+* `format` - **(Optional)** A config block used for file formatting specifics
+  * `type` - **(Optional)** Specifies the type of file
+  * `column_delimiter` - **(Optional)** Specifies the character for separating columns
+  * `row_delimiter` - **(Optional)** Specifies the character for separating rows
+  * `header_row` - **(Optional)** Specifies if the file includes a header row
+* `index_retention` - **(Optional)** Config block for specifying how long an index is retained
+  * Only applies on update
+  * `overall` - **(Optional)** Takes the amount of days an index is retained
+    * use `-1` for an indefinite amount of time
+* `filter` - **(Optional)** Config block for housing filtering
+  * `prefix_filter`
+    * `field` - **(Required)** What field the filter applies to (usually `key`)
+    * `prefix` - **(Required)** The prefix the field must match for the file
+  * `regex_filter`
+    * `field` - **(Required)** What field the filter applies to (usually `key`)
+    * `regex` - **(Required)** The regex used for filtering files

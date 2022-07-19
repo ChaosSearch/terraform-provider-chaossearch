@@ -76,13 +76,6 @@ func ResourceObjectGroup() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"for_partition": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
 						"overall": {
 							Type:     schema.TypeInt,
 							Optional: true,
@@ -133,7 +126,7 @@ func ResourceObjectGroup() *schema.Resource {
 			},
 			"interval": {
 				Type:     schema.TypeSet,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"column": {
@@ -164,6 +157,7 @@ func ResourceObjectGroup() *schema.Resource {
 			"options": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ignore_irregular": {
@@ -220,9 +214,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	var regexFilterField string
 	var regex string
 	var format *client.Format
-	var interval *client.Interval
 	var indexRetention *client.IndexRetention
-	var options *client.Options
 
 	c := meta.(*models.ProviderMeta).CSClient
 	formatList := data.Get("format").(*schema.Set).List()
@@ -256,55 +248,17 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		}
 	}
 
-	intervalList := data.Get("interval").(*schema.Set).List()
-	if len(intervalList) > 0 {
-		var mode int
-		var column int
-		intervalMap := intervalList[0].(map[string]interface{})
-
-		if intervalMap["mode"] != nil {
-			mode = intervalMap["mode"].(int)
-		}
-
-		if intervalMap["column"] != nil {
-			column = intervalMap["column"].(int)
-		}
-
-		interval = &client.Interval{
-			Mode:   mode,
-			Column: column,
-		}
-	}
-
 	indexList := data.Get("index_retention").(*schema.Set).List()
 	if len(indexList) > 0 {
-		var forPartition []interface{}
 		var overall int
 
 		indexMap := indexList[0].(map[string]interface{})
-		if indexMap["for_partition"] != nil {
-			forPartition = indexMap["for_partition"].([]interface{})
-		}
-
 		if indexMap["overall"] != nil {
 			overall = indexMap["overall"].(int)
 		}
 		indexRetention = &client.IndexRetention{
-			ForPartition: forPartition,
+			ForPartition: []interface{}{},
 			Overall:      overall,
-		}
-	}
-
-	optionsList := data.Get("options").(*schema.Set).List()
-	if len(optionsList) > 0 {
-		var ignore bool
-		optionsMap := optionsList[0].(map[string]interface{})
-		if optionsMap["ignore_irregular"] != nil {
-			ignore = optionsMap["ignore_irregular"].(bool)
-		}
-
-		options = &client.Options{
-			IgnoreIrregular: ignore,
 		}
 	}
 
@@ -354,11 +308,16 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		Bucket:         data.Get("bucket").(string),
 		Source:         data.Get("source").(string),
 		Format:         format,
-		Interval:       interval,
 		IndexRetention: indexRetention,
 		Filter:         filter,
-		Options:        options,
-		Realtime:       false,
+		Options: &client.Options{
+			IgnoreIrregular: true,
+		},
+		Interval: &client.Interval{
+			Mode:   0,
+			Column: 0,
+		},
+		Realtime: false,
 	}
 
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {
