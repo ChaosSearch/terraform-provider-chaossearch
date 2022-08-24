@@ -63,7 +63,7 @@ func testAccViewConfig(viewName, bucketName string) string {
 			index_retention  = -1
 			overwrite        = true
 			sources          = ["%s"]
-			time_field_name  = "@timestamp"
+			time_field_name  = "timestamp"
 			filter {
 			  predicate {
 				type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"

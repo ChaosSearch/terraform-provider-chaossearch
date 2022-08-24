@@ -3,11 +3,13 @@ package resources
 import (
 	"context"
 	"cs-tf-provider/client"
+	"cs-tf-provider/client/utils"
 	"cs-tf-provider/provider/models"
-	"strings"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceObjectGroup() *schema.Resource {
@@ -50,26 +52,55 @@ func ResourceObjectGroup() *schema.Resource {
 			"format": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"column_delimiter": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 						"header_row": {
 							Type:     schema.TypeBool,
 							Optional: true,
+							Computed: true,
 						},
 						"row_delimiter": {
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
+						},
+						"pattern": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"array_flatten_depth": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+						},
+						"strip_prefix": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Computed: true,
+						},
+						"horizontal": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Computed: true,
 						},
 					},
 				},
+			},
+			"live_events": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"index_retention": {
 				Type:     schema.TypeSet,
@@ -85,41 +116,48 @@ func ResourceObjectGroup() *schema.Resource {
 				},
 			},
 			"filter": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"prefix_filter": {
+						"field": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"range": {
 							Type:     schema.TypeSet,
 							Optional: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"field": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"prefix": {
+									"min": {
 										Type:     schema.TypeString,
 										Optional: true,
+										Computed: true,
+									},
+									"max": {
+										Type:     schema.TypeString,
+										Optional: true,
+										Computed: true,
 									},
 								},
 							},
 						},
-						"regex_filter": {
-							Type:     schema.TypeSet,
+						"equals": {
+							Type:     schema.TypeString,
 							Optional: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"field": {
-										Type:     schema.TypeString,
-										Required: true,
-									},
-									"regex": {
-										Type:     schema.TypeString,
-										Optional: true,
-									},
-								},
-							},
+							Computed: true,
+						},
+						"prefix": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"regex": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
 						},
 					},
 				},
@@ -160,10 +198,19 @@ func ResourceObjectGroup() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"compression": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 						"ignore_irregular": {
 							Type:     schema.TypeBool,
 							Optional: true,
 							Default:  true,
+						},
+						"col_types": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringIsJSON,
 						},
 					},
 				},
@@ -188,34 +235,22 @@ func ResourceObjectGroup() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"compression": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"array_flatten_depth": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "",
-			},
 		},
 	}
 
 }
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var prefixFilter *client.PrefixFilter
-	var prefixFilterField string
-	var prefix string
-	var regexFilter *client.RegexFilter
-	var regexFilterField string
-	var regex string
 	var format *client.Format
 	var indexRetention *client.IndexRetention
+	FILTER_FIELDS := []string{
+		"lastModified",
+		"size",
+		"storageClass",
+		"key",
+	}
 
+	rangeFields := []string{FILTER_FIELDS[0], FILTER_FIELDS[1]}
 	c := meta.(*models.ProviderMeta).CSClient
 	formatList := data.Get("format").(*schema.Set).List()
 	if len(formatList) > 0 {
@@ -262,44 +297,92 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		}
 	}
 
-	filterSet := data.Get("filter").(*schema.Set)
-	if filterSet.Len() > 0 {
-		var prefixMap map[string]interface{}
-		filterList := data.Get("filter").(*schema.Set).List()[0]
-		filterMap := filterList.(map[string]interface{})
+	filters := []client.Filter{}
+	filterList := data.Get("filter").([]interface{})
+	if len(filterList) > 0 {
+		for _, filterSet := range filterList {
+			filterMap := filterSet.(map[string]interface{})
+			field := filterMap["field"].(string)
 
-		prefixList := filterMap["prefix_filter"].(*schema.Set).List()
-		if len(prefixList) > 0 {
-			prefixMap = prefixList[0].(map[string]interface{})
-			prefixFilterField = prefixMap["field"].(string)
-			prefix = prefixMap["prefix"].(string)
-
-			prefixFilter = &client.PrefixFilter{
-				Field:  prefixFilterField,
-				Prefix: prefix,
+			if !utils.ContainsString(FILTER_FIELDS, field) {
+				return utils.CreateObjectGroupError(
+					fmt.Sprintf(`Invalid field supplied: %s Acceptable values are: %v`, field, FILTER_FIELDS),
+				)
 			}
-		} else {
-			prefixFilter = nil
-		}
 
-		regexList := filterMap["regex_filter"].(*schema.Set).List()
-		if len(regexList) > 0 {
-			regexMap := regexList[0].(map[string]interface{})
-			regexFilterField = regexMap["field"].(string)
-			regex = regexMap["regex"].(string)
+			rangeList := filterMap["range"].(*schema.Set).List()
+			equals := filterMap["equals"].(string)
+			regex := filterMap["regex"].(string)
+			prefix := filterMap["prefix"].(string)
 
-			regexFilter = &client.RegexFilter{
-				Field: regexFilterField,
-				Regex: regex,
+			if len(rangeList) > 0 && utils.ContainsString(rangeFields, field) {
+				return utils.CreateObjectGroupError(`Range is currently not supported`)
+				/*
+					rangeMap := rangeList[0].(map[string]interface{})
+					filters = append(filters, client.Filter{
+						Field: field,
+						Range: client.Range{
+							Min: rangeMap["min"].(string),
+						},
+					})
+
+					filters = append(filters, client.Filter{
+						Field: field,
+						Range: client.Range{
+							Max: rangeMap["max"].(string),
+						},
+					})
+				*/
+			} else if len(rangeList) > 0 && !utils.ContainsString(rangeFields, field) {
+				return utils.CreateObjectGroupError(
+					fmt.Sprintf(`Range used with incompatible field. Range can only be used with %v`, rangeFields),
+				)
 			}
-		} else {
-			regexFilter = nil
+
+			if field == FILTER_FIELDS[2] && equals != "" {
+				filters = append(filters, client.Filter{
+					Field:  field,
+					Equals: equals,
+				})
+			} else if field == FILTER_FIELDS[2] && equals == "" {
+				return utils.CreateObjectGroupError("'storageClass' field must be used with equals param")
+			}
+
+			if field == FILTER_FIELDS[3] && regex == "" && prefix == "" {
+				return utils.CreateObjectGroupError("'key' field requires either regex or prefix be defined")
+			}
+
+			if field == FILTER_FIELDS[3] && regex != "" && prefix != "" {
+				return utils.CreateObjectGroupError(
+					"'key' field requires only one of regex or prefix to be defined \n" +
+						"Note: Break these out into separate filter blocks. One containing regex and the other with prefix",
+				)
+			}
+
+			if field == FILTER_FIELDS[3] && regex != "" {
+				filters = append(filters, client.Filter{
+					Field: field,
+					Regex: regex,
+				})
+			}
+
+			if field == FILTER_FIELDS[3] && prefix != "" {
+				filters = append(filters, client.Filter{
+					Field:  field,
+					Prefix: prefix,
+				})
+			}
 		}
 	}
 
-	filter := &client.Filter{
-		PrefixFilter: prefixFilter,
-		RegexFilter:  regexFilter,
+	options := &client.Options{
+		IgnoreIrregular: true,
+	}
+
+	optionsList := data.Get("options").(*schema.Set).List()
+	if len(optionsList) > 0 {
+		optionsMap := optionsList[0].(map[string]interface{})
+		options.Compression = optionsMap["compression"].(string)
 	}
 
 	tokenValue := meta.(*models.ProviderMeta).Token
@@ -309,10 +392,9 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		Source:         data.Get("source").(string),
 		Format:         format,
 		IndexRetention: indexRetention,
-		Filter:         filter,
-		Options: &client.Options{
-			IgnoreIrregular: true,
-		},
+		Filter:         filters,
+		LiveEvents:     data.Get("live_events").(string),
+		Options:        options,
 		Interval: &client.Interval{
 			Mode:   0,
 			Column: 0,
@@ -328,8 +410,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var prefixFilterMap = map[string]string{}
-	var regexFilterMap = map[string]string{}
+	var filters = []map[string]interface{}{}
 
 	diags := diag.Diagnostics{}
 	c := meta.(*models.ProviderMeta).CSClient
@@ -355,32 +436,26 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 			filterMap := filter.(map[string]interface{})
 			for key, val := range filterMap {
 				if _, ok := filterMap["prefix"]; ok {
-					prefixFilterMap[key] = val.(string)
+					filters = append(filters, map[string]interface{}{
+						"field":  key,
+						"prefix": val.(string),
+					})
 				} else if _, ok := filterMap["regex"]; ok {
-					regexFilterMap[key] = val.(string)
+					filters = append(filters, map[string]interface{}{
+						"field": key,
+						"regex": val.(string),
+					})
+				} else if _, ok := filterMap["equals"]; ok {
+					filters = append(filters, map[string]interface{}{
+						"field":  key,
+						"equals": val.(string),
+					})
 				}
 			}
 		}
 	}
 
-	filterArr := []interface{}{}
-	if len(prefixFilterMap) > 0 {
-		filterArr = append(filterArr, map[string]interface{}{
-			"prefix_filter": []interface{}{
-				prefixFilterMap,
-			},
-		})
-	}
-
-	if len(regexFilterMap) > 0 {
-		filterArr = append(filterArr, map[string]interface{}{
-			"regex_filter": []interface{}{
-				regexFilterMap,
-			},
-		})
-	}
-
-	err = data.Set("filter", filterArr)
+	err = data.Set("filter", filters)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -388,10 +463,11 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	if resp.Format != nil {
 		err = data.Set("format", []interface{}{
 			map[string]interface{}{
-				"type":             resp.Format.Type,
-				"header_row":       resp.Format.HeaderRow,
-				"column_delimiter": resp.Format.ColumnDelimiter,
-				"row_delimiter":    resp.Format.RowDelimiter,
+				"type":                resp.Format.Type,
+				"header_row":          resp.Format.HeaderRow,
+				"column_delimiter":    resp.Format.ColumnDelimiter,
+				"row_delimiter":       resp.Format.RowDelimiter,
+				"array_flatten_depth": resp.ArrayFlattenDepth,
 			},
 		})
 
@@ -429,33 +505,10 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		err = data.Set("options", []interface{}{
 			map[string]interface{}{
 				"ignore_irregular": resp.Options.IgnoreIrregular,
+				"compression":      resp.Compression,
 			},
 		})
 
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if strings.ToLower(resp.Compression) == "none" {
-		err = data.Set("compression", "")
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	} else {
-		err = data.Set("compression", resp.Compression)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if resp.ArrayFlattenDepth == nil {
-		err = data.Set("array_flatten_depth", -1)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	} else {
-		err = data.Set("array_flatten_depth", resp.ArrayFlattenDepth)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -508,8 +561,7 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	if indexRetention == 0 || indexRetention < -1 {
-		return diag.Errorf(`
-			Failure Updating Object Group => Invalid Index Retention
+		return diag.Errorf(`Failure Updating Object Group => Invalid Index Retention
 			Note:
 				index_retention.overall cannot == 0 or < -1 during update
 		`)
@@ -517,8 +569,7 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 
 	activeIndex := data.Get("target_active_index").(int)
 	if activeIndex == 0 || activeIndex < -1 {
-		return diag.Errorf(`
-			Failure Updating Object Group => Invalid Active Index
+		return diag.Errorf(`Failure Updating Object Group => Invalid Active Index
 			Note:
 				target_active_index cannot == 0 or < -1 during update
 				This value is optional on create, but required on update.

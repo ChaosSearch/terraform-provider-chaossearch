@@ -104,14 +104,15 @@ func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroup
 }
 
 func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, error) {
-	var filter []interface{}
-	var indexRetention, format, options, interval map[string]interface{}
-	if req.Filter.PrefixFilter != nil {
-		filter = append(filter, req.Filter.PrefixFilter)
-	}
+	var indexRetention,
+		format,
+		options,
+		interval map[string]interface{}
 
-	if req.Filter.RegexFilter != nil {
-		filter = append(filter, req.Filter.RegexFilter)
+	filters := []map[string]interface{}{}
+	rangeFilters := []string{
+		"lastModified",
+		"size",
 	}
 
 	if req.IndexRetention != nil {
@@ -134,6 +135,10 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		options = map[string]interface{}{
 			"ignoreIrregular": req.Options.IgnoreIrregular,
 		}
+
+		if req.Options.Compression != "" {
+			options["compression"] = req.Options.Compression
+		}
 	}
 
 	if req.Interval != nil {
@@ -143,15 +148,43 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		}
 	}
 
+	if len(req.Filter) > 0 {
+		for _, filter := range req.Filter {
+			filterMap := map[string]interface{}{
+				"field": filter.Field,
+			}
+
+			if utils.ContainsString(rangeFilters, filter.Field) {
+				filterMap["range"] = filter.Range
+			} else {
+				if filter.Field == "storageClass" {
+					filterMap["equals"] = filter.Equals
+				}
+				if filter.Field == "key" && filter.Prefix != "" {
+					filterMap["prefix"] = filter.Prefix
+				}
+				if filter.Field == "key" && filter.Regex != "" {
+					filterMap["regex"] = filter.Regex
+				}
+			}
+
+			filters = append(filters, filterMap)
+		}
+	}
+
 	body := map[string]interface{}{
 		"bucket":         req.Bucket,
 		"source":         req.Source,
 		"format":         format,
-		"filter":         filter,
+		"filter":         filters,
 		"indexRetention": indexRetention,
 		"options":        options,
 		"interval":       interval,
 		"realtime":       req.Realtime,
+	}
+
+	if req.LiveEvents != "" {
+		body["liveEvents"] = req.LiveEvents
 	}
 
 	bodyAsBytes, err := json.Marshal(body)

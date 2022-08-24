@@ -12,6 +12,10 @@ func (c *CSClient) ListBuckets(ctx context.Context, authToken string) (*ListBuck
 		Url:         fmt.Sprintf("%s/V1/", c.Config.URL),
 		RequestType: GET,
 		AuthToken:   authToken,
+		Headers: map[string]string{
+			"x-amz-chaossumo-bucket-tagging":   "true",
+			"x-amz-chaossumo-bucket-transform": "exclude-indexes",
+		},
 	})
 
 	if err != nil {

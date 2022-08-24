@@ -50,10 +50,12 @@ func testAccObjectGroupConfig(bucket string) string {
 			  overall       = -1
 		  }
 		  filter {
-			  regex_filter {
-			    field = "key"
-			    regex = ".*"
-			  }
+			field = "key"
+			prefix = "ec"
+		  }
+		  filter {
+			field = "key"
+			regex = ".*"
 		  }
 		  options {
 			  ignore_irregular = true

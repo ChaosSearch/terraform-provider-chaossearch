@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceView() *schema.Resource {
@@ -19,81 +20,74 @@ func DataSourceView() *schema.Resource {
 			"bucket": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: false,
 			},
 			"cacheable": {
 				Type:     schema.TypeBool,
-				ForceNew: false,
-				Optional: true,
+				Computed: true,
 			},
 			"case_insensitive": {
 				Type:     schema.TypeBool,
-				ForceNew: false,
-				Optional: true,
+				Computed: true,
 			},
 			"type": {
 				Type:     schema.TypeString,
-				ForceNew: false,
-				Optional: true,
+				Computed: true,
 			},
 			"id": {
 				Type:     schema.TypeString,
-				ForceNew: false,
-				Optional: true,
+				Computed: true,
 			},
 			"index_pattern": {
 				Type:     schema.TypeString,
-				ForceNew: false,
-				Optional: true,
+				Computed: true,
 			},
 			"time_field_name": {
 				Type:     schema.TypeString,
-				ForceNew: false,
-				Optional: true,
+				Computed: true,
 			},
 			"filter": {
 				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"predicate": {
 							Type:     schema.TypeSet,
-							Required: true,
-							ForceNew: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
+									"preds": {
+										Type:     schema.TypeList,
+										Computed: true,
+										Elem: &schema.Schema{
+											Type:         schema.TypeString,
+											ValidateFunc: validation.StringIsJSON,
+										},
+									},
 									"pred": {
 										Type:     schema.TypeSet,
-										Required: true,
-										ForceNew: true,
+										Computed: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"field": {
 													Type:     schema.TypeString,
-													Optional: true,
-													ForceNew: true,
+													Computed: true,
 												},
 												"type": {
 													Type:     schema.TypeString,
-													Optional: true,
-													ForceNew: true,
+													Computed: true,
 												},
 												"query": {
 													Type:     schema.TypeString,
-													Optional: true,
-													ForceNew: true,
+													Computed: true,
 												},
 												"state": {
 													Type:     schema.TypeSet,
-													Required: true,
-													ForceNew: true,
+													Computed: true,
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"type": {
 																Type:     schema.TypeString,
-																Optional: true,
-																ForceNew: true,
+																Computed: true,
 															},
 														},
 													},
@@ -103,8 +97,7 @@ func DataSourceView() *schema.Resource {
 									},
 									"type": {
 										Type:     schema.TypeString,
-										Optional: true,
-										ForceNew: true,
+										Computed: true,
 									},
 								},
 							},
@@ -114,14 +107,12 @@ func DataSourceView() *schema.Resource {
 			},
 			"metadata": {
 				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"creation_date": {
 							Type:     schema.TypeInt,
-							Required: true,
-							ForceNew: true,
+							Computed: true,
 						},
 					},
 				},
@@ -129,20 +120,23 @@ func DataSourceView() *schema.Resource {
 			"transforms": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"sources": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"region_availability": {
 				Type:     schema.TypeList,
 				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"array_flatten_depth": {
 				Type:     schema.TypeInt,
@@ -182,11 +176,11 @@ func DataSourceViews() *schema.Resource {
 							Computed: true,
 						},
 						"case_insensitive": {
-							Type:     schema.TypeBool,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"index_retention": {
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"bucket_type": {
@@ -194,7 +188,7 @@ func DataSourceViews() *schema.Resource {
 							Computed: true,
 						},
 						"visible": {
-							Type:     schema.TypeBool,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"time_field": {
@@ -241,7 +235,7 @@ func dataSourceViewsRead(ctx context.Context, data *schema.ResourceData, meta in
 func GetBucketData(clientResponse *client.ListBucketsResponse) []map[string]interface{} {
 	result := make([]map[string]interface{}, len(clientResponse.BucketsCollection.Buckets))
 	for i, bucket := range clientResponse.BucketsCollection.Buckets {
-		tagMap := convertTagSetToMap(bucket.Tagging.TagSet)
+		tagMap := convertTagSetToMap(bucket.Tags)
 		result[i] = map[string]interface{}{
 			"name":                 bucket.Name,
 			"creation_date":        bucket.CreationDate,

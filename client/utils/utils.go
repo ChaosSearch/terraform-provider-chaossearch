@@ -20,8 +20,7 @@ func CloseResponseError(err error) error {
 }
 
 func ResponseCodeError(res *http.Response, req *http.Request, bodyAsBytes []byte, respAsBytes []byte) error {
-	return fmt.Errorf(`
-			Client returned with a non 2xx status code => 
+	return fmt.Errorf(`Client returned with a non 2xx status code => 
 			Code: %d
 			Method: %s
 			URL: %s
@@ -56,10 +55,24 @@ func NormalizingJsonError(err error) error {
 	return fmt.Errorf("Failed to normalize JSON structure => Error: %s", err)
 }
 
+func CreateObjectGroupError(msg string) diag.Diagnostics {
+	return diag.Errorf("Failure Creating Object Group => %s", msg)
+}
+
 func ValidateAuthType(keyAuthEnabled bool) error {
 	if keyAuthEnabled {
 		return fmt.Errorf("Failed to authenticate => API Keys used with incompatible resource")
 	}
 
 	return nil
+}
+
+func ContainsString(arr []string, str string) bool {
+	for _, a := range arr {
+		if a == str {
+			return true
+		}
+	}
+
+	return false
 }

@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 1.0.5"
+      version = "~> 1.0.6"
       source  = "chaossearch/chaossearch"
     }
   }
@@ -58,6 +58,7 @@ resource "chaossearch_sub_account" "sub-account" {
 resource "chaossearch_object_group" "create-object-group" {
   bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
+  //live_events = "test"
   format {
     type             = "CSV"
     column_delimiter = ","
@@ -67,12 +68,25 @@ resource "chaossearch_object_group" "create-object-group" {
   index_retention {
     overall       = -1
   }
+
+  // Filter options:
   filter {
-    regex_filter {
-      field = "key"
-      regex = ".*"
-    }
+    field = "key"
+    prefix = "ec"
   }
+  filter {
+    field = "key"
+    regex = ".*"
+  }
+  /*
+  filter {
+    field = "storageClass"
+    equals = "STANDARD"
+  }
+  options {
+    compression = "GZIP"
+  }
+  */
 }
 
 resource "chaossearch_index_model" "model" {
@@ -90,7 +104,7 @@ resource "chaossearch_view" "view-pred" {
   index_retention  = -1
   overwrite        = true
   sources          = ["tf-provider"]
-  time_field_name  = "@timestamp"
+  time_field_name  = "timestamp"
   filter {
     predicate {
       type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
@@ -116,7 +130,7 @@ resource "chaossearch_view" "view-preds" {
   index_retention  = -1
   overwrite        = true
   sources          = ["tf-provider"]
-  time_field_name  = "@timestamp"
+  time_field_name  = "timestamp"
   filter {
     predicate {
       type = "chaossumo.query.NIRFrontend.Request.Predicate.Or"
@@ -149,7 +163,6 @@ resource "chaossearch_view" "view-preds" {
   ]
 }
 
-
 data "chaossearch_retrieve_sub_accounts" "sub_accounts" {}
 
 output "object_group_retrieve_sub_accounts" {
@@ -165,6 +178,12 @@ data "chaossearch_retrieve_object_group" "object-group" {
 
 output "object_group" {
   value = data.chaossearch_retrieve_object_group.object-group
+}
+
+data "chaossearch_retrieve_object_groups" "object-groups" {}
+
+output "object-groups" {
+  value = data.chaossearch_retrieve_object_groups.object-groups
 }
 
 data "chaossearch_retrieve_view" "retrieve_view" {

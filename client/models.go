@@ -1,26 +1,22 @@
 package client
 
-type Bucket struct {
-	Name         string  `xml:"Name"`
-	CreationDate string  `xml:"CreationDate"`
-	Tagging      Tagging `xml:"Tagging"`
-}
-
-type Tagging struct {
-	TagSet []Tag `xml:"TagSet"`
-}
-
-type Tag struct {
-	Key   string      `xml:"Key"`
-	Value interface{} `xml:"Value"`
+type ListBucketsResponse struct {
+	BucketsCollection BucketCollection `xml:"Buckets"`
 }
 
 type BucketCollection struct {
 	Buckets []Bucket `xml:"Bucket"`
 }
 
-type ListBucketsResponse struct {
-	BucketsCollection BucketCollection `xml:"Buckets"`
+type Bucket struct {
+	Name         string `xml:"Name"`
+	CreationDate string `xml:"CreationDate"`
+	Tags         []Tag  `xml:"Tagging>TagSet>Tag"`
+}
+
+type Tag struct {
+	Key   string `xml:"Key"`
+	Value string `xml:"Value"`
 }
 
 type ListBucketResponse struct {
@@ -90,9 +86,10 @@ type CreateObjectGroupRequest struct {
 	Format         *Format
 	Interval       *Interval
 	IndexRetention *IndexRetention
-	Filter         *Filter
+	Filter         []Filter
 	Options        *Options
 	Realtime       bool
+	LiveEvents     string
 }
 
 type Format struct {
@@ -113,27 +110,21 @@ type IndexRetention struct {
 }
 
 type Filter struct {
-	PrefixFilter *PrefixFilter
-	RegexFilter  *RegexFilter
-}
-
-type PrefixFilter struct {
 	Field  string `json:"field"`
-	Prefix string `json:"prefix"`
+	Prefix string `json:"prefix,omitempty"`
+	Regex  string `json:"regex,omitempty"`
+	Equals string `json:"equals,omitempty"`
+	Range  Range  `json:"range,omitempty"`
 }
 
-type RegexFilter struct {
-	Field string `json:"field"`
-	Regex string `json:"regex"`
+type Range struct {
+	Min string `json:"min,omitempty"`
+	Max string `json:"max,omitempty"`
 }
 
 type Options struct {
 	IgnoreIrregular bool
-}
-
-type UpdateIndexingStateRequest struct {
-	ObjectGroupName string
-	Active          bool
+	Compression     string
 }
 
 type DeleteObjectGroupRequest struct {
@@ -153,15 +144,6 @@ type UpdateObjectGroupRequest struct {
 	IndexRetention        int    `json:"indexRetention"`
 	TargetActiveIndex     int    `json:"targetActiveIndex"`
 	LiveEventsParallelism int    `json:"liveEventsParallelism"`
-}
-
-type ReadIndexingStateRequest struct {
-	ObjectGroupName string
-}
-
-type IndexingState struct {
-	ObjectGroupName string
-	Active          bool
 }
 
 type CreateViewRequest struct {
@@ -201,10 +183,6 @@ type ReadViewResponse struct {
 	FilterJSON         string
 	Pattern            string
 	KeepOriginal       bool
-}
-
-type RequestHeaders struct {
-	Headers map[string]interface{}
 }
 
 type FilterPredicate struct {
@@ -287,12 +265,6 @@ type CreateSubAccountRequest struct {
 	HoCon         []interface{} `json:"HoCon"`
 }
 
-type ImportBucketRequest struct {
-	AuthToken  string
-	Bucket     string `json:"bucket"`
-	HideBucket bool   `json:"hideBucket"`
-}
-
 type DeleteSubAccountRequest struct {
 	AuthToken string
 	Username  string
@@ -358,17 +330,6 @@ type IndexModelRequest struct {
 type IndexModelResponse struct {
 	BucketName string `json:"BucketName"`
 	Result     bool   `json:"Result"`
-}
-
-type IndexMetadataRequest struct {
-	AuthToken  string
-	BucketName string `json:"BucketNames"`
-}
-
-type IndexMetadataResponse struct {
-	Bucket        string  `json:"Bucket"`
-	LastIndexTime float64 `json:"LastIndexTime"`
-	State         string  `json:"State"`
 }
 
 type IndexStatusResponse struct {

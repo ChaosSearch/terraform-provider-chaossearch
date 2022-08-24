@@ -17,7 +17,7 @@ resource "chaossearch_view" "view" {
   index_retention  = -1
   overwrite        = true
   sources          = ["tf-provider"]
-  time_field_name  = "@timestamp"
+  time_field_name  = "timestamp"
   filter {
     predicate {
       type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
@@ -58,7 +58,7 @@ resource "chaossearch_view" "view-preds" {
   index_retention  = -1
   overwrite        = true
   sources          = ["tf-provider"]
-  time_field_name  = "@timestamp"
+  time_field_name  = "timestamp"
   filter {
     predicate {
       type = "chaossumo.query.NIRFrontend.Request.Predicate.Or"
