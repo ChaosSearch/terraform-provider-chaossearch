@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func SubmitRequestError(requestType string, url string, err error) error {
@@ -75,4 +76,8 @@ func ContainsString(arr []string, str string) bool {
 	}
 
 	return false
+}
+
+func ConvertSetToMap(item interface{}) map[string]interface{} {
+	return item.(*schema.Set).List()[0].(map[string]interface{})
 }

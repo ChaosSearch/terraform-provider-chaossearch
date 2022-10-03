@@ -89,9 +89,9 @@ func testAccUserGroupExists(resourceName string) resource.TestCheckFunc {
 		providerMeta := testAccProvider.Meta().(*models.ProviderMeta)
 		csClient := providerMeta.CSClient
 		ctx := context.Background()
-		req := &client.ReadUserGroupRequest{
+		req := &client.BasicRequest{
 			AuthToken: providerMeta.Token,
-			ID:        res.Primary.ID,
+			Id:        res.Primary.ID,
 		}
 
 		userGroup, err := csClient.ReadUserGroup(ctx, req)

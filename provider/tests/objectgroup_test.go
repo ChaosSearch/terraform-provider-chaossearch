@@ -78,9 +78,9 @@ func testAccObjectGroupExists(resourceName, bucketName string) resource.TestChec
 		providerMeta := testAccProvider.Meta().(*models.ProviderMeta)
 		csClient := providerMeta.CSClient
 		ctx := context.Background()
-		response, err := csClient.ReadObjGroup(ctx, &client.ReadObjGroupReq{
+		response, err := csClient.ReadObjGroup(ctx, &client.BasicRequest{
 			AuthToken: providerMeta.Token,
-			ID:        bucketName,
+			Id:        bucketName,
 		})
 
 		if err != nil {
@@ -101,9 +101,9 @@ func testAccObjectGroupDestroy(s *terraform.State) error {
 	ctx := context.Background()
 
 	for _, res := range s.RootModule().Resources {
-		response, err := csClient.ReadObjGroup(ctx, &client.ReadObjGroupReq{
+		response, err := csClient.ReadObjGroup(ctx, &client.BasicRequest{
 			AuthToken: providerMeta.Token,
-			ID:        res.Primary.ID,
+			Id:        res.Primary.ID,
 		})
 
 		if err == nil {

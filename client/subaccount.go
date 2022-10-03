@@ -28,7 +28,7 @@ func (c *CSClient) CreateSubAccount(ctx context.Context, req *CreateSubAccountRe
 	return nil
 }
 
-func (c *CSClient) DeleteSubAccount(ctx context.Context, req *DeleteSubAccountRequest) error {
+func (c *CSClient) DeleteSubAccount(ctx context.Context, req *BasicRequest) error {
 	bodyAsBytes, err := marshalDeleteSubAccountRequest(req)
 	if err != nil {
 		return err
@@ -69,9 +69,9 @@ func marshalCreateSubAccountRequest(req *CreateSubAccountRequest) ([]byte, error
 	return bodyAsBytes, nil
 }
 
-func marshalDeleteSubAccountRequest(req *DeleteSubAccountRequest) ([]byte, error) {
+func marshalDeleteSubAccountRequest(req *BasicRequest) ([]byte, error) {
 	body := map[string]interface{}{
-		"Username": req.Username,
+		"Username": req.Id,
 	}
 
 	bodyAsBytes, err := json.Marshal(body)

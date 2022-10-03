@@ -295,9 +295,9 @@ func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 	c := meta.(*models.ProviderMeta).CSClient
 
 	tokenValue := meta.(*models.ProviderMeta).Token
-	req := &client.ReadViewRequest{
+	req := &client.BasicRequest{
 		AuthToken: tokenValue,
-		ID:        data.Get("bucket").(string),
+		Id:        data.Get("bucket").(string),
 	}
 
 	resp, err := c.ReadView(ctx, req)
@@ -470,9 +470,9 @@ func resourceViewUpdate(ctx context.Context, data *schema.ResourceData, meta int
 func resourceViewDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
-	deleteViewRequest := &client.DeleteViewRequest{
+	deleteViewRequest := &client.BasicRequest{
 		AuthToken: tokenValue,
-		Name:      data.Get("bucket").(string),
+		Id:        data.Get("bucket").(string),
 	}
 
 	if err := c.DeleteView(ctx, deleteViewRequest); err != nil {

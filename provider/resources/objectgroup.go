@@ -5,6 +5,7 @@ import (
 	"cs-tf-provider/client"
 	"cs-tf-provider/client/utils"
 	"cs-tf-provider/provider/models"
+	"encoding/json"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -383,6 +384,11 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	if len(optionsList) > 0 {
 		optionsMap := optionsList[0].(map[string]interface{})
 		options.Compression = optionsMap["compression"].(string)
+		colTypesString := optionsMap["col_types"].(string)
+		err := json.Unmarshal([]byte(colTypesString), &options.ColTypes)
+		if err != nil {
+			return diag.FromErr(utils.UnmarshalJsonError(err))
+		}
 	}
 
 	tokenValue := meta.(*models.ProviderMeta).Token
@@ -415,8 +421,8 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	diags := diag.Diagnostics{}
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
-	req := &client.ReadObjGroupReq{
-		ID:        data.Get("bucket").(string),
+	req := &client.BasicRequest{
+		Id:        data.Get("bucket").(string),
 		AuthToken: tokenValue,
 	}
 
@@ -595,9 +601,9 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
-	deleteObjectGroupRequest := &client.DeleteObjectGroupRequest{
+	deleteObjectGroupRequest := &client.BasicRequest{
 		AuthToken: tokenValue,
-		Name:      data.Get("bucket").(string),
+		Id:        data.Get("bucket").(string),
 	}
 
 	if err := c.DeleteObjectGroup(ctx, deleteObjectGroupRequest); err != nil {

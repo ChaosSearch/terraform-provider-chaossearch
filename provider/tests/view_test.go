@@ -143,9 +143,9 @@ func testAccViewExists(resourceName, bucketName string) resource.TestCheckFunc {
 		providerMeta := testAccProvider.Meta().(*models.ProviderMeta)
 		csClient := providerMeta.CSClient
 		ctx := context.Background()
-		response, err := csClient.ReadView(ctx, &client.ReadViewRequest{
+		response, err := csClient.ReadView(ctx, &client.BasicRequest{
 			AuthToken: providerMeta.Token,
-			ID:        bucketName,
+			Id:        bucketName,
 		})
 
 		if err != nil {

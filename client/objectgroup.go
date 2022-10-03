@@ -29,10 +29,10 @@ func (c *CSClient) CreateObjectGroup(ctx context.Context, req *CreateObjectGroup
 	return nil
 }
 
-func (c *CSClient) ReadObjGroup(ctx context.Context, req *ReadObjGroupReq) (*ReadObjGroupResp, error) {
+func (c *CSClient) ReadObjGroup(ctx context.Context, req *BasicRequest) (*ReadObjGroupResp, error) {
 	var resp ReadObjGroupResp
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/Bucket/dataset/name/%s", c.Config.URL, req.ID),
+		Url:         fmt.Sprintf("%s/Bucket/dataset/name/%s", c.Config.URL, req.Id),
 		RequestType: GET,
 		AuthToken:   req.AuthToken,
 	})
@@ -87,8 +87,8 @@ func marshalUpdateObjectGroupRequest(req *UpdateObjectGroupRequest) ([]byte, err
 	return bodyAsBytes, nil
 }
 
-func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *DeleteObjectGroupRequest) error {
-	safeObjectGroupName := url.PathEscape(req.Name)
+func (c *CSClient) DeleteObjectGroup(ctx context.Context, req *BasicRequest) error {
+	safeObjectGroupName := url.PathEscape(req.Id)
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
 		Url:         fmt.Sprintf("%s/V1/%s", c.Config.URL, safeObjectGroupName),
 		RequestType: DELETE,
@@ -138,6 +138,10 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 
 		if req.Options.Compression != "" {
 			options["compression"] = req.Options.Compression
+		}
+
+		if req.Options.ColTypes != nil {
+			options["colTypes"] = req.Options.ColTypes
 		}
 	}
 
