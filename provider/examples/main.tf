@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 1.0.5"
+      version = "~> 1.0.6"
       source  = "chaossearch/chaossearch"
     }
   }
@@ -58,6 +58,7 @@ resource "chaossearch_sub_account" "sub-account" {
 resource "chaossearch_object_group" "create-object-group" {
   bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
+  //live_events = "test"
   format {
     type             = "CSV"
     column_delimiter = ","
@@ -67,12 +68,28 @@ resource "chaossearch_object_group" "create-object-group" {
   index_retention {
     overall       = -1
   }
-  filter {
-    regex_filter {
-      field = "key"
-      regex = ".*"
-    }
+
+  options {
+    #compression = "GZIP"
+    col_types = jsonencode({
+      "Period": "Timeval"
+    })
   }
+  // Filter options:
+  filter {
+    field = "key"
+    prefix = "ec"
+  }
+  filter {
+    field = "key"
+    regex = ".*"
+  }
+  /*
+  filter {
+    field = "storageClass"
+    equals = "STANDARD"
+  }
+  */
 }
 
 resource "chaossearch_index_model" "model" {
@@ -90,7 +107,7 @@ resource "chaossearch_view" "view-pred" {
   index_retention  = -1
   overwrite        = true
   sources          = ["tf-provider"]
-  time_field_name  = "@timestamp"
+  time_field_name  = "Period"
   filter {
     predicate {
       type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
@@ -116,7 +133,7 @@ resource "chaossearch_view" "view-preds" {
   index_retention  = -1
   overwrite        = true
   sources          = ["tf-provider"]
-  time_field_name  = "@timestamp"
+  time_field_name  = "Period"
   filter {
     predicate {
       type = "chaossumo.query.NIRFrontend.Request.Predicate.Or"
@@ -149,6 +166,116 @@ resource "chaossearch_view" "view-preds" {
   ]
 }
 
+resource "chaossearch_destination" "dest" {
+  name = "tf-provider-destination"
+  type = "slack"
+  slack {
+    url = "http://slack.com"
+  }
+}
+
+resource "chaossearch_destination" "dest_custom" {
+  name = "tf-provider-destination-custom"
+  type = "custom_webhook"
+  custom_webhook {
+    url = "http://test.com"
+  }
+}
+
+resource "chaossearch_destination" "dest_custom_host" {
+  name = "tf-provider-destination-custom-host"
+  type = "custom_webhook"
+  custom_webhook {
+    scheme = "HTTPS"
+    host = "test.com"
+    path = "/api/test"
+    port = "8080"
+    method = "POST"
+    query_params = jsonencode({
+      "test": "value"
+    })
+    header_params = jsonencode({
+      "Content-Type": "application/json"
+    })
+  }
+}
+
+resource "chaossearch_monitor" "monitor" {
+  name = "tf-provider-monitor"
+  type = "monitor"
+  enabled = true
+  depends_on = [
+    chaossearch_destination.dest,
+    chaossearch_view.view-pred,
+    chaossearch_view.view-preds
+  ]
+  schedule {
+    period {
+      interval = 1
+      unit = "MINUTES"
+    }
+  }
+  inputs {
+    search {
+      indices = [
+        chaossearch_view.view-pred.bucket,
+      ]
+      query = jsonencode({
+        "size": 0,
+        "aggregations": {
+            "when": {
+                "avg": {
+                    "field": "Magnitude"
+                },
+                "meta": null
+            }
+        },
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "range": {
+                            "Period": {
+                                "gte": "{{period_end}}||-1h",
+                                "lte": "{{period_end}}",
+                                "format": "epoch_millis"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+      })
+    }
+  }
+  triggers { // Can have multiple triggers
+    name = "tf-provider-trigger"
+    severity = "1"
+    condition {
+      script {
+        lang = "painless"
+        source = "ctx.results[0].hits.total.value > 1000"
+      }
+    }
+    actions { // Can have multiple actions
+      name = "tf-provider-action"
+      destination_id = chaossearch_destination.dest.id
+      subject_template {
+        lang = "mustache"
+        source = "Monitor {{ctx.monitor.name}} Triggered"
+      }
+      message_template {
+        lang = "mustache"
+        source = "Monitor {{ctx.monitor.name}} just entered alert status. Please investigate the issue.\n- Trigger: {{ctx.trigger.name}}\n- Severity: {{ctx.trigger.severity}}\n- Period start: {{ctx.periodStart}}\n- Period end: {{ctx.periodEnd}}"
+      }
+      throttle_enabled = true
+      throttle {
+        value = 10
+        unit = "MIN"
+      }
+    }
+  }
+}
 
 data "chaossearch_retrieve_sub_accounts" "sub_accounts" {}
 
@@ -165,6 +292,12 @@ data "chaossearch_retrieve_object_group" "object-group" {
 
 output "object_group" {
   value = data.chaossearch_retrieve_object_group.object-group
+}
+
+data "chaossearch_retrieve_object_groups" "object-groups" {}
+
+output "object-groups" {
+  value = data.chaossearch_retrieve_object_groups.object-groups
 }
 
 data "chaossearch_retrieve_view" "retrieve_view" {

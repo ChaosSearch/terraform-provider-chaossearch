@@ -1,3 +1,19 @@
+## 1.0.6
+
+### Features:
+* provider/resources/objectgroup.go: `range` related filters now have support, although currently disabled
+* provider/resources/objectgroup.go: `live_events` are now enabled
+* provider/resources/objectgroup.go: `compression` type is now specifiable in `options`
+* provider/resources/destinations.go: `destinations` are now a supported resource for kibana alerts
+* provider/resources/monitors.go: `monitors` are now a supported resource for kibana alerts
+
+### Enhancements:
+* provider/resources/objectgroup.go: Pull apart `filter` to more reflect API. Extends supported `filter` types
+
+### Bug Fixes
+* client/bucket.go: Pass in bucket tagging header, enables more types on datasources/objectgroup & view
+* provider/resources/objectgroup.go: Change `Compression` from computed to optional, moved into `options` block
+
 ## 1.0.5
 
 ### Enhancements:

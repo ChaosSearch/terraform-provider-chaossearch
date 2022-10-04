@@ -11,6 +11,7 @@ Check out the _Object Group_ documentation here: [Object Group Docs](https://doc
 resource "chaossearch_object_group" "create-object-group" {
   bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
+  live_events = "arn:partition:service:region:account-id:resource-id"
   format {
     type             = "CSV"
     column_delimiter = ","
@@ -21,14 +22,19 @@ resource "chaossearch_object_group" "create-object-group" {
     overall       = -1
   }
   filter {
-    prefix_filter {
-      field = "key"
-      prefix = ".*"
-    }
-    regex_filter {
-      field = "key"
-      regex = ".*"
-    }
+    field = "key"
+    prefix = "ec"
+  }
+  filter {
+    field = "key"
+    regex = ".*"
+  }
+  filter {
+    field = "storageClass"
+    equals = "STANDARD"
+  }
+  options {
+    compression = "GZIP"
   }
 }
 ```
@@ -36,6 +42,7 @@ resource "chaossearch_object_group" "create-object-group" {
 ## Argument Reference
 * `bucket` - **(Required)** Name of the object group
 * `source` - **(Required)** Name of the bucket where your data is stored
+* `live_events` - **(Optional)** The SQS Arn for live event streaming
 * `format` - **(Optional)** A config block used for file formatting specifics
   * `type` - **(Optional)** Specifies the type of file
   * `column_delimiter` - **(Optional)** Specifies the character for separating columns
@@ -46,9 +53,13 @@ resource "chaossearch_object_group" "create-object-group" {
   * `overall` - **(Optional)** Takes the amount of days an index is retained
     * use `-1` for an indefinite amount of time
 * `filter` - **(Optional)** Config block for housing filtering
-  * `prefix_filter`
-    * `field` - **(Required)** What field the filter applies to (usually `key`)
-    * `prefix` - **(Required)** The prefix the field must match for the file
-  * `regex_filter`
-    * `field` - **(Required)** What field the filter applies to (usually `key`)
-    * `regex` - **(Required)** The regex used for filtering files
+  * Note: Make sure that `prefix`, `regex` and `equals` are all broken into their own filter block
+  * `field` - **(Required)** What field the filter applies to
+    * Can be `key` and `storageClass`
+  * `prefix` - **(Optional)** Used with `key` field. The prefix the field must match for the file
+  * `regex` - **(Optional)** Used with `key` field. The regex for filtering files 
+  * `equals` - **(Optional)** Used with `storageClass` field. Supplies the `storageClass` type of the S3 bucket
+    * Can be `STANDARD`, `STANDARD_IA`, `INTELLIGENT_TIERING`, `ONEZONE_IA`, `GLACIER`, `DEEP_ARCHIVE`, `REDUCED_REDUNDANCY`
+* `options` - **(Optional)** A config block for housing advanced settings
+  * `compression` - **(Optional)** Form of file compression being used
+    * Can either be `GZIP` or `SNAPPY`

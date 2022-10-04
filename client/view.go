@@ -29,10 +29,10 @@ func (c *CSClient) CreateView(ctx context.Context, req *CreateViewRequest) error
 	return nil
 }
 
-func (c *CSClient) ReadView(ctx context.Context, req *ReadViewRequest) (*ReadViewResponse, error) {
+func (c *CSClient) ReadView(ctx context.Context, req *BasicRequest) (*ReadViewResponse, error) {
 	var resp ReadViewResponse
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/Bucket/dataset/name/%s", c.Config.URL, req.ID),
+		Url:         fmt.Sprintf("%s/Bucket/dataset/name/%s", c.Config.URL, req.Id),
 		RequestType: GET,
 		AuthToken:   req.AuthToken,
 	})
@@ -49,8 +49,8 @@ func (c *CSClient) ReadView(ctx context.Context, req *ReadViewRequest) (*ReadVie
 	return &resp, nil
 }
 
-func (c *CSClient) DeleteView(ctx context.Context, req *DeleteViewRequest) error {
-	safeViewName := url.PathEscape(req.Name)
+func (c *CSClient) DeleteView(ctx context.Context, req *BasicRequest) error {
+	safeViewName := url.PathEscape(req.Id)
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
 		Url:         fmt.Sprintf("%s/V1/%s", c.Config.URL, safeViewName),
 		RequestType: DELETE,

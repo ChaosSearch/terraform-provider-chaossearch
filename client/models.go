@@ -1,26 +1,22 @@
 package client
 
-type Bucket struct {
-	Name         string  `xml:"Name"`
-	CreationDate string  `xml:"CreationDate"`
-	Tagging      Tagging `xml:"Tagging"`
-}
-
-type Tagging struct {
-	TagSet []Tag `xml:"TagSet"`
-}
-
-type Tag struct {
-	Key   string      `xml:"Key"`
-	Value interface{} `xml:"Value"`
+type ListBucketsResponse struct {
+	BucketsCollection BucketCollection `xml:"Buckets"`
 }
 
 type BucketCollection struct {
 	Buckets []Bucket `xml:"Bucket"`
 }
 
-type ListBucketsResponse struct {
-	BucketsCollection BucketCollection `xml:"Buckets"`
+type Bucket struct {
+	Name         string `xml:"Name"`
+	CreationDate string `xml:"CreationDate"`
+	Tags         []Tag  `xml:"Tagging>TagSet>Tag"`
+}
+
+type Tag struct {
+	Key   string `xml:"Key"`
+	Value string `xml:"Value"`
 }
 
 type ListBucketResponse struct {
@@ -40,14 +36,9 @@ type Contents struct {
 	StorageClass string `xml:"StorageClass"`
 }
 
-type ReadObjGroupReq struct {
+type BasicRequest struct {
 	AuthToken string
-	ID        string
-}
-
-type ReadViewRequest struct {
-	AuthToken string
-	ID        string
+	Id        string
 }
 
 type Metadata struct {
@@ -90,9 +81,10 @@ type CreateObjectGroupRequest struct {
 	Format         *Format
 	Interval       *Interval
 	IndexRetention *IndexRetention
-	Filter         *Filter
+	Filter         []Filter
 	Options        *Options
 	Realtime       bool
+	LiveEvents     string
 }
 
 type Format struct {
@@ -113,37 +105,22 @@ type IndexRetention struct {
 }
 
 type Filter struct {
-	PrefixFilter *PrefixFilter
-	RegexFilter  *RegexFilter
-}
-
-type PrefixFilter struct {
 	Field  string `json:"field"`
-	Prefix string `json:"prefix"`
+	Prefix string `json:"prefix,omitempty"`
+	Regex  string `json:"regex,omitempty"`
+	Equals string `json:"equals,omitempty"`
+	Range  Range  `json:"range,omitempty"`
 }
 
-type RegexFilter struct {
-	Field string `json:"field"`
-	Regex string `json:"regex"`
+type Range struct {
+	Min string `json:"min,omitempty"`
+	Max string `json:"max,omitempty"`
 }
 
 type Options struct {
 	IgnoreIrregular bool
-}
-
-type UpdateIndexingStateRequest struct {
-	ObjectGroupName string
-	Active          bool
-}
-
-type DeleteObjectGroupRequest struct {
-	AuthToken string
-	Name      string
-}
-
-type DeleteViewRequest struct {
-	AuthToken string
-	Name      string
+	Compression     string
+	ColTypes        map[string]string
 }
 
 type UpdateObjectGroupRequest struct {
@@ -153,15 +130,6 @@ type UpdateObjectGroupRequest struct {
 	IndexRetention        int    `json:"indexRetention"`
 	TargetActiveIndex     int    `json:"targetActiveIndex"`
 	LiveEventsParallelism int    `json:"liveEventsParallelism"`
-}
-
-type ReadIndexingStateRequest struct {
-	ObjectGroupName string
-}
-
-type IndexingState struct {
-	ObjectGroupName string
-	Active          bool
 }
 
 type CreateViewRequest struct {
@@ -201,10 +169,6 @@ type ReadViewResponse struct {
 	FilterJSON         string
 	Pattern            string
 	KeepOriginal       bool
-}
-
-type RequestHeaders struct {
-	Headers map[string]interface{}
 }
 
 type FilterPredicate struct {
@@ -287,17 +251,6 @@ type CreateSubAccountRequest struct {
 	HoCon         []interface{} `json:"HoCon"`
 }
 
-type ImportBucketRequest struct {
-	AuthToken  string
-	Bucket     string `json:"bucket"`
-	HideBucket bool   `json:"hideBucket"`
-}
-
-type DeleteSubAccountRequest struct {
-	AuthToken string
-	Username  string
-}
-
 type ListUsersResponse struct {
 	Users []User `json:"Users"`
 }
@@ -339,16 +292,6 @@ type UserGroup struct {
 	Permissions []Permission `json:"permissions"`
 }
 
-type ReadUserGroupRequest struct {
-	AuthToken string
-	ID        string
-}
-
-type DeleteUserGroupRequest struct {
-	AuthToken string
-	ID        string
-}
-
 type IndexModelRequest struct {
 	AuthToken  string
 	BucketName string `json:"BucketName"`
@@ -360,17 +303,106 @@ type IndexModelResponse struct {
 	Result     bool   `json:"Result"`
 }
 
-type IndexMetadataRequest struct {
-	AuthToken  string
-	BucketName string `json:"BucketNames"`
-}
-
-type IndexMetadataResponse struct {
-	Bucket        string  `json:"Bucket"`
-	LastIndexTime float64 `json:"LastIndexTime"`
-	State         string  `json:"State"`
-}
-
 type IndexStatusResponse struct {
 	Indexed bool `json:"indexed"`
+}
+
+type CreateMonitorRequest struct {
+	Id         string      `json:"-"`
+	AuthToken  string      `json:"-"`
+	Name       string      `json:"name"`
+	Type       string      `json:"type"`
+	Enabled    bool        `json:"enabled"`
+	Schedule   Schedule    `json:"schedule"`
+	Inputs     []Input     `json:"inputs"`
+	Triggers   []Trigger   `json:"triggers"`
+	UIMetadata interface{} `json:"ui_metadata"`
+}
+
+type Schedule struct {
+	Period Period `json:"period"`
+}
+
+type Period struct {
+	Interval int    `json:"interval"`
+	Unit     string `json:"unit"`
+}
+
+type Input struct {
+	Search Search `json:"search"`
+}
+
+type Search struct {
+	Indices []string    `json:"indices"`
+	Query   interface{} `json:"query"`
+}
+
+type Trigger struct {
+	Name      string           `json:"name"`
+	Severity  string           `json:"severity"`
+	MinTime   string           `json:"min_time_between_executions"`
+	Condition MonitorCondition `json:"condition"`
+	Actions   []Action         `json:"actions"`
+}
+
+type MonitorCondition struct {
+	Script Script `json:"script"`
+}
+
+type Script struct {
+	Lang   string `json:"lang"`
+	Source string `json:"source"`
+}
+
+type Action struct {
+	Name            string   `json:"name"`
+	DestinationId   string   `json:"destination_id"`
+	SubjectTemplate Script   `json:"subject_template"`
+	MessageTemplate Script   `json:"message_template"`
+	ThrottleEnabled bool     `json:"throttle_enabled,omitempty"`
+	Throttle        Throttle `json:"throttle,omitempty"`
+}
+
+type Throttle struct {
+	Value int    `json:"value"`
+	Unit  string `json:"unit"`
+}
+
+type CreateMonitorResponse struct {
+	Ok   bool        `json:"ok"`
+	Resp MonitorResp `json:"resp"`
+}
+
+type MonitorResp struct {
+	Id string `json:"_id"`
+}
+
+type CreateDestinationRequest struct {
+	Id            string         `json:"-"`
+	AuthToken     string         `json:"-"`
+	Name          string         `json:"name"`
+	Type          string         `json:"type"`
+	Slack         *Slack         `json:"slack,omitempty"`
+	CustomWebhook *CustomWebhook `json:"custom_webhook,omitempty"`
+}
+
+type Slack struct {
+	Url string `json:"url"`
+}
+
+type CustomWebhook struct {
+	Scheme       string            `json:"scheme"`
+	Method       string            `json:"method"`
+	Url          string            `json:"url"`
+	Host         string            `json:"host"`
+	Port         int               `json:"port"`
+	Path         string            `json:"path"`
+	HeaderParams map[string]string `json:"header_params,omitempty"`
+	QueryParams  map[string]string `json:"query_params,omitempty"`
+}
+
+type CreateDestinationResponse struct {
+	Id      string `json:"id"`
+	Ok      bool   `json:"ok"`
+	Version int    `json:"version"`
 }

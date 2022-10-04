@@ -15,37 +15,25 @@ func DataSourceObjectGroup() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: resources.ResourceObjectGroupRead,
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"bucket": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"public": {
 				Type:     schema.TypeBool,
-				Optional: true,
-			},
-			"realtime": {
-				Type:     schema.TypeBool,
-				Optional: true,
+				Computed: true,
 			},
 			"type": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"content_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"compression": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"source": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"source_id": {
 				Type:     schema.TypeString,
@@ -53,123 +41,144 @@ func DataSourceObjectGroup() *schema.Resource {
 			},
 			"format": {
 				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
 							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Computed: true,
 						},
 						"column_delimiter": {
 							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Computed: true,
 						},
 						"header_row": {
 							Type:     schema.TypeBool,
-							Optional: true,
-							ForceNew: true,
+							Computed: true,
 						},
 						"row_delimiter": {
 							Type:     schema.TypeString,
-							Optional: true,
-							ForceNew: true,
+							Computed: true,
+						},
+						"pattern": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"array_flatten_depth": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"strip_prefix": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"horizontal": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"live_events": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"index_retention": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"overall": {
+							Type:     schema.TypeInt,
+							Computed: true,
 						},
 					},
 				},
 			},
 			"filter": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: true,
+				Type:     schema.TypeList,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"prefix_filter": {
+						"field": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"range": {
 							Type:     schema.TypeSet,
-							Optional: true,
-							ForceNew: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"field": {
+									"min": {
 										Type:     schema.TypeString,
-										Required: true,
-										ForceNew: true,
+										Computed: true,
 									},
-									"prefix": {
+									"max": {
 										Type:     schema.TypeString,
-										Optional: true,
-										ForceNew: true,
+										Computed: true,
 									},
 								},
 							},
 						},
-						"regex_filter": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							ForceNew: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"field": {
-										Type:     schema.TypeString,
-										Required: true,
-										ForceNew: true,
-									},
-									"regex": {
-										Type:     schema.TypeString,
-										Optional: true,
-										ForceNew: true,
-									},
-								},
-							},
+						"equals": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"prefix": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"regex": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
 			},
 			"interval": {
 				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"column": {
 							Type:     schema.TypeInt,
-							Required: true,
-							ForceNew: true,
+							Computed: true,
 						},
 						"mode": {
 							Type:     schema.TypeInt,
-							Optional: true,
-							ForceNew: true,
-						},
-					},
-				},
-			},
-			"options": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ignore_irregular": {
-							Type:     schema.TypeBool,
-							Required: true,
-							ForceNew: true,
+							Computed: true,
 						},
 					},
 				},
 			},
 			"metadata": {
 				Type:     schema.TypeSet,
-				Optional: true,
-				ForceNew: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"creation_date": {
 							Type:     schema.TypeInt,
-							Required: true,
-							ForceNew: true,
+							Computed: true,
+						},
+					},
+				},
+			},
+			"options": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"compression": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"ignore_irregular": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"col_types": {
+							Type:     schema.TypeString,
+							Computed: true,
 						},
 					},
 				},
@@ -180,9 +189,16 @@ func DataSourceObjectGroup() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Optional: true,
 			},
-			"array_flatten_depth": {
+			"index_parallelism": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"target_active_index": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"live_events_parallelism": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
@@ -199,11 +215,55 @@ func DataSourceObjectGroups() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						"name": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"creation_date": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"filter": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"case_insensitive": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"index_retention": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"bucket_type": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"visible": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"time_field": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"index_pattern": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"cacheable": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"parent_object_groups": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"transform": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -215,7 +275,6 @@ func DataSourceObjectGroups() *schema.Resource {
 }
 
 func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var diags diag.Diagnostics
 	client := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
 	clientResponse, err := client.ListBuckets(ctx, tokenValue)
@@ -227,5 +286,5 @@ func dataSourceObjectGroupsRead(ctx context.Context, data *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 	data.SetId(strconv.FormatInt(time.Now().Unix(), 10))
-	return diags
+	return nil
 }

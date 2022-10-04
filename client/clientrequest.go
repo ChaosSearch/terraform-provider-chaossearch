@@ -43,8 +43,7 @@ func (cr *ClientRequest) constructRequest(ctx context.Context, config Configurat
 		claims := jwt.MapClaims{}
 		_, _, err = new(jwt.Parser).ParseUnverified(cr.AuthToken, claims)
 		if err != nil {
-			return nil, fmt.Errorf(`
-			Failed to parse JWT => Error: %s
+			return nil, fmt.Errorf(`Failed to parse JWT => Error: %s
 			Note: 
 				This is usually a symptom of failed auth. Please ensure your credentials are correct
 			`, err)

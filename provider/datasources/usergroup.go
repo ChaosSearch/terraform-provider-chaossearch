@@ -112,9 +112,9 @@ func readUserGroup(ctx context.Context, data *schema.ResourceData, meta interfac
 	data.SetId(id)
 	diags := diag.Diagnostics{}
 	tokenValue := meta.(*models.ProviderMeta).Token
-	req := &client.ReadUserGroupRequest{
+	req := &client.BasicRequest{
 		AuthToken: tokenValue,
-		ID:        id,
+		Id:        id,
 	}
 
 	resp, err := c.ReadUserGroup(ctx, req)
