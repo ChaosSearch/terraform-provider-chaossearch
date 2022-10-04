@@ -141,9 +141,9 @@ func resourceSubAccountDelete(ctx context.Context, data *schema.ResourceData, me
 		username = data.Get("username").(string)
 	}
 
-	deleteSubAccountRequest := &client.DeleteSubAccountRequest{
+	deleteSubAccountRequest := &client.BasicRequest{
 		AuthToken: meta.(*models.ProviderMeta).Token,
-		Username:  username,
+		Id:        username,
 	}
 
 	if err := c.DeleteSubAccount(ctx, deleteSubAccountRequest); err != nil {

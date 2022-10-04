@@ -54,10 +54,10 @@ func (c *CSClient) CreateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 	return &readUserGroupResp[0], nil
 }
 
-func (c *CSClient) ReadUserGroup(ctx context.Context, req *ReadUserGroupRequest) (*UserGroup, error) {
+func (c *CSClient) ReadUserGroup(ctx context.Context, req *BasicRequest) (*UserGroup, error) {
 	var readUserGroupResp UserGroup
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
-		Url:         fmt.Sprintf("%s/user/group/%s", c.Config.URL, req.ID),
+		Url:         fmt.Sprintf("%s/user/group/%s", c.Config.URL, req.Id),
 		RequestType: GET,
 		AuthToken:   req.AuthToken,
 	})
@@ -100,8 +100,8 @@ func (c *CSClient) UpdateUserGroup(ctx context.Context, req *CreateUserGroupRequ
 	return &readUserGroupResp[0], nil
 }
 
-func (c *CSClient) DeleteUserGroup(ctx context.Context, req *DeleteUserGroupRequest) error {
-	deleteUserGroupID := url.PathEscape(req.ID)
+func (c *CSClient) DeleteUserGroup(ctx context.Context, req *BasicRequest) error {
+	deleteUserGroupID := url.PathEscape(req.Id)
 	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
 		Url:         fmt.Sprintf("%s/user/group/%s", c.Config.URL, deleteUserGroupID),
 		RequestType: DELETE,

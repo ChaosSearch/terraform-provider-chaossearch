@@ -36,14 +36,9 @@ type Contents struct {
 	StorageClass string `xml:"StorageClass"`
 }
 
-type ReadObjGroupReq struct {
+type BasicRequest struct {
 	AuthToken string
-	ID        string
-}
-
-type ReadViewRequest struct {
-	AuthToken string
-	ID        string
+	Id        string
 }
 
 type Metadata struct {
@@ -125,16 +120,7 @@ type Range struct {
 type Options struct {
 	IgnoreIrregular bool
 	Compression     string
-}
-
-type DeleteObjectGroupRequest struct {
-	AuthToken string
-	Name      string
-}
-
-type DeleteViewRequest struct {
-	AuthToken string
-	Name      string
+	ColTypes        map[string]string
 }
 
 type UpdateObjectGroupRequest struct {
@@ -265,11 +251,6 @@ type CreateSubAccountRequest struct {
 	HoCon         []interface{} `json:"HoCon"`
 }
 
-type DeleteSubAccountRequest struct {
-	AuthToken string
-	Username  string
-}
-
 type ListUsersResponse struct {
 	Users []User `json:"Users"`
 }
@@ -311,16 +292,6 @@ type UserGroup struct {
 	Permissions []Permission `json:"permissions"`
 }
 
-type ReadUserGroupRequest struct {
-	AuthToken string
-	ID        string
-}
-
-type DeleteUserGroupRequest struct {
-	AuthToken string
-	ID        string
-}
-
 type IndexModelRequest struct {
 	AuthToken  string
 	BucketName string `json:"BucketName"`
@@ -334,4 +305,104 @@ type IndexModelResponse struct {
 
 type IndexStatusResponse struct {
 	Indexed bool `json:"indexed"`
+}
+
+type CreateMonitorRequest struct {
+	Id         string      `json:"-"`
+	AuthToken  string      `json:"-"`
+	Name       string      `json:"name"`
+	Type       string      `json:"type"`
+	Enabled    bool        `json:"enabled"`
+	Schedule   Schedule    `json:"schedule"`
+	Inputs     []Input     `json:"inputs"`
+	Triggers   []Trigger   `json:"triggers"`
+	UIMetadata interface{} `json:"ui_metadata"`
+}
+
+type Schedule struct {
+	Period Period `json:"period"`
+}
+
+type Period struct {
+	Interval int    `json:"interval"`
+	Unit     string `json:"unit"`
+}
+
+type Input struct {
+	Search Search `json:"search"`
+}
+
+type Search struct {
+	Indices []string    `json:"indices"`
+	Query   interface{} `json:"query"`
+}
+
+type Trigger struct {
+	Name      string           `json:"name"`
+	Severity  string           `json:"severity"`
+	MinTime   string           `json:"min_time_between_executions"`
+	Condition MonitorCondition `json:"condition"`
+	Actions   []Action         `json:"actions"`
+}
+
+type MonitorCondition struct {
+	Script Script `json:"script"`
+}
+
+type Script struct {
+	Lang   string `json:"lang"`
+	Source string `json:"source"`
+}
+
+type Action struct {
+	Name            string   `json:"name"`
+	DestinationId   string   `json:"destination_id"`
+	SubjectTemplate Script   `json:"subject_template"`
+	MessageTemplate Script   `json:"message_template"`
+	ThrottleEnabled bool     `json:"throttle_enabled,omitempty"`
+	Throttle        Throttle `json:"throttle,omitempty"`
+}
+
+type Throttle struct {
+	Value int    `json:"value"`
+	Unit  string `json:"unit"`
+}
+
+type CreateMonitorResponse struct {
+	Ok   bool        `json:"ok"`
+	Resp MonitorResp `json:"resp"`
+}
+
+type MonitorResp struct {
+	Id string `json:"_id"`
+}
+
+type CreateDestinationRequest struct {
+	Id            string         `json:"-"`
+	AuthToken     string         `json:"-"`
+	Name          string         `json:"name"`
+	Type          string         `json:"type"`
+	Slack         *Slack         `json:"slack,omitempty"`
+	CustomWebhook *CustomWebhook `json:"custom_webhook,omitempty"`
+}
+
+type Slack struct {
+	Url string `json:"url"`
+}
+
+type CustomWebhook struct {
+	Scheme       string            `json:"scheme"`
+	Method       string            `json:"method"`
+	Url          string            `json:"url"`
+	Host         string            `json:"host"`
+	Port         int               `json:"port"`
+	Path         string            `json:"path"`
+	HeaderParams map[string]string `json:"header_params,omitempty"`
+	QueryParams  map[string]string `json:"query_params,omitempty"`
+}
+
+type CreateDestinationResponse struct {
+	Id      string `json:"id"`
+	Ok      bool   `json:"ok"`
+	Version int    `json:"version"`
 }

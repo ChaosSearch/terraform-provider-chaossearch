@@ -89,9 +89,9 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 	}
 
 	tokenValue := meta.(*models.ProviderMeta).Token
-	req := &client.ReadUserGroupRequest{
+	req := &client.BasicRequest{
 		AuthToken: tokenValue,
-		ID:        data.Id(),
+		Id:        data.Id(),
 	}
 
 	resp, err := c.ReadUserGroup(ctx, req)
@@ -169,9 +169,9 @@ func resourceGroupDelete(ctx context.Context, data *schema.ResourceData, meta in
 	}
 
 	tokenValue := meta.(*models.ProviderMeta).Token
-	deleteUserGroupRequest := &client.DeleteUserGroupRequest{
+	deleteUserGroupRequest := &client.BasicRequest{
 		AuthToken: tokenValue,
-		ID:        data.Id(),
+		Id:        data.Id(),
 	}
 
 	if err := c.DeleteUserGroup(ctx, deleteUserGroupRequest); err != nil {
