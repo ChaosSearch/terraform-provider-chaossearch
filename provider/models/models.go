@@ -8,5 +8,7 @@ type ProviderMeta struct {
 }
 
 type AuthResponse struct {
-	Token string
+	Token   *string `json:"Token,omitempty"`
+	Code    *string `json:"Code,omitempty"`
+	Message *string `json:"Message,omitempty"`
 }

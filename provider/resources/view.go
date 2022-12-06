@@ -17,7 +17,7 @@ import (
 type ViewData struct {
 	FilterPredicate *client.FilterPredicate
 	Source          []interface{}
-	Transforms      []interface{}
+	Transforms      []client.Transform
 }
 
 func ResourceView() *schema.Resource {
@@ -85,7 +85,8 @@ func ResourceView() *schema.Resource {
 			"transforms": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringIsJSON,
 				},
 				Optional: true,
 			},
@@ -204,7 +205,7 @@ func resourceViewCreate(ctx context.Context, data *schema.ResourceData, meta int
 
 func setViewRequest(data *schema.ResourceData, meta interface{}) (*ViewData, error) {
 	var sourcesStrings []interface{}
-	var transforms []interface{}
+	var transforms []client.Transform
 	var state *client.State
 	var pred *client.Pred
 	var preds []client.Pred
@@ -278,9 +279,23 @@ func setViewRequest(data *schema.ResourceData, meta interface{}) (*ViewData, err
 		sourcesStrings = sources.([]interface{})
 	}
 
-	transformElem, _ := data.GetOk("transforms")
-	if transformElem != nil {
-		transforms = transformElem.([]interface{})
+	transformsArr := data.Get("transforms").([]interface{})
+	if len(transformsArr) > 0 {
+		transforms = make([]client.Transform, len(transformsArr))
+		for index, transform := range transformsArr {
+			var transformHolder client.Transform
+			transformJson, err := structure.NormalizeJsonString(transform)
+			if err != nil {
+				return nil, utils.NormalizingJsonError(err)
+			}
+
+			err = json.Unmarshal([]byte(transformJson), &transformHolder)
+			if err != nil {
+				return nil, utils.UnmarshalJsonError(err)
+			}
+
+			transforms[index] = transformHolder
+		}
 	}
 
 	return &ViewData{
@@ -385,6 +400,38 @@ func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 			if err != nil {
 				return diag.FromErr(err)
 			}
+		}
+	}
+
+	if len(resp.Transforms) > 0 {
+		transforms := make([]string, len(resp.Transforms))
+		for index, transformItem := range resp.Transforms {
+			transformMap := map[string]interface{}{
+				"_type":      transformItem.Type,
+				"inputField": transformItem.InputField,
+				"keyPart":    transformItem.KeyPart,
+				"pattern":    transformItem.Pattern,
+				"paths":      transformItem.Paths,
+				"vertical":   transformItem.Vertical,
+				"format":     transformItem.Format,
+			}
+
+			transformBytes, err := json.Marshal(transformMap)
+			if err != nil {
+				return diag.FromErr(utils.MarshalJsonError(err))
+			}
+
+			transformJson, err := structure.NormalizeJsonString(string(transformBytes))
+			if err != nil {
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+
+			transforms[index] = transformJson
+		}
+
+		err = data.Set("transforms", transforms)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 

@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 1.0.6"
+      version = "~> 1.0.7"
       source  = "chaossearch/chaossearch"
     }
   }
@@ -95,6 +95,7 @@ resource "chaossearch_object_group" "create-object-group" {
 resource "chaossearch_index_model" "model" {
   bucket_name = "tf-provider"
   model_mode  = 0
+  delete_enabled = true
   depends_on  = [
     chaossearch_object_group.create-object-group
   ]
@@ -161,6 +162,49 @@ resource "chaossearch_view" "view-preds" {
       ]
     }
   }
+  depends_on = [
+    chaossearch_index_model.model
+  ]
+}
+
+resource "chaossearch_view" "view-transforms" {
+  bucket           = "tf-provider-view-transforms"
+  case_insensitive = false
+  index_pattern    = ".*"
+  index_retention  = -1
+  overwrite        = true
+  sources          = ["tf-provider"]
+  time_field_name  = "Period"
+  filter {
+    predicate {
+      type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
+      pred {
+        type  = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+        field = "STATUS"
+        query = "*F*"
+        state {
+          type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+        }
+      }
+    }
+  }
+  transforms = [
+    jsonencode({
+      "_type": "MaterializeRegexTransform",
+      "inputField": "Data_value",
+      "pattern": "(\\d+)\\.(\\d+)"
+      "outputFields": [
+        {
+          "name": "Whole",
+          "type": "NUMBER"
+        },
+        {
+          "name": "Decimal",
+          "type": "NUMBER"
+        }
+      ]
+    }),
+  ]
   depends_on = [
     chaossearch_index_model.model
   ]

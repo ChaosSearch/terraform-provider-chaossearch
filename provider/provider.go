@@ -8,52 +8,64 @@ import (
 	"cs-tf-provider/provider/models"
 	"cs-tf-provider/provider/resources"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	cUrl             = "url"
+	cAccessKeyID     = "access_key_id"
+	cSecretAccessKey = "secret_access_key"
+	cParentUserID    = "parent_user_id"
+	cRegion          = "region"
+	cLogin           = "login"
+	cUsername        = "user_name"
+	cPassword        = "password"
+)
+
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"url": {
+			cUrl: {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_URL", ""),
 			},
-			"access_key_id": {
+			cAccessKeyID: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_ACCESS_KEY", ""),
 			},
-			"secret_access_key": {
+			cSecretAccessKey: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_SECRET_KEY", ""),
 			},
-			"region": {
+			cRegion: {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_REGION", ""),
 			},
-			"parent_user_id": {
+			cParentUserID: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_PARENT_USER_ID", ""),
 			},
-			"login": {
+			cLogin: {
 				Type:     schema.TypeSet,
 				ForceNew: true,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"user_name": {
+						cUsername: {
 							Type:        schema.TypeString,
 							Required:    true,
 							ForceNew:    true,
 							DefaultFunc: schema.EnvDefaultFunc("CS_USERNAME", ""),
 						},
-						"password": {
+						cPassword: {
 							Type:        schema.TypeString,
 							Required:    true,
 							ForceNew:    true,
@@ -87,88 +99,96 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	var username string
-	var password string
+	var username, password string
 	var authResp models.AuthResponse
+	keyAuthMap := map[string]string{}
 	keyAuthEnabled := true
 
-	url, diagErr := getConfig(ctx, d, "url")
+	url, diagErr := getConfig(ctx, d, cUrl)
 	if diagErr != nil {
 		return nil, diagErr
 	}
 
-	accessKeyID, diagErr := getConfig(ctx, d, "access_key_id")
+	region, diagErr := getConfig(ctx, d, cRegion)
 	if diagErr != nil {
 		return nil, diagErr
 	}
 
-	secretAccessKey, diagErr := getConfig(ctx, d, "secret_access_key")
-	if diagErr != nil {
-		return nil, diagErr
-	}
-
-	region, diagErr := getConfig(ctx, d, "region")
-	if diagErr != nil {
-		return nil, diagErr
-	}
-
-	parentUserID := d.Get("parent_user_id").(string)
-	loginList := d.Get("login").(*schema.Set).List()
+	loginList := d.Get(cLogin).(*schema.Set).List()
 	if len(loginList) > 0 {
 		loginMap := loginList[0].(map[string]interface{})
-		username = loginMap["user_name"].(string)
+		username = loginMap[cUsername].(string)
 		if username == "" {
-			return nil, utils.ConfigurationError("user_name")
+			return nil, diag.FromErr(utils.UndefinedError(cUsername))
 		}
 
-		password = loginMap["password"].(string)
+		password = loginMap[cPassword].(string)
 		if password == "" {
-			return nil, utils.ConfigurationError("password")
+			return nil, diag.FromErr(utils.UndefinedError(cPassword))
 		}
 
 		keyAuthEnabled = false
 	}
 
-	if keyAuthEnabled && parentUserID == "" {
-		return nil, diag.Errorf(`
-		Failed to configure provider => 'parent_user_id' must be defined for API Key Auth
-		Note: 
-			This can be populated with the account's UID, regardless of being a subaccount
-		`)
+	keyAuthMap[cParentUserID] = d.Get(cParentUserID).(string)
+	if keyAuthEnabled {
+		keyAuthMap[cAccessKeyID] = d.Get(cAccessKeyID).(string)
+		keyAuthMap[cSecretAccessKey] = d.Get(cSecretAccessKey).(string)
+
+		for key, val := range keyAuthMap {
+			if key == cParentUserID && val == "" {
+				return nil, utils.ProviderConfigurationError(fmt.Errorf(
+					"'parent_user_id' must be defined for API Key Auth => \n" +
+						"Note: \n" +
+						"This can be populated with the account's UID, regardless of being a subaccount",
+				))
+			} else if val == "" {
+				return nil, utils.ProviderConfigurationError(utils.UndefinedError(val))
+			}
+		}
 	}
 
 	config := &client.Configuration{
 		URL:             url,
-		AccessKeyID:     accessKeyID,
-		SecretAccessKey: secretAccessKey,
+		AccessKeyID:     keyAuthMap[cAccessKeyID],
+		SecretAccessKey: keyAuthMap[cSecretAccessKey],
 		AWSServiceName:  "s3",
 		Region:          region,
-		UserID:          parentUserID,
+		UserID:          keyAuthMap[cParentUserID],
 		KeyAuthEnabled:  keyAuthEnabled,
 	}
 
 	login := client.Login{
 		Username:     username,
 		Password:     password,
-		ParentUserID: parentUserID,
+		ParentUserID: keyAuthMap[cParentUserID],
 	}
 
 	csClient := client.NewClient(config, &login)
-	authResponseString, err := csClient.Auth(ctx)
-	if err != nil {
-		return nil, diag.Errorf("Failed to configure provider => %s", err)
-
-	}
-
 	if !keyAuthEnabled {
+		authResponseString, err := csClient.Auth(ctx)
+		if err != nil {
+			return nil, utils.ProviderConfigurationError(err)
+
+		}
+
 		if err := json.Unmarshal([]byte(authResponseString), &authResp); err != nil {
-			return nil, diag.Errorf("Failed to configure provider => %s", utils.UnmarshalJsonError(err))
+			return nil, utils.ProviderConfigurationError(utils.UnmarshalJsonError(err))
+		}
+
+		if authResp.Token == nil {
+			return nil, utils.ProviderConfigurationError(fmt.Errorf(
+				"Login auth failed => \n"+
+					"Code: %s \n"+
+					"Message: %s",
+				*authResp.Code, *authResp.Message,
+			))
 		}
 	}
 
 	providerMeta := &models.ProviderMeta{
 		CSClient: csClient,
-		Token:    authResp.Token,
+		Token:    *authResp.Token,
 	}
 
 	return providerMeta, nil
@@ -178,7 +198,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 func getConfig(ctx context.Context, data *schema.ResourceData, value string) (string, diag.Diagnostics) {
 	cred := data.Get(value).(string)
 	if cred == "" {
-		return "", utils.ConfigurationError(value)
+		return "", utils.ProviderConfigurationError(utils.UndefinedError(value))
 	}
 
 	return cred, nil
