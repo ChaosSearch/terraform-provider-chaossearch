@@ -155,6 +155,7 @@ func (client *CSClient) createAndSendReq(
 		}
 
 		retryAttemptLogger(index+1, len(backoffSchedule), backoff, err)
+		time.Sleep(backoff)
 	}
 
 	if err != nil {
