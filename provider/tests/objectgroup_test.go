@@ -41,13 +41,18 @@ func testAccObjectGroupConfig(bucket string) string {
 		  bucket = "%s"
 		  source = "%s"
 		  format {
-			  type            = "CSV"
-			  column_delimiter = ","
-			  row_delimiter    = "\n"
-			  header_row       = false
+			type             = "CSV"
+			column_delimiter = ","
+			row_delimiter    = "\n"
+			header_row       = true
 		  }
 		  index_retention {
-			  overall       = -1
+			overall = -1
+		  }
+		  options {
+			col_types = jsonencode({
+			  "Period": "Timeval"
+			})
 		  }
 		  filter {
 			field = "key"
@@ -56,9 +61,6 @@ func testAccObjectGroupConfig(bucket string) string {
 		  filter {
 			field = "key"
 			regex = ".*"
-		  }
-		  options {
-			  ignore_irregular = true
 		  }
 		}
 	`, testAccProviderConfigBlock(), bucket, source)

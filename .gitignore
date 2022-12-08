@@ -98,4 +98,5 @@ terraform.rc
 **/*.terraform.lock.hcl
 **/*.terraform
 **/*.tfstate
-**/terraform.txt
+**/terraform.txt\
+**/*.tfvars

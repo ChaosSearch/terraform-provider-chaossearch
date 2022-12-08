@@ -144,7 +144,23 @@ type CreateViewRequest struct {
 	Cacheable         bool
 	Overwrite         bool
 	Sources           []interface{}
-	Transforms        []interface{}
+	Transforms        []Transform
+}
+
+type Transform struct {
+	Type         string          `json:"_type"`
+	InputField   string          `json:"inputField"`
+	OutputFields []ViewFieldSpec `json:"outputFields"`
+	KeyPart      int             `json:"keyPart,omitempty"`
+	Pattern      string          `json:"pattern,omitempty"`
+	Paths        []string        `json:"paths,omitempty"`
+	Vertical     []string        `json:"vertical,omitempty"`
+	Format       float32         `json:"format,omitempty"`
+}
+
+type ViewFieldSpec struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 type ReadViewResponse struct {
@@ -159,7 +175,7 @@ type ReadViewResponse struct {
 	Cacheable          bool
 	Overwrite          bool
 	Sources            []interface{}
-	Transforms         []interface{}
+	Transforms         []Transform
 	ID                 string    `json:"id"`
 	MetaData           *Metadata `json:"metadata"`
 	RegionAvailability []string  `json:"regionAvailability"`

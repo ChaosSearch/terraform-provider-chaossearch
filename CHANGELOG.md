@@ -1,3 +1,13 @@
+## 1.0.7
+
+### Enhancements:
+* client/client.go: Added retry with exponential back off, accumulative 15 second backoff
+* provider/provdier.go: API Keys are no longer required if using login cred auth
+* provider/resources/view.go: `transforms` now supports json attributes for all types of transforms
+
+### Bug Fixes
+* provider/resources/view.go: Fix `transforms` json encoding string -> map[string]interface
+
 ## 1.0.6
 
 ### Features:

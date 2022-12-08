@@ -31,21 +31,6 @@ resource "chaossearch_view" "view" {
       }
     }
   }
-  transforms = [
-    jsonencode(
-      {
-        "_type": "PartitionKeyTransform"
-        "keyPart": 0
-        "inputField": "cs_partition_key_0"
-      }
-    ),
-    jsonencode(
-      {
-        "_type": "PartitionKeyTransform"
-        "keyPart": 1
-        "inputField": "cs_partition_key_1"
-      }
-    )
 }
 ```
 
@@ -109,21 +94,53 @@ resource "chaossearch_view" "view-preds" {
       ]
     }
   }
+}
+```
+
+Below is an example view with `transforms`
+```hcl
+resource "chaossearch_view" "view-transforms" {
+  bucket           = "tf-provider-view"
+  case_insensitive = false
+  index_pattern    = ".*"
+  index_retention  = -1
+  overwrite        = true
+  sources          = ["tf-provider"]
+  time_field_name  = "timestamp"
+  filter {
+    predicate {
+      type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
+      pred {
+        type = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
+        field = "STATUS"
+        query = "*F*"
+        state {
+          type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
+        }
+      }
+    }
+  }
   transforms = [
-    jsonencode(
-      {
+    jsonencode({
         "_type": "PartitionKeyTransform"
         "keyPart": 0
         "inputField": "cs_partition_key_0"
-      }
-    ),
-    jsonencode(
-      {
-        "_type": "PartitionKeyTransform"
-        "keyPart": 1
-        "inputField": "cs_partition_key_1"
-      }
-    )
+    }),
+    jsonencode({
+      "_type": "MaterializeRegexTransform",
+      "inputField": "Data_value",
+      "pattern": "(\\d+)\\.(\\d+)"
+      "outputFields": [
+        {
+          "name": "Whole",
+          "type": "NUMBER"
+        },
+        {
+          "name": "Decimal",
+          "type": "NUMBER"
+        }
+      ]
+    }),
   ]
 }
 ```
@@ -153,3 +170,21 @@ resource "chaossearch_view" "view-preds" {
     * `preds` - **(Optional)** Used in the case where multiple fields are being filtered
       * Takes in an array of json
       * Follows the same structure as `pred`, but also enables the ability to nest more `preds`
+* `transforms` - **(Optional)** Takes in an array populated wth a json object for each transform
+  * `_type` - **(Required)** Defines the type of transform, different types include:
+    * `PartitionKeyTransform` - Takes in `keyPart`
+    * `MaterializeRegexTransform` - Takes in `pattern`
+    * `MaterializeSJSONTransform` - Takes in `paths` 
+    * `VerticalArrayTransform` - Takes in `vertical`
+    * `IPFieldTransform`
+    * `GeoPointFieldTransform` - Takes in `format`
+    * `NestedFieldTransform`
+  * `inputField` - **(Required)** The field you are transforming
+  * `outputFields` - **(Optional)** Used when transforming one input field to many outputs
+    * `name` - **(Required)**
+    * `type` - **(Required)**
+  * `keyPart` - See `PartitionKeyTransform`, takes an integer
+  * `pattern` - See `MaterializeRegexTransform`, takes regex string
+  * `paths` - See `MaterializeSJSONTransform`, takes an array of strings
+  * `vertical` - See `VerticalArrayTransform`, takes an array of strings
+  * `format` - See `GeoPointFieldTransform`, takes a float 

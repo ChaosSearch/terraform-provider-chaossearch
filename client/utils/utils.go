@@ -48,10 +48,6 @@ func MarshalJsonError(err error) error {
 	return fmt.Errorf("Failed to marshal JSON => Error: %s", err)
 }
 
-func ConfigurationError(value string) diag.Diagnostics {
-	return diag.Errorf("Failed to configure provider => Expected '%s' to be defined", value)
-}
-
 func NormalizingJsonError(err error) error {
 	return fmt.Errorf("Failed to normalize JSON structure => Error: %s", err)
 }
@@ -66,6 +62,14 @@ func ValidateAuthType(keyAuthEnabled bool) error {
 	}
 
 	return nil
+}
+
+func ProviderConfigurationError(err error) diag.Diagnostics {
+	return diag.Errorf("Failed to configure provider => %s", err)
+}
+
+func UndefinedError(value string) error {
+	return fmt.Errorf("Expected '%s' to be defined", value)
 }
 
 func ContainsString(arr []string, str string) bool {

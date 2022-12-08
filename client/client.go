@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Configuration struct {
@@ -128,14 +129,37 @@ func (client *CSClient) createAndSendReq(
 	ctx context.Context,
 	request ClientRequest,
 ) (*http.Response, error) {
+	var httpResp *http.Response
+	var backoffSchedule = []time.Duration{
+		1 * time.Second,
+		2 * time.Second,
+		4 * time.Second,
+		8 * time.Second,
+	}
+
 	httpReq, err := request.constructRequest(ctx, *client.Config)
 	if err != nil {
 		return nil, utils.CreateRequestError(err)
 	}
 
-	httpResp, err := client.httpClient.Do(httpReq)
+	for index, backoff := range backoffSchedule {
+		httpResp, err = client.httpClient.Do(httpReq)
+		if err == nil {
+			defer func(httpReq *http.Request) {
+				if httpReq.Body != nil {
+					httpReq.Body.Close()
+				}
+			}(httpReq)
+
+			break
+		}
+
+		retryAttemptLogger(index+1, len(backoffSchedule), backoff, err)
+		time.Sleep(backoff)
+	}
+
 	if err != nil {
-		return nil, fmt.Errorf("Failed to execute request => Error: %s", err)
+		return nil, fmt.Errorf("Failed to execute request (Attempts exceeded) => Error: %s", err)
 	}
 
 	if httpResp.Body == http.NoBody {
@@ -153,12 +177,6 @@ func (client *CSClient) createAndSendReq(
 
 		return nil, utils.ResponseCodeError(httpResp, httpReq, request.Body, respAsBytes)
 	}
-
-	defer func(httpReq *http.Request) {
-		if httpReq.Body != nil {
-			httpReq.Body.Close()
-		}
-	}(httpReq)
 
 	return httpResp, nil
 }
@@ -187,4 +205,12 @@ func (c *CSClient) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
 	}
 
 	return nil
+}
+
+func retryAttemptLogger(attemptNum int, attemptTotal int, backoff time.Duration, err error) {
+	fmt.Fprintf(os.Stderr, `
+	Request failed... Attempt %v / %v
+	Retrying in %v seconds
+	Error: %s
+	`, attemptNum, attemptTotal, backoff, err)
 }
