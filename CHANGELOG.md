@@ -1,3 +1,13 @@
+## 1.0.9
+
+### Enhancemetns:
+* provider/destinations.go & provider/monitor.go: Add validation against API key auth
+
+### Bug Fixes:
+* provider/provider.go: Check for nil pointer on auth token when using API key auth
+
+## 1.0.8 -> Skipped
+
 ## 1.0.7
 
 ### Enhancements:
