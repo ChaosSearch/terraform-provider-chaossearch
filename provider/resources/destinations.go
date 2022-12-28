@@ -95,6 +95,11 @@ func ResourceDestination() *schema.Resource {
 
 func resourceDestinationCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
+	err := utils.ValidateAuthType(c.Config.KeyAuthEnabled)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req, diagErr := constructCreateDestinationRequest(data, meta)
 	if diagErr != nil {
 		return diagErr

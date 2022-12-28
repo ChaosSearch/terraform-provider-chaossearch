@@ -188,7 +188,10 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	providerMeta := &models.ProviderMeta{
 		CSClient: csClient,
-		Token:    *authResp.Token,
+	}
+
+	if authResp.Token != nil {
+		providerMeta.Token = *authResp.Token
 	}
 
 	return providerMeta, nil
