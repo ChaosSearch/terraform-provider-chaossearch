@@ -33,7 +33,7 @@ resource "aws_s3_bucket_object" "upload-file" {
   bucket = aws_s3_bucket.bucket-creation.id
   key    = "economic-survey-of-manufacturing-dec-2021.csv"
   source = "economic-survey-of-manufacturing-dec-2021.csv"
-  etag = filemd5("economic-survey-of-manufacturing-dec-2021.csv")
+  etag   = filemd5("economic-survey-of-manufacturing-dec-2021.csv")
 }
 
 
@@ -46,6 +46,23 @@ resource "chaossearch_object_group" "create-object-group" {
     column_delimiter = ","
     row_delimiter    = "\n"
     header_row       = false
+    field_selection = jsonencode([
+      {
+        "excludes" : [
+          "data",
+          "bigobject"
+        ],
+        "type" : "blacklist"
+      }
+    ])
+    array_selection = jsonencode([
+      {
+        "excludes" : [
+          "object.ids",
+        ],
+        "type" : "blacklist"
+      }
+    ])
   }
   interval {
     mode   = 0
@@ -74,5 +91,5 @@ resource "chaossearch_object_group" "create-object-group" {
 // Generates index data and dataset for view test
 resource "chaossearch_index_model" "model-1" {
   bucket_name = "acc-test-og-source"
-  model_mode = 0
+  model_mode  = 0
 }

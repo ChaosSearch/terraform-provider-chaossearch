@@ -72,6 +72,8 @@ type ReadObjGroupResp struct {
 	ArrayFlattenDepth  *int
 	ColumnRenames      map[string]string
 	ColumnSelection    []map[string]interface{}
+	ArraySelection     string
+	FieldSelection     string
 }
 
 type CreateObjectGroupRequest struct {
@@ -88,10 +90,15 @@ type CreateObjectGroupRequest struct {
 }
 
 type Format struct {
-	Type            string `json:"_type"`
-	ColumnDelimiter string `json:"columnDelimiter"`
-	RowDelimiter    string `json:"rowDelimiter"`
-	HeaderRow       bool   `json:"headerRow"`
+	Type              string                    `json:"_type"`
+	ColumnDelimiter   string                    `json:"columnDelimiter"`
+	RowDelimiter      string                    `json:"rowDelimiter"`
+	HeaderRow         bool                      `json:"headerRow"`
+	ArrayFlattenDepth int                       `json:"arrayFlattenDepth"`
+	StripPrefix       bool                      `json:"stripPrefix"`
+	Horizontal        bool                      `json:"horizontal"`
+	ArraySelection    *[]map[string]interface{} `json:"arraySelection"`
+	FieldSelection    *[]map[string]interface{} `json:"fieldSelection"`
 }
 
 type Interval struct {
