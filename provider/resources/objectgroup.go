@@ -96,6 +96,16 @@ func ResourceObjectGroup() *schema.Resource {
 							Optional: true,
 							Computed: true,
 						},
+						"array_selection": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringIsJSON,
+						},
+						"field_selection": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringIsJSON,
+						},
 					},
 				},
 			},
@@ -259,6 +269,11 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		var columnDelimit string
 		var rowDelimit string
 		var headerRow bool
+		var arrayFlattenDepth int
+		var stripPrefix bool
+		var horizontal bool
+		var arraySelection []map[string]interface{}
+		var fieldSelection []map[string]interface{}
 
 		formatMap := formatList[0].(map[string]interface{})
 		if formatMap["type"] != nil {
@@ -276,11 +291,43 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		if formatMap["header_row"] != nil {
 			headerRow = formatMap["header_row"].(bool)
 		}
+
+		if formatMap["array_flatten_depth"] != nil {
+			arrayFlattenDepth = formatMap["array_flatten_depth"].(int)
+		}
+
+		if formatMap["strip_prefix"] != nil {
+			stripPrefix = formatMap["strip_prefix"].(bool)
+		}
+
+		if formatMap["horizontal"] != nil {
+			horizontal = formatMap["horizontal"].(bool)
+		}
+
+		if formatMap["array_selection"] != nil {
+			err := json.Unmarshal([]byte(formatMap["array_selection"].(string)), &arraySelection)
+			if err != nil {
+				return diag.FromErr(utils.UnmarshalJsonError(err))
+			}
+		}
+
+		if formatMap["field_selection"] != nil {
+			err := json.Unmarshal([]byte(formatMap["field_selection"].(string)), &fieldSelection)
+			if err != nil {
+				return diag.FromErr(utils.UnmarshalJsonError(err))
+			}
+		}
+
 		format = &client.Format{
-			Type:            typeStr,
-			ColumnDelimiter: columnDelimit,
-			RowDelimiter:    rowDelimit,
-			HeaderRow:       headerRow,
+			Type:              typeStr,
+			ColumnDelimiter:   columnDelimit,
+			RowDelimiter:      rowDelimit,
+			HeaderRow:         headerRow,
+			ArrayFlattenDepth: arrayFlattenDepth,
+			StripPrefix:       stripPrefix,
+			Horizontal:        horizontal,
+			ArraySelection:    &arraySelection,
+			FieldSelection:    &fieldSelection,
 		}
 	}
 
@@ -474,6 +521,8 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 				"column_delimiter":    resp.Format.ColumnDelimiter,
 				"row_delimiter":       resp.Format.RowDelimiter,
 				"array_flatten_depth": resp.ArrayFlattenDepth,
+				"array_selection":     resp.ArraySelection,
+				"field_selection":     resp.FieldSelection,
 			},
 		})
 

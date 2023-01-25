@@ -17,6 +17,19 @@ resource "chaossearch_object_group" "create-object-group" {
     column_delimiter = ","
     row_delimiter    = "\n"
     header_row       = true
+    field_selection = jsonencode([{
+      "excludes": [
+        "data",
+        "bigobject"
+      ],
+      "type": "blacklist"
+    }])
+    array_selection = jsonencode([{
+      "excludes": [
+        "object.ids",
+      ],
+      "type": "blacklist"
+    }])
   }
   index_retention {
     overall       = -1
@@ -48,6 +61,11 @@ resource "chaossearch_object_group" "create-object-group" {
   * `column_delimiter` - **(Optional)** Specifies the character for separating columns
   * `row_delimiter` - **(Optional)** Specifies the character for separating rows
   * `header_row` - **(Optional)** Specifies if the file includes a header row
+  * `array_flatten_depth` - **(Optional)** How deeply nested arrays should be allowed to get before parsing stops. Defaults to unlimited.
+  * `strip_prefix` - **(Optional)** By default, all fields will be prefixed with 'root'. If this is set to true, that prefix will be disabled.
+  * `horizontal` - **(Optional)** If true, array fields will be turned into new columns on each flattened message. If false, array fields will be broadcast into multiple flattened rows for each array item.
+  * `array_selection` - **(Optional)** Specify array fields to leave as flat, unparsed strings when indexing
+  * `field_selection` - **(Optional)** Specify object fields to leave as flat, unparsed strings when indexing
 * `index_retention` - **(Optional)** Config block for specifying how long an index is retained
   * Only applies on update
   * `overall` - **(Optional)** Takes the amount of days an index is retained
