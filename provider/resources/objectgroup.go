@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
@@ -99,11 +100,13 @@ func ResourceObjectGroup() *schema.Resource {
 						"array_selection": {
 							Type:         schema.TypeString,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: validation.StringIsJSON,
 						},
 						"field_selection": {
 							Type:         schema.TypeString,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: validation.StringIsJSON,
 						},
 					},
@@ -304,17 +307,33 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 			horizontal = formatMap["horizontal"].(bool)
 		}
 
-		if formatMap["array_selection"] != nil {
-			err := json.Unmarshal([]byte(formatMap["array_selection"].(string)), &arraySelection)
+		arraySelectString := formatMap["array_selection"].(string)
+		if arraySelectString != "" {
+			arraySelectJson, err := structure.NormalizeJsonString(arraySelectString)
 			if err != nil {
-				return diag.FromErr(utils.UnmarshalJsonError(err))
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+
+			err = json.Unmarshal([]byte(arraySelectJson), &arraySelection)
+			if err != nil {
+				return diag.FromErr(
+					fmt.Errorf("Object Group Resource Failure => %s \n %s", utils.UnmarshalJsonError(err), arraySelectJson),
+				)
 			}
 		}
 
-		if formatMap["field_selection"] != nil {
-			err := json.Unmarshal([]byte(formatMap["field_selection"].(string)), &fieldSelection)
+		fieldSelectString := formatMap["field_selection"].(string)
+		if fieldSelectString != "" {
+			fieldSelectJson, err := structure.NormalizeJsonString(fieldSelectString)
 			if err != nil {
-				return diag.FromErr(utils.UnmarshalJsonError(err))
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+
+			err = json.Unmarshal([]byte(fieldSelectJson), &fieldSelection)
+			if err != nil {
+				return diag.FromErr(
+					fmt.Errorf("Object Group Resource Failure => %s \n %s", utils.UnmarshalJsonError(err), fieldSelectJson),
+				)
 			}
 		}
 
@@ -326,8 +345,8 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 			ArrayFlattenDepth: arrayFlattenDepth,
 			StripPrefix:       stripPrefix,
 			Horizontal:        horizontal,
-			ArraySelection:    &arraySelection,
-			FieldSelection:    &fieldSelection,
+			ArraySelection:    arraySelection,
+			FieldSelection:    fieldSelection,
 		}
 	}
 
@@ -514,6 +533,35 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	}
 
 	if resp.Format != nil {
+		var arraySelection string
+		var fieldSelection string
+
+		arraySelect := resp.Format.ArraySelection
+		if len(arraySelect) > 0 {
+			selectJson, err := json.Marshal(arraySelect)
+			if err != nil {
+				return diag.FromErr(utils.MarshalJsonError(err))
+			}
+
+			arraySelection, err = structure.NormalizeJsonString(string(selectJson))
+			if err != nil {
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+		}
+
+		fieldSelect := resp.Format.FieldSelection
+		if len(fieldSelect) > 0 {
+			selectJson, err := json.Marshal(arraySelect)
+			if err != nil {
+				return diag.FromErr(utils.MarshalJsonError(err))
+			}
+
+			fieldSelection, err = structure.NormalizeJsonString(string(selectJson))
+			if err != nil {
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+		}
+
 		err = data.Set("format", []interface{}{
 			map[string]interface{}{
 				"type":                resp.Format.Type,
@@ -521,8 +569,8 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 				"column_delimiter":    resp.Format.ColumnDelimiter,
 				"row_delimiter":       resp.Format.RowDelimiter,
 				"array_flatten_depth": resp.ArrayFlattenDepth,
-				"array_selection":     resp.ArraySelection,
-				"field_selection":     resp.FieldSelection,
+				"array_selection":     arraySelection,
+				"field_selection":     fieldSelection,
 			},
 		})
 

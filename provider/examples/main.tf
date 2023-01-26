@@ -95,48 +95,33 @@ resource "chaossearch_object_group" "create-object-group" {
 resource "chaossearch_object_group" "selection-og" {
   bucket = "tf-provider-selections"
   source = "chaossearch-tf-provider-test"
-  //live_events = "test"
   format {
     type             = "CSV"
     column_delimiter = ","
     row_delimiter    = "\n"
     header_row       = true
-    field_selection = jsonencode([
-      {
+    field_selection = jsonencode([{
         "excludes" : [
           "data",
           "bigobject"
         ],
         "type" : "blacklist"
-      }
-    ])
-    array_selection = jsonencode([
-      {
-        "excludes" : [
-          "object.ids",
-        ],
-        "type" : "blacklist"
-      }
-    ])
+    }])
+    array_selection = jsonencode([{
+      "excludes" : [
+        "object.ids",
+      ],
+      "type" : "blacklist"
+    }])
   }
   index_retention {
     overall       = -1
   }
 
   options {
-    #compression = "GZIP"
     col_types = jsonencode({
       "Period": "Timeval"
     })
-  }
-  // Filter options:
-  filter {
-    field = "key"
-    prefix = "ec"
-  }
-  filter {
-    field = "key"
-    regex = ".*"
   }
 }
 

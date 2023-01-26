@@ -8,7 +8,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -91,7 +90,7 @@ func (c *CSClient) Auth(ctx context.Context) (token string, err error) {
 		}
 		defer res.Body.Close()
 
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			return "", utils.ReadResponseError(err)
 		}
@@ -163,14 +162,14 @@ func (client *CSClient) createAndSendReq(
 	}
 
 	if httpResp.Body == http.NoBody {
-		_, err := ioutil.ReadAll(httpResp.Body)
+		_, err := io.ReadAll(httpResp.Body)
 		if err != nil {
 			return nil, utils.ReadResponseError(err)
 		}
 	}
 
 	if httpResp.StatusCode < 200 || httpResp.StatusCode >= 300 {
-		respAsBytes, err := ioutil.ReadAll(httpResp.Body)
+		respAsBytes, err := io.ReadAll(httpResp.Body)
 		if err != nil {
 			return nil, utils.ReadResponseError(err)
 		}
@@ -182,7 +181,7 @@ func (client *CSClient) createAndSendReq(
 }
 
 func (c *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
-	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
+	bodyAsBytes, err := io.ReadAll(bodyReader)
 	if err != nil {
 		return utils.ReadResponseError(err)
 	}
@@ -195,7 +194,7 @@ func (c *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error 
 }
 
 func (c *CSClient) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
-	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
+	bodyAsBytes, err := io.ReadAll(bodyReader)
 	if err != nil {
 		return utils.ReadResponseError(err)
 	}

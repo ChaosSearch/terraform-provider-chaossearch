@@ -76,6 +76,14 @@ func DataSourceObjectGroup() *schema.Resource {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
+						"array_selection": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"field_selection": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
