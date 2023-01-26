@@ -1,7 +1,19 @@
+## 1.0.10
+
+### Enhancements:
+* client/models.go: Plumb through `ArrayFlattenDepth`, `StripPrefix`, and `Horizontal`
+* provider/examples.go: Add `array_selection` and `field_selection` examples
+
+### Bug Fixes:
+* client/client.go: `ioutil.ReadAll()` was deprecated, function moved to `io`
+
+### Features:
+* provider/resources/objectgroup.go: Add support for `array_selection` and `field_selection`
+
 ## 1.0.9
 
-### Enhancemetns:
-* provider/destinations.go & provider/monitor.go: Add validation against API key auth
+### Enhancements:
+* provider/resources/destinations.go & provider/resources/monitor.go: Add validation against API key auth
 
 ### Bug Fixes:
 * provider/provider.go: Check for nil pointer on auth token when using API key auth
