@@ -101,13 +101,19 @@ func ResourceObjectGroup() *schema.Resource {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Computed:     true,
-							ValidateFunc: validation.StringIsJSON,
+							ValidateFunc: validateSelectionPolicy,
 						},
 						"field_selection": {
 							Type:         schema.TypeString,
 							Optional:     true,
 							Computed:     true,
-							ValidateFunc: validation.StringIsJSON,
+							ValidateFunc: validateSelectionPolicy,
+						},
+						"vertical_selection": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validateSelectionPolicy,
 						},
 					},
 				},
@@ -226,6 +232,17 @@ func ResourceObjectGroup() *schema.Resource {
 							Optional:     true,
 							ValidateFunc: validation.StringIsJSON,
 						},
+						"col_renames": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringIsJSON,
+						},
+						"col_selection": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validateSelectionPolicy,
+						},
 					},
 				},
 			},
@@ -277,6 +294,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		var horizontal bool
 		var arraySelection []map[string]interface{}
 		var fieldSelection []map[string]interface{}
+		var verticalSelection []map[string]interface{}
 
 		formatMap := formatList[0].(map[string]interface{})
 		if formatMap["type"] != nil {
@@ -337,6 +355,21 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 			}
 		}
 
+		verticalSelectStr := formatMap["vertical_selection"].(string)
+		if verticalSelectStr != "" {
+			verticalSelectJson, err := structure.NormalizeJsonString(verticalSelectStr)
+			if err != nil {
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+
+			err = json.Unmarshal([]byte(verticalSelectJson), &verticalSelection)
+			if err != nil {
+				return diag.FromErr(
+					fmt.Errorf("Object Group Resource Failure => %s \n %s", utils.UnmarshalJsonError(err), verticalSelectJson),
+				)
+			}
+		}
+
 		format = &client.Format{
 			Type:              typeStr,
 			ColumnDelimiter:   columnDelimit,
@@ -347,6 +380,7 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 			Horizontal:        horizontal,
 			ArraySelection:    arraySelection,
 			FieldSelection:    fieldSelection,
+			VerticalSelection: verticalSelection,
 		}
 	}
 
@@ -451,9 +485,27 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		optionsMap := optionsList[0].(map[string]interface{})
 		options.Compression = optionsMap["compression"].(string)
 		colTypesString := optionsMap["col_types"].(string)
-		err := json.Unmarshal([]byte(colTypesString), &options.ColTypes)
-		if err != nil {
-			return diag.FromErr(utils.UnmarshalJsonError(err))
+		if colTypesString != "" {
+			err := json.Unmarshal([]byte(colTypesString), &options.ColTypes)
+			if err != nil {
+				return diag.FromErr(utils.UnmarshalJsonError(err))
+			}
+		}
+
+		colRenamesString := optionsMap["col_renames"].(string)
+		if colRenamesString != "" {
+			err := json.Unmarshal([]byte(colRenamesString), &options.ColRenames)
+			if err != nil {
+				return diag.FromErr(utils.UnmarshalJsonError(err))
+			}
+		}
+
+		colSelectionString := optionsMap["col_selection"].(string)
+		if colSelectionString != "" {
+			err := json.Unmarshal([]byte(colSelectionString), &options.ColSelection)
+			if err != nil {
+				return diag.FromErr(utils.UnmarshalJsonError(err))
+			}
 		}
 	}
 
@@ -709,4 +761,61 @@ func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, m
 
 	data.SetId(data.Get("bucket").(string))
 	return nil
+}
+
+func validateSelectionPolicy(i interface{}, k string) (warnings []string, errors []error) {
+	var policyArr []map[string]interface{}
+	types := []string{
+		"blacklist",
+		"whitelist",
+		"regex",
+	}
+
+	warnings, errors = validation.StringIsJSON(i, k)
+	if len(warnings) > 0 || len(errors) > 0 {
+		return warnings, errors
+	}
+
+	policyJson, _ := structure.NormalizeJsonString(i.(string))
+	err := json.Unmarshal([]byte(policyJson), &policyArr)
+	if err != nil {
+		errors = append(errors, err)
+		return warnings, errors
+	}
+
+	for _, policyMap := range policyArr {
+		selectType, ok := policyMap["type"].(string)
+		if !ok {
+			errors = append(errors, fmt.Errorf("json expected to have 'type' field for select policy"))
+			return warnings, errors
+		}
+
+		if !utils.ContainsString(types, selectType) {
+			errors = append(errors, fmt.Errorf("invalid type found for selection policy. type: %s", selectType))
+			return warnings, errors
+		}
+
+		if selectType == types[0] {
+			excludes := policyMap["excludes"]
+			if excludes == nil {
+				errors = append(errors, fmt.Errorf("selection json expected an 'excludes' array in the case of type %s", types[0]))
+			}
+		}
+
+		if selectType == types[1] {
+			includes := policyMap["includes"]
+			if includes == nil {
+				errors = append(errors, fmt.Errorf("selection json expected an 'includes' array in the case of type %s", types[1]))
+			}
+		}
+
+		if selectType == types[2] {
+			patterns := policyMap["patterns"]
+			if patterns == nil {
+				errors = append(errors, fmt.Errorf("selection json expected a 'patterns' array in the case of type %s", types[2]))
+			}
+		}
+	}
+
+	return warnings, errors
 }

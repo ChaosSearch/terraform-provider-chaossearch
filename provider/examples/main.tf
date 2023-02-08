@@ -101,17 +101,34 @@ resource "chaossearch_object_group" "selection-og" {
     row_delimiter    = "\n"
     header_row       = true
     field_selection = jsonencode([{
-        "excludes" : [
+        "excludes": [
           "data",
           "bigobject"
         ],
-        "type" : "blacklist"
+        "type": "blacklist"
     }])
     array_selection = jsonencode([{
-      "excludes" : [
+      "includes": [
         "object.ids",
       ],
-      "type" : "blacklist"
+      "type": "whitelist"
+    }])
+    vertical_selection = jsonencode([{
+      "include": true,
+       "patterns": [
+        "^line\\.level$",
+        "^attrs.version$",
+        "^timestamp$",
+        "^line\\.meta\\.[^\\.]*$",
+        "^host$",
+        "^line\\.correlation_id$",
+        "^sourcetype$",
+        "^line\\.message$",
+        "^message$",
+        "^source$",
+        "^_rawJson$"
+      ],
+      "type": "regex"
     }])
   }
   index_retention {
@@ -120,8 +137,17 @@ resource "chaossearch_object_group" "selection-og" {
 
   options {
     col_types = jsonencode({
-      "Period": "Timeval"
+      "TimeStamp": "Timeval"
     })
+    col_renames = jsonencode({
+      "TimeStamp": "Period"
+    })
+    col_selection = jsonencode([{
+      "includes": [
+        "object.ids",
+      ],
+      "type": "whitelist"
+    }])
   }
 }
 

@@ -17,18 +17,37 @@ resource "chaossearch_object_group" "create-object-group" {
     column_delimiter = ","
     row_delimiter    = "\n"
     header_row       = true
+
+    # The following selection policies can all contain the same json properties (including col_selection)
     field_selection = jsonencode([{
-      "excludes": [
-        "data",
-        "bigobject"
-      ],
-      "type": "blacklist"
+        "excludes": [
+          "data",
+          "bigobject"
+        ],
+        "type": "blacklist"
     }])
     array_selection = jsonencode([{
-      "excludes": [
+      "includes": [
         "object.ids",
       ],
-      "type": "blacklist"
+      "type": "whitelist"
+    }])
+    vertical_selection = jsonencode([{
+      "include": true,
+       "patterns": [
+        "^line\\.level$",
+        "^attrs.version$",
+        "^timestamp$",
+        "^line\\.meta\\.[^\\.]*$",
+        "^host$",
+        "^line\\.correlation_id$",
+        "^sourcetype$",
+        "^line\\.message$",
+        "^message$",
+        "^source$",
+        "^_rawJson$"
+      ],
+      "type": "regex"
     }])
   }
   index_retention {
@@ -48,6 +67,18 @@ resource "chaossearch_object_group" "create-object-group" {
   }
   options {
     compression = "GZIP"
+    col_types = jsonencode({
+      "TimeStamp": "Timeval"
+    })
+    col_renames = jsonencode({
+      "TimeStamp": "Period"
+    })
+    col_selection = jsonencode({
+      "includes": [
+        "object.ids",
+      ],
+      "type": "whitelist"
+    })
   }
 }
 ```
@@ -64,8 +95,8 @@ resource "chaossearch_object_group" "create-object-group" {
   * `array_flatten_depth` - **(Optional)** How deeply nested arrays should be allowed to get before parsing stops. Defaults to unlimited.
   * `strip_prefix` - **(Optional)** By default, all fields will be prefixed with 'root'. If this is set to true, that prefix will be disabled.
   * `horizontal` - **(Optional)** If true, array fields will be turned into new columns on each flattened message. If false, array fields will be broadcast into multiple flattened rows for each array item.
-  * `array_selection` - **(Optional)** Specify array fields to leave as flat, unparsed strings when indexing
-  * `field_selection` - **(Optional)** Specify object fields to leave as flat, unparsed strings when indexing
+  * `array_selection` - **(Optional)** A json policy block for selecting array fields
+  * `field_selection` - **(Optional)** A json policy block for selecting object fields
 * `index_retention` - **(Optional)** Config block for specifying how long an index is retained
   * Only applies on update
   * `overall` - **(Optional)** Takes the amount of days an index is retained
@@ -79,5 +110,8 @@ resource "chaossearch_object_group" "create-object-group" {
   * `equals` - **(Optional)** Used with `storageClass` field. Supplies the `storageClass` type of the S3 bucket
     * Can be `STANDARD`, `STANDARD_IA`, `INTELLIGENT_TIERING`, `ONEZONE_IA`, `GLACIER`, `DEEP_ARCHIVE`, `REDUCED_REDUNDANCY`
 * `options` - **(Optional)** A config block for housing advanced settings
+  * `col_renames` - **(Optional)** A set of key value pairs, key being new name, val being old name
+  * `col_types` - **(Optional)** A set of key value pairs, key being field name, val being field type
+  * `col_selection` - **(Optional)** A json policy block for selecting column fields 
   * `compression` - **(Optional)** Form of file compression being used
     * Can either be `GZIP` or `SNAPPY`

@@ -2,13 +2,14 @@
 
 ### Enhancements:
 * client/models.go: Plumb through `ArrayFlattenDepth`, `StripPrefix`, and `Horizontal`
-* provider/examples.go: Add `array_selection` and `field_selection` examples
+* provider/examples.go: Add selection policy examples
 
 ### Bug Fixes:
 * client/client.go: `ioutil.ReadAll()` was deprecated, function moved to `io`
 
 ### Features:
-* provider/resources/objectgroup.go: Add support for `array_selection` and `field_selection`
+* provider/resources/objectgroup.go: Add support for format's `array_selection`, `field_selection` and `vertical_selection`
+* provider/resources/objectgroup.go: Add support for option's `col_selection` and `col_renames`
 
 ## 1.0.9
 

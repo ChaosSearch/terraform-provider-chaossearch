@@ -97,6 +97,7 @@ type Format struct {
 	Horizontal        bool                     `json:"horizontal"`
 	ArraySelection    []map[string]interface{} `json:"arraySelection"`
 	FieldSelection    []map[string]interface{} `json:"fieldSelection"`
+	VerticalSelection []map[string]interface{} `json:"verticalSelection"`
 }
 
 type Interval struct {
@@ -123,9 +124,11 @@ type Range struct {
 }
 
 type Options struct {
-	IgnoreIrregular bool
-	Compression     string
-	ColTypes        map[string]string
+	IgnoreIrregular bool                     `json:"ignoreIrregular"`
+	Compression     string                   `json:"compression"`
+	ColTypes        map[string]string        `json:"colTypes"`
+	ColRenames      map[string]string        `json:"colRenames"`
+	ColSelection    []map[string]interface{} `json:"colSelection"`
 }
 
 type UpdateObjectGroupRequest struct {
@@ -156,7 +159,7 @@ type Transform struct {
 	Type         string          `json:"_type"`
 	InputField   string          `json:"inputField"`
 	OutputFields []ViewFieldSpec `json:"outputFields"`
-	KeyPart      int             `json:"keyPart,omitempty"`
+	KeyPart      int             `json:"keyPart"`
 	Pattern      string          `json:"pattern,omitempty"`
 	Paths        []string        `json:"paths,omitempty"`
 	Vertical     []string        `json:"vertical,omitempty"`

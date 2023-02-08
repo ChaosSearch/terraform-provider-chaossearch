@@ -140,6 +140,10 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		if req.Format.FieldSelection != nil {
 			format["fieldSelection"] = req.Format.FieldSelection
 		}
+
+		if req.Format.VerticalSelection != nil {
+			format["verticalSelection"] = req.Format.VerticalSelection
+		}
 	}
 
 	if req.Options != nil {
@@ -153,6 +157,14 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 
 		if req.Options.ColTypes != nil {
 			options["colTypes"] = req.Options.ColTypes
+		}
+
+		if req.Options.ColRenames != nil {
+			options["colRenames"] = req.Options.ColRenames
+		}
+
+		if req.Options.ColSelection != nil {
+			options["colSelection"] = req.Options.ColSelection
 		}
 	}
 
