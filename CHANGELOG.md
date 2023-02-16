@@ -1,5 +1,10 @@
 ## 1.0.10
 
+### Important:
+* provider/resources/objectgroup.go: There was a change with how Filters are structured in ReadObjectGroup from the API, particularly for regex
+  * This was found on CS release `8a1fa185cd`
+  * Should have a fallback mechanism to account for older clusters
+
 ### Enhancements:
 * client/models.go: Plumb through `ArrayFlattenDepth`, `StripPrefix`, and `Horizontal`
 * provider/examples.go: Add selection policy examples

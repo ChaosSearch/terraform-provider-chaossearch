@@ -132,8 +132,13 @@ func (client *CSClient) createAndSendReq(
 	var backoffSchedule = []time.Duration{
 		1 * time.Second,
 		2 * time.Second,
-		4 * time.Second,
+		3 * time.Second,
+		5 * time.Second,
 		8 * time.Second,
+		13 * time.Second,
+		21 * time.Second,
+		34 * time.Second,
+		55 * time.Second,
 	}
 
 	httpReq, err := request.constructRequest(ctx, *client.Config)
@@ -143,7 +148,7 @@ func (client *CSClient) createAndSendReq(
 
 	for index, backoff := range backoffSchedule {
 		httpResp, err = client.httpClient.Do(httpReq)
-		if err == nil {
+		if err == nil && (httpResp.StatusCode >= 200 || httpResp.StatusCode < 300) {
 			defer func(httpReq *http.Request) {
 				if httpReq.Body != nil {
 					httpReq.Body.Close()

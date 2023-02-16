@@ -558,23 +558,27 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	if len(objectFilter.And) > 0 {
 		for _, filter := range objectFilter.And {
 			filterMap := filter.(map[string]interface{})
-			for key, val := range filterMap {
-				if _, ok := filterMap["prefix"]; ok {
-					filters = append(filters, map[string]interface{}{
-						"field":  key,
-						"prefix": val.(string),
-					})
-				} else if _, ok := filterMap["regex"]; ok {
-					filters = append(filters, map[string]interface{}{
-						"field": key,
-						"regex": val.(string),
-					})
-				} else if _, ok := filterMap["equals"]; ok {
-					filters = append(filters, map[string]interface{}{
-						"field":  key,
-						"equals": val.(string),
-					})
+			field := filterMap["field"].(string)
+			if _, ok := filterMap["prefix"]; ok {
+				filters = append(filters, map[string]interface{}{
+					"field":  field,
+					"prefix": filterMap["prefix"].(string),
+				})
+			} else if _, ok := filterMap["regex"]; ok {
+				regex, ok := filterMap["regex"].(map[string]interface{})["pattern"].(string)
+				if !ok {
+					regex = filterMap["regex"].(string)
 				}
+
+				filters = append(filters, map[string]interface{}{
+					"field": field,
+					"regex": regex,
+				})
+			} else if _, ok := filterMap["equals"]; ok {
+				filters = append(filters, map[string]interface{}{
+					"field":  field,
+					"equals": filterMap["equals"].(string),
+				})
 			}
 		}
 	}
