@@ -148,7 +148,7 @@ func (client *CSClient) createAndSendReq(
 
 	for index, backoff := range backoffSchedule {
 		httpResp, err = client.httpClient.Do(httpReq)
-		if err == nil && (httpResp.StatusCode >= 200 || httpResp.StatusCode < 300) {
+		if err == nil && (httpResp.StatusCode >= 200 && httpResp.StatusCode < 300) {
 			defer func(httpReq *http.Request) {
 				if httpReq.Body != nil {
 					httpReq.Body.Close()
