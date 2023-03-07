@@ -502,9 +502,15 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 						"prefix": val.(string),
 					})
 				} else if _, ok := filterMap["regex"]; ok {
+					regex, ok := val.(string)
+					if !ok {
+						val_obj := val.(map[string]interface{})
+						regex = val_obj["pattern"].(string)
+					}
+
 					filters = append(filters, map[string]interface{}{
 						"field": key,
-						"regex": val.(map[string]interface{})["pattern"].(string),
+						"regex": regex,
 					})
 				} else if _, ok := filterMap["equals"]; ok {
 					filters = append(filters, map[string]interface{}{
