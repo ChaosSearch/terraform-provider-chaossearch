@@ -471,7 +471,7 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 
 	name := data.Get("bucket")
 
-	if name == nil {
+	if name == nil || name == "" {
 		// When importing, this is where the bucket name is provided
 		name = data.Id()
 	}
