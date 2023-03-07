@@ -8,7 +8,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"io/ioutil" //nolint:all
 	"net/http"
 	"os"
 	"time"
