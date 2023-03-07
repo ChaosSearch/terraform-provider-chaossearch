@@ -468,8 +468,16 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	diags := diag.Diagnostics{}
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
+
+	name := data.Get("bucket")
+
+	if name == nil {
+		// When importing, this is where the bucket name is provided
+		name = data.Id()
+	}
+
 	req := &client.BasicRequest{
-		Id:        data.Get("bucket").(string),
+		Id:        name.(string),
 		AuthToken: tokenValue,
 	}
 
