@@ -565,9 +565,12 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 					"prefix": filterMap["prefix"].(string),
 				})
 			} else if _, ok := filterMap["regex"]; ok {
-				regex, ok := filterMap["regex"].(map[string]interface{})["pattern"].(string)
+				var regex string
+				regex_map, ok := filterMap["regex"].(map[string]interface{})
 				if !ok {
 					regex = filterMap["regex"].(string)
+				} else {
+					regex = regex_map["pattern"].(string)
 				}
 
 				filters = append(filters, map[string]interface{}{
