@@ -75,16 +75,18 @@ type ReadObjGroupResp struct {
 }
 
 type CreateObjectGroupRequest struct {
-	AuthToken      string
-	Bucket         string
-	Source         string
-	Format         *Format
-	Interval       *Interval
-	IndexRetention *IndexRetention
-	Filter         []Filter
-	Options        *Options
-	Realtime       bool
-	LiveEvents     string
+	AuthToken         string
+	Bucket            string
+	Source            string
+	Format            *Format
+	Interval          *Interval
+	IndexRetention    *IndexRetention
+	Filter            []Filter
+	Options           *Options
+	Realtime          bool
+	LiveEvents        string
+	PartitionBy	   	  string
+	TargetActiveIndex *int
 }
 
 type Format struct {
