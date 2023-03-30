@@ -9,6 +9,9 @@ terraform {
 
 provider "chaossearch" {
   login {}
+  options {
+    retry_count = 10
+  }
 }
 
 resource "chaossearch_user_group" "user_group" {

@@ -21,6 +21,7 @@ type Configuration struct {
 	Region          string
 	KeyAuthEnabled  bool
 	UserID          string
+	RetryCount      int
 }
 
 type Login struct {
@@ -34,6 +35,7 @@ type CSClient struct {
 	httpClient *http.Client
 	userAgent  string
 	Login      *Login
+	RetryCount int
 }
 
 const (
@@ -66,6 +68,7 @@ func NewClient(config *Configuration, login *Login) *CSClient {
 		httpClient: http.DefaultClient,
 		userAgent:  userAgent,
 		Login:      login,
+		RetryCount: config.RetryCount,
 	}
 }
 
@@ -129,18 +132,7 @@ func (client *CSClient) createAndSendReq(
 	request ClientRequest,
 ) (*http.Response, error) {
 	var httpResp *http.Response
-	var backoffSchedule = []time.Duration{
-		1 * time.Second,
-		2 * time.Second,
-		3 * time.Second,
-		5 * time.Second,
-		8 * time.Second,
-		13 * time.Second,
-		21 * time.Second,
-		34 * time.Second,
-		55 * time.Second,
-	}
-
+	var backoffSchedule = client.fibBackoff()
 	httpReq, err := request.constructRequest(ctx, *client.Config)
 	if err != nil {
 		return nil, utils.CreateRequestError(err)
@@ -183,6 +175,16 @@ func (client *CSClient) createAndSendReq(
 	}
 
 	return httpResp, nil
+}
+
+func (client *CSClient) fibBackoff() []time.Duration {
+	backoff := make([]time.Duration, client.RetryCount)
+	backoff[0], backoff[1] = 0*time.Second, 1*time.Second
+	for i := 2; i < client.RetryCount; i++ {
+		backoff[i] = backoff[i-1] + backoff[i-2]
+	}
+
+	return backoff
 }
 
 func (c *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {

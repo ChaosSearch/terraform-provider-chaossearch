@@ -15,61 +15,76 @@ import (
 )
 
 const (
-	cUrl             = "url"
-	cAccessKeyID     = "access_key_id"
-	cSecretAccessKey = "secret_access_key"
-	cParentUserID    = "parent_user_id"
-	cRegion          = "region"
-	cLogin           = "login"
-	cUsername        = "user_name"
-	cPassword        = "password"
+	Url             = "url"
+	AccessKeyID     = "access_key_id"
+	SecretAccessKey = "secret_access_key"
+	ParentUserID    = "parent_user_id"
+	Region          = "region"
+	Login           = "login"
+	Username        = "user_name"
+	Password        = "password"
+	Options         = "options"
+	RetryCount      = "retry_count"
 )
 
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			cUrl: {
+			Url: {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_URL", ""),
 			},
-			cAccessKeyID: {
+			AccessKeyID: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_ACCESS_KEY", ""),
 			},
-			cSecretAccessKey: {
+			SecretAccessKey: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_SECRET_KEY", ""),
 			},
-			cRegion: {
+			Region: {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_REGION", ""),
 			},
-			cParentUserID: {
+			ParentUserID: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CS_PARENT_USER_ID", ""),
 			},
-			cLogin: {
+			Login: {
 				Type:     schema.TypeSet,
 				ForceNew: true,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						cUsername: {
+						Username: {
 							Type:        schema.TypeString,
 							Required:    true,
 							ForceNew:    true,
 							DefaultFunc: schema.EnvDefaultFunc("CS_USERNAME", ""),
 						},
-						cPassword: {
+						Password: {
 							Type:        schema.TypeString,
 							Required:    true,
 							ForceNew:    true,
 							DefaultFunc: schema.EnvDefaultFunc("CS_PASSWORD", ""),
+						},
+					},
+				},
+			},
+			Options: {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						RetryCount: {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Default:  10,
 						},
 					},
 				},
@@ -104,39 +119,39 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	keyAuthMap := map[string]string{}
 	keyAuthEnabled := true
 
-	url, diagErr := getConfig(ctx, d, cUrl)
+	url, diagErr := getConfig(ctx, d, Url)
 	if diagErr != nil {
 		return nil, diagErr
 	}
 
-	region, diagErr := getConfig(ctx, d, cRegion)
+	region, diagErr := getConfig(ctx, d, Region)
 	if diagErr != nil {
 		return nil, diagErr
 	}
 
-	loginList := d.Get(cLogin).(*schema.Set).List()
+	loginList := d.Get(Login).(*schema.Set).List()
 	if len(loginList) > 0 {
 		loginMap := loginList[0].(map[string]interface{})
-		username = loginMap[cUsername].(string)
+		username = loginMap[Username].(string)
 		if username == "" {
-			return nil, diag.FromErr(utils.UndefinedError(cUsername))
+			return nil, diag.FromErr(utils.UndefinedError(Username))
 		}
 
-		password = loginMap[cPassword].(string)
+		password = loginMap[Password].(string)
 		if password == "" {
-			return nil, diag.FromErr(utils.UndefinedError(cPassword))
+			return nil, diag.FromErr(utils.UndefinedError(Password))
 		}
 
 		keyAuthEnabled = false
 	}
 
-	keyAuthMap[cParentUserID] = d.Get(cParentUserID).(string)
+	keyAuthMap[ParentUserID] = d.Get(ParentUserID).(string)
 	if keyAuthEnabled {
-		keyAuthMap[cAccessKeyID] = d.Get(cAccessKeyID).(string)
-		keyAuthMap[cSecretAccessKey] = d.Get(cSecretAccessKey).(string)
+		keyAuthMap[AccessKeyID] = d.Get(AccessKeyID).(string)
+		keyAuthMap[SecretAccessKey] = d.Get(SecretAccessKey).(string)
 
 		for key, val := range keyAuthMap {
-			if key == cParentUserID && val == "" {
+			if key == ParentUserID && val == "" {
 				return nil, utils.ProviderConfigurationError(fmt.Errorf(
 					"'parent_user_id' must be defined for API Key Auth => \n" +
 						"Note: \n" +
@@ -150,18 +165,26 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	config := &client.Configuration{
 		URL:             url,
-		AccessKeyID:     keyAuthMap[cAccessKeyID],
-		SecretAccessKey: keyAuthMap[cSecretAccessKey],
+		AccessKeyID:     keyAuthMap[AccessKeyID],
+		SecretAccessKey: keyAuthMap[SecretAccessKey],
 		AWSServiceName:  "s3",
 		Region:          region,
-		UserID:          keyAuthMap[cParentUserID],
+		UserID:          keyAuthMap[ParentUserID],
 		KeyAuthEnabled:  keyAuthEnabled,
+	}
+
+	optionsList := d.Get(Options).(*schema.Set).List()
+	if len(optionsList) > 0 {
+		optionsMap := optionsList[0].(map[string]interface{})
+		config.RetryCount = optionsMap[RetryCount].(int)
+	} else {
+		config.RetryCount = 10
 	}
 
 	login := client.Login{
 		Username:     username,
 		Password:     password,
-		ParentUserID: keyAuthMap[cParentUserID],
+		ParentUserID: keyAuthMap[ParentUserID],
 	}
 
 	csClient := client.NewClient(config, &login)

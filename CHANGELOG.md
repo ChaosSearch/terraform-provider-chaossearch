@@ -8,6 +8,7 @@
 ### Enhancements:
 * client/models.go: Plumb through `ArrayFlattenDepth`, `StripPrefix`, and `Horizontal`
 * provider/examples.go: Add selection policy examples
+* client/client.go & provider/provider.go: `retry_count` is now available under `provider.options` config
 
 ### Bug Fixes:
 * client/client.go: `ioutil.ReadAll()` was deprecated, function moved to `io`
