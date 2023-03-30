@@ -85,7 +85,7 @@ type CreateObjectGroupRequest struct {
 	Options           *Options
 	Realtime          bool
 	LiveEvents        string
-	PartitionBy	   	  string
+	PartitionBy       string
 	TargetActiveIndex *int
 }
 
