@@ -65,13 +65,17 @@ type ReadObjGroupResp struct {
 	Source             string       `json:"source"`
 	Compression        string
 	Pattern            string
-	PartitionBy        string
+	PartitionBy        PartitionBy `json:"partitionBy"`
 	SourceBucket       string
 	IndexRetention     int
 	KeepOriginal       bool
 	ArrayFlattenDepth  *int
 	ColumnRenames      map[string]string
 	ColumnSelection    []map[string]interface{}
+}
+
+type PartitionBy struct {
+	By []map[string]interface{} `json:"by"`
 }
 
 type CreateObjectGroupRequest struct {
@@ -86,7 +90,7 @@ type CreateObjectGroupRequest struct {
 	Realtime          bool
 	LiveEvents        string
 	PartitionBy       string
-	TargetActiveIndex *int
+	TargetActiveIndex int
 }
 
 type Format struct {

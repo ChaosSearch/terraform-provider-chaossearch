@@ -266,6 +266,10 @@ func ResourceObjectGroup() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+			"partition_by": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 
@@ -511,14 +515,16 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 
 	tokenValue := meta.(*models.ProviderMeta).Token
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
-		AuthToken:      tokenValue,
-		Bucket:         data.Get("bucket").(string),
-		Source:         data.Get("source").(string),
-		Format:         format,
-		IndexRetention: indexRetention,
-		Filter:         filters,
-		LiveEvents:     data.Get("live_events").(string),
-		Options:        options,
+		AuthToken:         tokenValue,
+		Bucket:            data.Get("bucket").(string),
+		Source:            data.Get("source").(string),
+		Format:            format,
+		IndexRetention:    indexRetention,
+		Filter:            filters,
+		LiveEvents:        data.Get("live_events").(string),
+		PartitionBy:       data.Get("partition_by").(string),
+		TargetActiveIndex: data.Get("target_active_index").(int),
+		Options:           options,
 		Interval: &client.Interval{
 			Mode:   0,
 			Column: 0,
@@ -671,6 +677,14 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 			},
 		})
 
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if len(resp.PartitionBy.By) > 0 {
+		pattern := resp.PartitionBy.By[0]["pattern"].(string)
+		err = data.Set("partition_by", pattern)
 		if err != nil {
 			return diag.FromErr(err)
 		}

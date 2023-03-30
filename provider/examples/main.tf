@@ -58,6 +58,7 @@ resource "chaossearch_sub_account" "sub-account" {
 resource "chaossearch_object_group" "create-object-group" {
   bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
+  target_active_index = 1
   //live_events = "test"
   format {
     type             = "CSV"

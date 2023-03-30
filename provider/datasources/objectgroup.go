@@ -210,6 +210,10 @@ func DataSourceObjectGroup() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"partition_by": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }

@@ -15,6 +15,7 @@
 ### Features:
 * provider/resources/objectgroup.go: Add support for format's `array_selection`, `field_selection` and `vertical_selection`
 * provider/resources/objectgroup.go: Add support for option's `col_selection` and `col_renames`
+* provider/resources/objectgroup.go: Add support for `partition_by` and `target_active_index` (on create)
 
 ## 1.0.9
 

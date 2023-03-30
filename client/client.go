@@ -192,7 +192,7 @@ func (c *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error 
 	}
 
 	if err := json.Unmarshal(bodyAsBytes, v); err != nil {
-		return utils.UnmarshalJsonError(err)
+		return fmt.Errorf("Error %v, Body: %s", utils.UnmarshalJsonError(err), bodyAsBytes)
 	}
 
 	return nil

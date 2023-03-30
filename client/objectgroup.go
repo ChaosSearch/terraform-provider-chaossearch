@@ -200,14 +200,16 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 	}
 
 	body := map[string]interface{}{
-		"bucket":         req.Bucket,
-		"source":         req.Source,
-		"format":         format,
-		"filter":         filters,
-		"indexRetention": indexRetention,
-		"options":        options,
-		"interval":       interval,
-		"realtime":       req.Realtime,
+		"bucket":            req.Bucket,
+		"source":            req.Source,
+		"format":            format,
+		"filter":            filters,
+		"indexRetention":    indexRetention,
+		"options":           options,
+		"interval":          interval,
+		"realtime":          req.Realtime,
+		"targetActiveIndex": req.TargetActiveIndex,
+		"partitionBy":       req.PartitionBy,
 	}
 
 	if req.LiveEvents != "" {
