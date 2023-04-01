@@ -1,7 +1,27 @@
+## 1.0.10
+
+### Important:
+* provider/resources/objectgroup.go: There was a change with how Filters are structured in ReadObjectGroup from the API, particularly for regex
+  * This was found on CS release `8a1fa185cd`
+  * Should have a fallback mechanism to account for older clusters
+
+### Enhancements:
+* client/models.go: Plumb through `ArrayFlattenDepth`, `StripPrefix`, and `Horizontal`
+* provider/examples.go: Add selection policy examples
+* client/client.go & provider/provider.go: `retry_count` is now available under `provider.options` config
+
+### Bug Fixes:
+* client/client.go: `ioutil.ReadAll()` was deprecated, function moved to `io`
+
+### Features:
+* provider/resources/objectgroup.go: Add support for format's `array_selection`, `field_selection` and `vertical_selection`
+* provider/resources/objectgroup.go: Add support for option's `col_selection` and `col_renames`
+* provider/resources/objectgroup.go: Add support for `partition_by` and `target_active_index` (on create)
+
 ## 1.0.9
 
-### Enhancemetns:
-* provider/destinations.go & provider/monitor.go: Add validation against API key auth
+### Enhancements:
+* provider/resources/destinations.go & provider/resources/monitor.go: Add validation against API key auth
 
 ### Bug Fixes:
 * provider/provider.go: Check for nil pointer on auth token when using API key auth

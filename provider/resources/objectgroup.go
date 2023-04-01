@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
@@ -95,6 +96,24 @@ func ResourceObjectGroup() *schema.Resource {
 							Type:     schema.TypeBool,
 							Optional: true,
 							Computed: true,
+						},
+						"array_selection": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validateSelectionPolicy,
+						},
+						"field_selection": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validateSelectionPolicy,
+						},
+						"vertical_selection": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validateSelectionPolicy,
 						},
 					},
 				},
@@ -213,6 +232,17 @@ func ResourceObjectGroup() *schema.Resource {
 							Optional:     true,
 							ValidateFunc: validation.StringIsJSON,
 						},
+						"col_renames": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringIsJSON,
+						},
+						"col_selection": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validateSelectionPolicy,
+						},
 					},
 				},
 			},
@@ -234,6 +264,10 @@ func ResourceObjectGroup() *schema.Resource {
 			},
 			"live_events_parallelism": {
 				Type:     schema.TypeInt,
+				Optional: true,
+			},
+			"partition_by": {
+				Type:     schema.TypeString,
 				Optional: true,
 			},
 		},
@@ -259,6 +293,12 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		var columnDelimit string
 		var rowDelimit string
 		var headerRow bool
+		var arrayFlattenDepth int
+		var stripPrefix bool
+		var horizontal bool
+		var arraySelection []map[string]interface{}
+		var fieldSelection []map[string]interface{}
+		var verticalSelection []map[string]interface{}
 
 		formatMap := formatList[0].(map[string]interface{})
 		if formatMap["type"] != nil {
@@ -276,11 +316,75 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		if formatMap["header_row"] != nil {
 			headerRow = formatMap["header_row"].(bool)
 		}
+
+		if formatMap["array_flatten_depth"] != nil {
+			arrayFlattenDepth = formatMap["array_flatten_depth"].(int)
+		}
+
+		if formatMap["strip_prefix"] != nil {
+			stripPrefix = formatMap["strip_prefix"].(bool)
+		}
+
+		if formatMap["horizontal"] != nil {
+			horizontal = formatMap["horizontal"].(bool)
+		}
+
+		arraySelectString := formatMap["array_selection"].(string)
+		if arraySelectString != "" {
+			arraySelectJson, err := structure.NormalizeJsonString(arraySelectString)
+			if err != nil {
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+
+			err = json.Unmarshal([]byte(arraySelectJson), &arraySelection)
+			if err != nil {
+				return diag.FromErr(
+					fmt.Errorf("Object Group Resource Failure => %s \n %s", utils.UnmarshalJsonError(err), arraySelectJson),
+				)
+			}
+		}
+
+		fieldSelectString := formatMap["field_selection"].(string)
+		if fieldSelectString != "" {
+			fieldSelectJson, err := structure.NormalizeJsonString(fieldSelectString)
+			if err != nil {
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+
+			err = json.Unmarshal([]byte(fieldSelectJson), &fieldSelection)
+			if err != nil {
+				return diag.FromErr(
+					fmt.Errorf("Object Group Resource Failure => %s \n %s", utils.UnmarshalJsonError(err), fieldSelectJson),
+				)
+			}
+		}
+
+		verticalSelectStr := formatMap["vertical_selection"].(string)
+		if verticalSelectStr != "" {
+			verticalSelectJson, err := structure.NormalizeJsonString(verticalSelectStr)
+			if err != nil {
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+
+			err = json.Unmarshal([]byte(verticalSelectJson), &verticalSelection)
+			if err != nil {
+				return diag.FromErr(
+					fmt.Errorf("Object Group Resource Failure => %s \n %s", utils.UnmarshalJsonError(err), verticalSelectJson),
+				)
+			}
+		}
+
 		format = &client.Format{
-			Type:            typeStr,
-			ColumnDelimiter: columnDelimit,
-			RowDelimiter:    rowDelimit,
-			HeaderRow:       headerRow,
+			Type:              typeStr,
+			ColumnDelimiter:   columnDelimit,
+			RowDelimiter:      rowDelimit,
+			HeaderRow:         headerRow,
+			ArrayFlattenDepth: arrayFlattenDepth,
+			StripPrefix:       stripPrefix,
+			Horizontal:        horizontal,
+			ArraySelection:    arraySelection,
+			FieldSelection:    fieldSelection,
+			VerticalSelection: verticalSelection,
 		}
 	}
 
@@ -385,22 +489,42 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		optionsMap := optionsList[0].(map[string]interface{})
 		options.Compression = optionsMap["compression"].(string)
 		colTypesString := optionsMap["col_types"].(string)
-		err := json.Unmarshal([]byte(colTypesString), &options.ColTypes)
-		if err != nil {
-			return diag.FromErr(utils.UnmarshalJsonError(err))
+		if colTypesString != "" {
+			err := json.Unmarshal([]byte(colTypesString), &options.ColTypes)
+			if err != nil {
+				return diag.FromErr(utils.UnmarshalJsonError(err))
+			}
+		}
+
+		colRenamesString := optionsMap["col_renames"].(string)
+		if colRenamesString != "" {
+			err := json.Unmarshal([]byte(colRenamesString), &options.ColRenames)
+			if err != nil {
+				return diag.FromErr(utils.UnmarshalJsonError(err))
+			}
+		}
+
+		colSelectionString := optionsMap["col_selection"].(string)
+		if colSelectionString != "" {
+			err := json.Unmarshal([]byte(colSelectionString), &options.ColSelection)
+			if err != nil {
+				return diag.FromErr(utils.UnmarshalJsonError(err))
+			}
 		}
 	}
 
 	tokenValue := meta.(*models.ProviderMeta).Token
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
-		AuthToken:      tokenValue,
-		Bucket:         data.Get("bucket").(string),
-		Source:         data.Get("source").(string),
-		Format:         format,
-		IndexRetention: indexRetention,
-		Filter:         filters,
-		LiveEvents:     data.Get("live_events").(string),
-		Options:        options,
+		AuthToken:         tokenValue,
+		Bucket:            data.Get("bucket").(string),
+		Source:            data.Get("source").(string),
+		Format:            format,
+		IndexRetention:    indexRetention,
+		Filter:            filters,
+		LiveEvents:        data.Get("live_events").(string),
+		PartitionBy:       data.Get("partition_by").(string),
+		TargetActiveIndex: data.Get("target_active_index").(int),
+		Options:           options,
 		Interval: &client.Interval{
 			Mode:   0,
 			Column: 0,
@@ -440,23 +564,30 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	if len(objectFilter.And) > 0 {
 		for _, filter := range objectFilter.And {
 			filterMap := filter.(map[string]interface{})
-			for key, val := range filterMap {
-				if _, ok := filterMap["prefix"]; ok {
-					filters = append(filters, map[string]interface{}{
-						"field":  key,
-						"prefix": val.(string),
-					})
-				} else if _, ok := filterMap["regex"]; ok {
-					filters = append(filters, map[string]interface{}{
-						"field": key,
-						"regex": val.(string),
-					})
-				} else if _, ok := filterMap["equals"]; ok {
-					filters = append(filters, map[string]interface{}{
-						"field":  key,
-						"equals": val.(string),
-					})
+			field := filterMap["field"].(string)
+			if _, ok := filterMap["prefix"]; ok {
+				filters = append(filters, map[string]interface{}{
+					"field":  field,
+					"prefix": filterMap["prefix"].(string),
+				})
+			} else if _, ok := filterMap["regex"]; ok {
+				var regex string
+				regex_map, ok := filterMap["regex"].(map[string]interface{})
+				if !ok {
+					regex = filterMap["regex"].(string)
+				} else {
+					regex = regex_map["pattern"].(string)
 				}
+
+				filters = append(filters, map[string]interface{}{
+					"field": field,
+					"regex": regex,
+				})
+			} else if _, ok := filterMap["equals"]; ok {
+				filters = append(filters, map[string]interface{}{
+					"field":  field,
+					"equals": filterMap["equals"].(string),
+				})
 			}
 		}
 	}
@@ -467,6 +598,35 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	}
 
 	if resp.Format != nil {
+		var arraySelection string
+		var fieldSelection string
+
+		arraySelect := resp.Format.ArraySelection
+		if len(arraySelect) > 0 {
+			selectJson, err := json.Marshal(arraySelect)
+			if err != nil {
+				return diag.FromErr(utils.MarshalJsonError(err))
+			}
+
+			arraySelection, err = structure.NormalizeJsonString(string(selectJson))
+			if err != nil {
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+		}
+
+		fieldSelect := resp.Format.FieldSelection
+		if len(fieldSelect) > 0 {
+			selectJson, err := json.Marshal(arraySelect)
+			if err != nil {
+				return diag.FromErr(utils.MarshalJsonError(err))
+			}
+
+			fieldSelection, err = structure.NormalizeJsonString(string(selectJson))
+			if err != nil {
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+		}
+
 		err = data.Set("format", []interface{}{
 			map[string]interface{}{
 				"type":                resp.Format.Type,
@@ -474,6 +634,8 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 				"column_delimiter":    resp.Format.ColumnDelimiter,
 				"row_delimiter":       resp.Format.RowDelimiter,
 				"array_flatten_depth": resp.ArrayFlattenDepth,
+				"array_selection":     arraySelection,
+				"field_selection":     fieldSelection,
 			},
 		})
 
@@ -515,6 +677,14 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 			},
 		})
 
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if len(resp.PartitionBy.By) > 0 {
+		pattern := resp.PartitionBy.By[0]["pattern"].(string)
+		err = data.Set("partition_by", pattern)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -612,4 +782,61 @@ func resourceObjectGroupDelete(ctx context.Context, data *schema.ResourceData, m
 
 	data.SetId(data.Get("bucket").(string))
 	return nil
+}
+
+func validateSelectionPolicy(i interface{}, k string) (warnings []string, errors []error) {
+	var policyArr []map[string]interface{}
+	types := []string{
+		"blacklist",
+		"whitelist",
+		"regex",
+	}
+
+	warnings, errors = validation.StringIsJSON(i, k)
+	if len(warnings) > 0 || len(errors) > 0 {
+		return warnings, errors
+	}
+
+	policyJson, _ := structure.NormalizeJsonString(i.(string))
+	err := json.Unmarshal([]byte(policyJson), &policyArr)
+	if err != nil {
+		errors = append(errors, err)
+		return warnings, errors
+	}
+
+	for _, policyMap := range policyArr {
+		selectType, ok := policyMap["type"].(string)
+		if !ok {
+			errors = append(errors, fmt.Errorf("json expected to have 'type' field for select policy"))
+			return warnings, errors
+		}
+
+		if !utils.ContainsString(types, selectType) {
+			errors = append(errors, fmt.Errorf("invalid type found for selection policy. type: %s", selectType))
+			return warnings, errors
+		}
+
+		if selectType == types[0] {
+			excludes := policyMap["excludes"]
+			if excludes == nil {
+				errors = append(errors, fmt.Errorf("selection json expected an 'excludes' array in the case of type %s", types[0]))
+			}
+		}
+
+		if selectType == types[1] {
+			includes := policyMap["includes"]
+			if includes == nil {
+				errors = append(errors, fmt.Errorf("selection json expected an 'includes' array in the case of type %s", types[1]))
+			}
+		}
+
+		if selectType == types[2] {
+			patterns := policyMap["patterns"]
+			if patterns == nil {
+				errors = append(errors, fmt.Errorf("selection json expected a 'patterns' array in the case of type %s", types[2]))
+			}
+		}
+	}
+
+	return warnings, errors
 }

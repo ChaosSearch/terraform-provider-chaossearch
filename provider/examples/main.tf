@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 1.0.9"
+      version = "~> 1.0.10"
       source  = "chaossearch/chaossearch"
     }
   }
@@ -9,6 +9,9 @@ terraform {
 
 provider "chaossearch" {
   login {}
+  options {
+    retry_count = 10
+  }
 }
 
 resource "chaossearch_user_group" "user_group" {
@@ -58,6 +61,7 @@ resource "chaossearch_sub_account" "sub-account" {
 resource "chaossearch_object_group" "create-object-group" {
   bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
+  target_active_index = 1
   //live_events = "test"
   format {
     type             = "CSV"
@@ -90,6 +94,65 @@ resource "chaossearch_object_group" "create-object-group" {
     equals = "STANDARD"
   }
   */
+}
+
+resource "chaossearch_object_group" "selection-og" {
+  bucket = "tf-provider-selections"
+  source = "chaossearch-tf-provider-test"
+  format {
+    type             = "CSV"
+    column_delimiter = ","
+    row_delimiter    = "\n"
+    header_row       = true
+    field_selection = jsonencode([{
+        "excludes": [
+          "data",
+          "bigobject"
+        ],
+        "type": "blacklist"
+    }])
+    array_selection = jsonencode([{
+      "includes": [
+        "object.ids",
+      ],
+      "type": "whitelist"
+    }])
+    vertical_selection = jsonencode([{
+      "include": true,
+       "patterns": [
+        "^line\\.level$",
+        "^attrs.version$",
+        "^timestamp$",
+        "^line\\.meta\\.[^\\.]*$",
+        "^host$",
+        "^line\\.correlation_id$",
+        "^sourcetype$",
+        "^line\\.message$",
+        "^message$",
+        "^source$",
+        "^_rawJson$"
+      ],
+      "type": "regex"
+    }])
+  }
+  index_retention {
+    overall       = -1
+  }
+
+  options {
+    col_types = jsonencode({
+      "TimeStamp": "Timeval"
+    })
+    col_renames = jsonencode({
+      "TimeStamp": "Period"
+    })
+    col_selection = jsonencode([{
+      "includes": [
+        "object.ids",
+      ],
+      "type": "whitelist"
+    }])
+  }
 }
 
 resource "chaossearch_index_model" "model" {

@@ -76,6 +76,14 @@ func DataSourceObjectGroup() *schema.Resource {
 							Type:     schema.TypeBool,
 							Computed: true,
 						},
+						"array_selection": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"field_selection": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 					},
 				},
 			},
@@ -201,6 +209,10 @@ func DataSourceObjectGroup() *schema.Resource {
 			"live_events_parallelism": {
 				Type:     schema.TypeInt,
 				Computed: true,
+			},
+			"partition_by": {
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 	}

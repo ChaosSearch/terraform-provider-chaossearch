@@ -8,7 +8,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -22,6 +21,7 @@ type Configuration struct {
 	Region          string
 	KeyAuthEnabled  bool
 	UserID          string
+	RetryCount      int
 }
 
 type Login struct {
@@ -35,6 +35,7 @@ type CSClient struct {
 	httpClient *http.Client
 	userAgent  string
 	Login      *Login
+	RetryCount int
 }
 
 const (
@@ -67,6 +68,7 @@ func NewClient(config *Configuration, login *Login) *CSClient {
 		httpClient: http.DefaultClient,
 		userAgent:  userAgent,
 		Login:      login,
+		RetryCount: config.RetryCount,
 	}
 }
 
@@ -91,7 +93,7 @@ func (c *CSClient) Auth(ctx context.Context) (token string, err error) {
 		}
 		defer res.Body.Close()
 
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			return "", utils.ReadResponseError(err)
 		}
@@ -130,13 +132,7 @@ func (client *CSClient) createAndSendReq(
 	request ClientRequest,
 ) (*http.Response, error) {
 	var httpResp *http.Response
-	var backoffSchedule = []time.Duration{
-		1 * time.Second,
-		2 * time.Second,
-		4 * time.Second,
-		8 * time.Second,
-	}
-
+	var backoffSchedule = client.fibBackoff()
 	httpReq, err := request.constructRequest(ctx, *client.Config)
 	if err != nil {
 		return nil, utils.CreateRequestError(err)
@@ -144,7 +140,7 @@ func (client *CSClient) createAndSendReq(
 
 	for index, backoff := range backoffSchedule {
 		httpResp, err = client.httpClient.Do(httpReq)
-		if err == nil {
+		if err == nil && (httpResp.StatusCode >= 200 && httpResp.StatusCode < 300) {
 			defer func(httpReq *http.Request) {
 				if httpReq.Body != nil {
 					httpReq.Body.Close()
@@ -163,14 +159,14 @@ func (client *CSClient) createAndSendReq(
 	}
 
 	if httpResp.Body == http.NoBody {
-		_, err := ioutil.ReadAll(httpResp.Body)
+		_, err := io.ReadAll(httpResp.Body)
 		if err != nil {
 			return nil, utils.ReadResponseError(err)
 		}
 	}
 
 	if httpResp.StatusCode < 200 || httpResp.StatusCode >= 300 {
-		respAsBytes, err := ioutil.ReadAll(httpResp.Body)
+		respAsBytes, err := io.ReadAll(httpResp.Body)
 		if err != nil {
 			return nil, utils.ReadResponseError(err)
 		}
@@ -181,21 +177,31 @@ func (client *CSClient) createAndSendReq(
 	return httpResp, nil
 }
 
+func (client *CSClient) fibBackoff() []time.Duration {
+	backoff := make([]time.Duration, client.RetryCount)
+	backoff[0], backoff[1] = 0*time.Second, 1*time.Second
+	for i := 2; i < client.RetryCount; i++ {
+		backoff[i] = backoff[i-1] + backoff[i-2]
+	}
+
+	return backoff
+}
+
 func (c *CSClient) unmarshalJSONBody(bodyReader io.Reader, v interface{}) error {
-	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
+	bodyAsBytes, err := io.ReadAll(bodyReader)
 	if err != nil {
 		return utils.ReadResponseError(err)
 	}
 
 	if err := json.Unmarshal(bodyAsBytes, v); err != nil {
-		return utils.UnmarshalJsonError(err)
+		return fmt.Errorf("Error %v, Body: %s", utils.UnmarshalJsonError(err), bodyAsBytes)
 	}
 
 	return nil
 }
 
 func (c *CSClient) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
-	bodyAsBytes, err := ioutil.ReadAll(bodyReader)
+	bodyAsBytes, err := io.ReadAll(bodyReader)
 	if err != nil {
 		return utils.ReadResponseError(err)
 	}

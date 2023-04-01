@@ -65,7 +65,7 @@ type ReadObjGroupResp struct {
 	Source             string       `json:"source"`
 	Compression        string
 	Pattern            string
-	PartitionBy        string
+	PartitionBy        PartitionBy `json:"partitionBy"`
 	SourceBucket       string
 	IndexRetention     int
 	KeepOriginal       bool
@@ -74,24 +74,36 @@ type ReadObjGroupResp struct {
 	ColumnSelection    []map[string]interface{}
 }
 
+type PartitionBy struct {
+	By []map[string]interface{} `json:"by"`
+}
+
 type CreateObjectGroupRequest struct {
-	AuthToken      string
-	Bucket         string
-	Source         string
-	Format         *Format
-	Interval       *Interval
-	IndexRetention *IndexRetention
-	Filter         []Filter
-	Options        *Options
-	Realtime       bool
-	LiveEvents     string
+	AuthToken         string
+	Bucket            string
+	Source            string
+	Format            *Format
+	Interval          *Interval
+	IndexRetention    *IndexRetention
+	Filter            []Filter
+	Options           *Options
+	Realtime          bool
+	LiveEvents        string
+	PartitionBy       string
+	TargetActiveIndex int
 }
 
 type Format struct {
-	Type            string `json:"_type"`
-	ColumnDelimiter string `json:"columnDelimiter"`
-	RowDelimiter    string `json:"rowDelimiter"`
-	HeaderRow       bool   `json:"headerRow"`
+	Type              string                   `json:"_type"`
+	ColumnDelimiter   string                   `json:"columnDelimiter"`
+	RowDelimiter      string                   `json:"rowDelimiter"`
+	HeaderRow         bool                     `json:"headerRow"`
+	ArrayFlattenDepth int                      `json:"arrayFlattenDepth"`
+	StripPrefix       bool                     `json:"stripPrefix"`
+	Horizontal        bool                     `json:"horizontal"`
+	ArraySelection    []map[string]interface{} `json:"arraySelection"`
+	FieldSelection    []map[string]interface{} `json:"fieldSelection"`
+	VerticalSelection []map[string]interface{} `json:"verticalSelection"`
 }
 
 type Interval struct {
@@ -118,9 +130,11 @@ type Range struct {
 }
 
 type Options struct {
-	IgnoreIrregular bool
-	Compression     string
-	ColTypes        map[string]string
+	IgnoreIrregular bool                     `json:"ignoreIrregular"`
+	Compression     string                   `json:"compression"`
+	ColTypes        map[string]string        `json:"colTypes"`
+	ColRenames      map[string]string        `json:"colRenames"`
+	ColSelection    []map[string]interface{} `json:"colSelection"`
 }
 
 type UpdateObjectGroupRequest struct {
@@ -151,7 +165,7 @@ type Transform struct {
 	Type         string          `json:"_type"`
 	InputField   string          `json:"inputField"`
 	OutputFields []ViewFieldSpec `json:"outputFields"`
-	KeyPart      int             `json:"keyPart,omitempty"`
+	KeyPart      int             `json:"keyPart"`
 	Pattern      string          `json:"pattern,omitempty"`
 	Paths        []string        `json:"paths,omitempty"`
 	Vertical     []string        `json:"vertical,omitempty"`

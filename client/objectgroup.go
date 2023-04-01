@@ -124,10 +124,25 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 
 	if req.Format != nil {
 		format = map[string]interface{}{
-			"_type":           req.Format.Type,
-			"columnDelimiter": req.Format.ColumnDelimiter,
-			"rowDelimiter":    req.Format.RowDelimiter,
-			"headerRow":       req.Format.HeaderRow,
+			"_type":             req.Format.Type,
+			"columnDelimiter":   req.Format.ColumnDelimiter,
+			"rowDelimiter":      req.Format.RowDelimiter,
+			"headerRow":         req.Format.HeaderRow,
+			"arrayFlattenDepth": req.Format.ArrayFlattenDepth,
+			"stripPrefix":       req.Format.StripPrefix,
+			"horizontal":        req.Format.Horizontal,
+		}
+
+		if req.Format.ArraySelection != nil {
+			format["arraySelection"] = req.Format.ArraySelection
+		}
+
+		if req.Format.FieldSelection != nil {
+			format["fieldSelection"] = req.Format.FieldSelection
+		}
+
+		if req.Format.VerticalSelection != nil {
+			format["verticalSelection"] = req.Format.VerticalSelection
 		}
 	}
 
@@ -142,6 +157,14 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 
 		if req.Options.ColTypes != nil {
 			options["colTypes"] = req.Options.ColTypes
+		}
+
+		if req.Options.ColRenames != nil {
+			options["colRenames"] = req.Options.ColRenames
+		}
+
+		if req.Options.ColSelection != nil {
+			options["colSelection"] = req.Options.ColSelection
 		}
 	}
 
@@ -177,14 +200,16 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 	}
 
 	body := map[string]interface{}{
-		"bucket":         req.Bucket,
-		"source":         req.Source,
-		"format":         format,
-		"filter":         filters,
-		"indexRetention": indexRetention,
-		"options":        options,
-		"interval":       interval,
-		"realtime":       req.Realtime,
+		"bucket":            req.Bucket,
+		"source":            req.Source,
+		"format":            format,
+		"filter":            filters,
+		"indexRetention":    indexRetention,
+		"options":           options,
+		"interval":          interval,
+		"realtime":          req.Realtime,
+		"targetActiveIndex": req.TargetActiveIndex,
+		"partitionBy":       req.PartitionBy,
 	}
 
 	if req.LiveEvents != "" {
