@@ -65,17 +65,13 @@ type ReadObjGroupResp struct {
 	Source             string       `json:"source"`
 	Compression        string
 	Pattern            string
-	PartitionBy        PartitionBy `json:"partitionBy"`
+	PartitionBy        interface{} `json:"partitionBy"`
 	SourceBucket       string
 	IndexRetention     int
 	KeepOriginal       bool
 	ArrayFlattenDepth  *int
 	ColumnRenames      map[string]string
 	ColumnSelection    []map[string]interface{}
-}
-
-type PartitionBy struct {
-	By []map[string]interface{} `json:"by"`
 }
 
 type CreateObjectGroupRequest struct {

@@ -1,3 +1,8 @@
+## 1.0.11
+
+### Bug Fixes:
+* provider/resources/objectgroup.go: Making `PartitionBy` read backwards compatible between CS releases
+
 ## 1.0.10
 
 ### Important:
