@@ -682,8 +682,14 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		}
 	}
 
-	if len(resp.PartitionBy.By) > 0 {
-		pattern := resp.PartitionBy.By[0]["pattern"].(string)
+	if resp.PartitionBy != nil {
+		var pattern string
+		pattern, ok := resp.PartitionBy.(string)
+		if !ok {
+			by := resp.PartitionBy.([]map[string]interface{})
+			pattern = by[0]["pattern"].(string)
+		}
+
 		err = data.Set("partition_by", pattern)
 		if err != nil {
 			return diag.FromErr(err)
