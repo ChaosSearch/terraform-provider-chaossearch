@@ -1,3 +1,13 @@
+## 1.0.12
+
+### Bug FIxes:
+* provider/resources/objectgroup.go: Touching up `PartitionBy` type casting
+
+### Enhancements:
+* client/client.go: Retry function used to truncate the original error for a failed request
+* client/objectgroup.go: if req.PartitionBy is an empty string, do not put it in request body
+* provider/resources/objectgroup.go: `strip_prefix` default true
+
 ## 1.0.11
 
 ### Bug Fixes:

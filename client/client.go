@@ -138,24 +138,31 @@ func (client *CSClient) createAndSendReq(
 		return nil, utils.CreateRequestError(err)
 	}
 
-	for index, backoff := range backoffSchedule {
-		httpResp, err = client.httpClient.Do(httpReq)
-		if err == nil && (httpResp.StatusCode >= 200 && httpResp.StatusCode < 300) {
-			defer func(httpReq *http.Request) {
-				if httpReq.Body != nil {
-					httpReq.Body.Close()
-				}
-			}(httpReq)
+	httpResp, err = client.httpClient.Do(httpReq)
+	if httpResp == nil || (httpResp.StatusCode < 200 || httpResp.StatusCode >= 300) {
+		for _, backoff := range backoffSchedule {
+			retryResp, err := client.httpClient.Do(httpReq)
+			if err == nil && (retryResp.StatusCode >= 200 && retryResp.StatusCode < 300) {
+				defer func(httpReq *http.Request) {
+					if httpReq.Body != nil {
+						httpResp = retryResp
+						httpReq.Body.Close()
+					}
+				}(httpReq)
 
-			break
+				break
+			}
+
+			time.Sleep(backoff)
 		}
-
-		retryAttemptLogger(index+1, len(backoffSchedule), backoff, err)
-		time.Sleep(backoff)
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("Failed to execute request (Attempts exceeded) => Error: %s", err)
+		respAsBytes, _ := io.ReadAll(httpResp.Body)
+		return nil, fmt.Errorf(
+			"Failed to execute request (Attempts exceeded) => StatusCode: %v \n Error: %s \n Body: %s",
+			httpResp.StatusCode, err, respAsBytes,
+		)
 	}
 
 	if httpResp.Body == http.NoBody {
@@ -211,12 +218,4 @@ func (c *CSClient) unmarshalXMLBody(bodyReader io.Reader, v interface{}) error {
 	}
 
 	return nil
-}
-
-func retryAttemptLogger(attemptNum int, attemptTotal int, backoff time.Duration, err error) {
-	fmt.Fprintf(os.Stderr, `
-	Request failed... Attempt %v / %v
-	Retrying in %v seconds
-	Error: %s
-	`, attemptNum, attemptTotal, backoff, err)
 }

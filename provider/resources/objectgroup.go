@@ -90,7 +90,7 @@ func ResourceObjectGroup() *schema.Resource {
 						"strip_prefix": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							Computed: true,
+							Default:  true,
 						},
 						"horizontal": {
 							Type:     schema.TypeBool,
@@ -686,8 +686,9 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		var pattern string
 		pattern, ok := resp.PartitionBy.(string)
 		if !ok {
-			by := resp.PartitionBy.([]map[string]interface{})
-			pattern = by[0]["pattern"].(string)
+			patternMap := resp.PartitionBy.(map[string]interface{})
+			byList := patternMap["by"].([]interface{})
+			pattern = byList[0].(map[string]interface{})["pattern"].(string)
 		}
 
 		err = data.Set("partition_by", pattern)
