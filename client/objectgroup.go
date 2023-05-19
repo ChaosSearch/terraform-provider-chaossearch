@@ -209,11 +209,14 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		"interval":          interval,
 		"realtime":          req.Realtime,
 		"targetActiveIndex": req.TargetActiveIndex,
-		"partitionBy":       req.PartitionBy,
 	}
 
 	if req.LiveEvents != "" {
 		body["liveEvents"] = req.LiveEvents
+	}
+
+	if req.PartitionBy != "" {
+		body["partitionBy"] = req.PartitionBy
 	}
 
 	bodyAsBytes, err := json.Marshal(body)
