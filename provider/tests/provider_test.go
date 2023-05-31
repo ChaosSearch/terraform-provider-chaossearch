@@ -11,7 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const source string = "chaossearch-tf-provider-test"
+const csvSource string = "chaossearch-tf-provider-test"
+const jsonSource string = "chaossearch-self-service-users"
 
 var testAccProvider *schema.Provider
 var testAccProviders map[string]*schema.Provider

@@ -11,7 +11,7 @@ import (
 )
 
 func TestAccIndex(t *testing.T) {
-	resourceName := "chaossearch_object_group.create-object-group"
+	resourceName := "chaossearch_index_model.model"
 	bucketName := generateName("acc-test-tf-provider-index")
 	resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
@@ -39,10 +39,10 @@ func testAccIndexConfig(bucket string) string {
 			model_mode = 0
 			delete_enabled = true
 			depends_on = [
-			  chaossearch_object_group.create-object-group
+			  chaossearch_object_group.csv-og
 			]
 		  }
-	`, testAccObjectGroupConfig(bucket), bucket)
+	`, testAccObjectGroupConfigCSV(bucket), bucket)
 }
 
 func testAccIndexExists(resourceName, bucketName string) resource.TestCheckFunc {

@@ -1,6 +1,16 @@
+## 1.0.13
+
+### Bug Fixes:
+* provider/resources/objectgroup.go: Fix `strip_prefix` on read
+  
+### Enhancements:
+* provider/resources/objectgroup.go: Enable unlimited `array_flatten_depth` by passing `-1`
+* provider/resources/objectgroup.go: Schema and read data mapping updates for update in-place discrepancies
+* provider/tests/*: Acceptance test improvements
+
 ## 1.0.12
 
-### Bug FIxes:
+### Bug Fixes:
 * provider/resources/objectgroup.go: Touching up `PartitionBy` type casting
 
 ### Enhancements:

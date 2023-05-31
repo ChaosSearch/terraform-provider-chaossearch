@@ -98,12 +98,11 @@ resource "chaossearch_object_group" "create-object-group" {
 
 resource "chaossearch_object_group" "selection-og" {
   bucket = "tf-provider-selections"
-  source = "chaossearch-tf-provider-test"
+  source = "chaos-watch-playground"
   format {
-    type             = "CSV"
-    column_delimiter = ","
-    row_delimiter    = "\n"
-    header_row       = true
+    type             = "JSON"
+    array_flatten_depth = -1
+    /*
     field_selection = jsonencode([{
         "excludes": [
           "data",
@@ -134,9 +133,19 @@ resource "chaossearch_object_group" "selection-og" {
       ],
       "type": "regex"
     }])
+  */
   }
   index_retention {
     overall       = -1
+  }
+  filter {
+    field = "key"
+    prefix = "specs/"
+  }
+
+  filter {
+    field = "key"
+    regex = ".*"
   }
 
   options {
