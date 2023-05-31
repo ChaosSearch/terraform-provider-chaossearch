@@ -124,13 +124,16 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 
 	if req.Format != nil {
 		format = map[string]interface{}{
-			"_type":             req.Format.Type,
-			"columnDelimiter":   req.Format.ColumnDelimiter,
-			"rowDelimiter":      req.Format.RowDelimiter,
-			"headerRow":         req.Format.HeaderRow,
-			"arrayFlattenDepth": req.Format.ArrayFlattenDepth,
-			"stripPrefix":       req.Format.StripPrefix,
-			"horizontal":        req.Format.Horizontal,
+			"_type":           req.Format.Type,
+			"columnDelimiter": req.Format.ColumnDelimiter,
+			"rowDelimiter":    req.Format.RowDelimiter,
+			"headerRow":       req.Format.HeaderRow,
+			"stripPrefix":     req.Format.StripPrefix,
+			"horizontal":      req.Format.Horizontal,
+		}
+
+		if req.Format.ArrayFlattenDepth != -1 {
+			format["arrayFlattenDepth"] = req.Format.ArrayFlattenDepth
 		}
 
 		if req.Format.ArraySelection != nil {

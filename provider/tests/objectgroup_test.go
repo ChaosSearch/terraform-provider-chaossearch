@@ -13,8 +13,10 @@ import (
 )
 
 func TestAccObjectGroup(t *testing.T) {
-	resourceName := "chaossearch_object_group.create-object-group"
-	bucketName := generateName("acc-test-tf-provider-og")
+	csvResourceName := "chaossearch_object_group.csv-og"
+	csvBucketName := generateName("acc-test-tf-csv-og")
+	jsonResourceName := "chaossearch_object_group.json-og"
+	jsonBucketName := generateName("acc-test-tf-json-og")
 	resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
 		ExternalProviders: testAccExternalProviders,
@@ -24,26 +26,33 @@ func TestAccObjectGroup(t *testing.T) {
 		CheckDestroy: testAccObjectGroupDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccObjectGroupConfig(bucketName),
+				Config: testAccObjectGroupConfigCSV(csvBucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccObjectGroupExists(resourceName, bucketName),
-					resource.TestCheckResourceAttr(resourceName, "bucket", bucketName),
+					testAccObjectGroupExists(csvResourceName, csvBucketName),
+					resource.TestCheckResourceAttr(csvResourceName, "bucket", csvBucketName),
+				),
+			},
+			{
+				Config: testAccObjectGroupConfigJSON(jsonBucketName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccObjectGroupExists(jsonResourceName, jsonBucketName),
+					resource.TestCheckResourceAttr(jsonResourceName, "bucket", jsonBucketName),
 				),
 			},
 		},
 	})
 }
 
-func testAccObjectGroupConfig(bucket string) string {
+func testAccObjectGroupConfigCSV(bucket string) string {
 	return fmt.Sprintf(`
 		%s
-		resource "chaossearch_object_group" "create-object-group" {
+		resource "chaossearch_object_group" "csv-og" {
 		  bucket = "%s"
 		  source = "%s"
 		  format {
 			type             = "CSV"
 			column_delimiter = ","
-			row_delimiter    = "\n"
+			row_delimiter    = "\\n"
 			header_row       = true
 		  }
 		  index_retention {
@@ -53,9 +62,10 @@ func testAccObjectGroupConfig(bucket string) string {
 			col_types = jsonencode({
 			  "Period": "Timeval"
 			})
+			ignore_irregular = true
 		  }
 		  filter {
-			field = "key"
+			field  = "key"
 			prefix = "ec"
 		  }
 		  filter {
@@ -63,7 +73,42 @@ func testAccObjectGroupConfig(bucket string) string {
 			regex = ".*"
 		  }
 		}
-	`, testAccProviderConfigBlock(), bucket, source)
+	`, testAccProviderConfigBlock(), bucket, csvSource)
+}
+
+func testAccObjectGroupConfigJSON(bucket string) string {
+	return fmt.Sprintf(`
+		%s
+		resource "chaossearch_object_group" "json-og" {
+		  bucket = "%s"
+		  source = "%s"
+		  format {
+			type                = "JSON"
+			array_flatten_depth = -1
+			field_selection     = jsonencode([{
+				"type": "blacklist",
+				"excludes": [
+					"email",
+					"hq_phone
+				]
+			}])
+		  }
+		  index_retention {
+			overall = -1
+		  }
+		  options {
+			col_types = jsonencode({
+			  "createddate.value": "Timeval"
+			})
+			ignore_irregular = true
+		  }
+		  filter {
+			field = "key"
+			regex = ".*"
+		  }
+		}
+		
+	`, testAccProviderConfigBlock(), bucket, jsonSource)
 }
 
 func testAccObjectGroupExists(resourceName, bucketName string) resource.TestCheckFunc {

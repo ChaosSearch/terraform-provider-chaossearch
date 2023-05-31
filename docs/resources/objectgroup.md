@@ -92,7 +92,7 @@ resource "chaossearch_object_group" "create-object-group" {
   * `column_delimiter` - **(Optional)** Specifies the character for separating columns
   * `row_delimiter` - **(Optional)** Specifies the character for separating rows
   * `header_row` - **(Optional)** Specifies if the file includes a header row
-  * `array_flatten_depth` - **(Optional)** How deeply nested arrays should be allowed to get before parsing stops. Defaults to unlimited.
+  * `array_flatten_depth` - **(Optional)** How deeply nested arrays should be allowed to get before parsing stops. Defaults to 0. Use `-1` for unlimited
   * `strip_prefix` - **(Optional)** By default, all fields will be prefixed with 'root'. If this is set to true, that prefix will be disabled.
   * `horizontal` - **(Optional)** If true, array fields will be turned into new columns on each flattened message. If false, array fields will be broadcast into multiple flattened rows for each array item.
   * `array_selection` - **(Optional)** A json policy block for selecting array fields

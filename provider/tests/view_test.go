@@ -14,7 +14,9 @@ import (
 func TestAccView(t *testing.T) {
 	bucketName := generateName("acc-test-tf-provider-view-og")
 	viewName := generateName("acc-test-tf-provider-view")
-	resourceName := "chaossearch_view.create-view"
+	predsViewName := generateName("acc-test-tf-provider-view-preds")
+	resourceName := "chaossearch_view.view"
+	predsResourceName := "chaossearch_view.view-preds"
 	resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
 		ExternalProviders: testAccExternalProviders,
@@ -28,25 +30,10 @@ func TestAccView(t *testing.T) {
 					testAccViewExists(resourceName, bucketName),
 				),
 			},
-		},
-	})
-}
-
-func TestAccViewPreds(t *testing.T) {
-	bucketName := generateName("acc-test-tf-provider-view-og")
-	viewName := generateName("acc-test-tf-provider-view-preds")
-	resourceName := "chaossearch_view.create-view"
-	resource.Test(t, resource.TestCase{
-		Providers:         testAccProviders,
-		ExternalProviders: testAccExternalProviders,
-		PreCheck: func() {
-			testAccPreCheck(t)
-		},
-		Steps: []resource.TestStep{
 			{
-				Config: testAccViewPredsConfig(viewName, bucketName),
+				Config: testAccViewPredsConfig(predsViewName, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccViewExists(resourceName, bucketName),
+					testAccViewExists(predsResourceName, bucketName),
 				),
 			},
 		},
@@ -56,7 +43,7 @@ func TestAccViewPreds(t *testing.T) {
 func testAccViewConfig(viewName, bucketName string) string {
 	return fmt.Sprintf(`
 		%s
-	    resource "chaossearch_view" "create-view" {
+	    resource "chaossearch_view" "view" {
 			bucket           = "%s"
 			case_insensitive = false
 			index_pattern    = ".*"
@@ -87,7 +74,7 @@ func testAccViewConfig(viewName, bucketName string) string {
 func testAccViewPredsConfig(viewName, bucketName string) string {
 	return fmt.Sprintf(`
 	%s
-	resource "chaossearch_view" "create-view" {
+	resource "chaossearch_view" "view-preds" {
 		bucket           = "%s"
 		case_insensitive = false
 		index_pattern    = ".*"

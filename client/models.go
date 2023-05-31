@@ -128,9 +128,9 @@ type Range struct {
 type Options struct {
 	IgnoreIrregular bool                     `json:"ignoreIrregular"`
 	Compression     string                   `json:"compression"`
-	ColTypes        map[string]string        `json:"colTypes"`
-	ColRenames      map[string]string        `json:"colRenames"`
-	ColSelection    []map[string]interface{} `json:"colSelection"`
+	ColTypes        map[string]string        `json:"colTypes,omitempty"`
+	ColRenames      map[string]string        `json:"colRenames,omitempty"`
+	ColSelection    []map[string]interface{} `json:"colSelection,omitempty"`
 }
 
 type UpdateObjectGroupRequest struct {

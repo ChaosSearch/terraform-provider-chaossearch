@@ -7,6 +7,7 @@ import (
 	"cs-tf-provider/provider/models"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -54,38 +55,32 @@ func ResourceObjectGroup() *schema.Resource {
 			"format": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Computed: true,
 						},
 						"column_delimiter": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Computed: true,
 						},
 						"header_row": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							Computed: true,
 						},
 						"row_delimiter": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Computed: true,
 						},
 						"pattern": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Computed: true,
 						},
 						"array_flatten_depth": {
 							Type:     schema.TypeInt,
 							Optional: true,
-							Computed: true,
+							Default:  0,
 						},
 						"strip_prefix": {
 							Type:     schema.TypeBool,
@@ -95,24 +90,21 @@ func ResourceObjectGroup() *schema.Resource {
 						"horizontal": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							Computed: true,
+							Default:  false,
 						},
 						"array_selection": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							Computed:     true,
 							ValidateFunc: validateSelectionPolicy,
 						},
 						"field_selection": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							Computed:     true,
 							ValidateFunc: validateSelectionPolicy,
 						},
 						"vertical_selection": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							Computed:     true,
 							ValidateFunc: validateSelectionPolicy,
 						},
 					},
@@ -138,7 +130,6 @@ func ResourceObjectGroup() *schema.Resource {
 			"filter": {
 				Type:     schema.TypeList,
 				Optional: true,
-				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"field": {
@@ -148,18 +139,15 @@ func ResourceObjectGroup() *schema.Resource {
 						"range": {
 							Type:     schema.TypeSet,
 							Optional: true,
-							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"min": {
 										Type:     schema.TypeString,
 										Optional: true,
-										Computed: true,
 									},
 									"max": {
 										Type:     schema.TypeString,
 										Optional: true,
-										Computed: true,
 									},
 								},
 							},
@@ -167,17 +155,14 @@ func ResourceObjectGroup() *schema.Resource {
 						"equals": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Computed: true,
 						},
 						"prefix": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Computed: true,
 						},
 						"regex": {
 							Type:     schema.TypeString,
 							Optional: true,
-							Computed: true,
 						},
 					},
 				},
@@ -215,7 +200,6 @@ func ResourceObjectGroup() *schema.Resource {
 			"options": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"compression": {
@@ -240,7 +224,6 @@ func ResourceObjectGroup() *schema.Resource {
 						"col_selection": {
 							Type:         schema.TypeString,
 							Optional:     true,
-							Computed:     true,
 							ValidateFunc: validateSelectionPolicy,
 						},
 					},
@@ -598,17 +581,29 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	}
 
 	if resp.Format != nil {
-		var arraySelection string
-		var fieldSelection string
+		var arraySelectString string
+		var fieldSelectString string
+		//var vertSelectString string
+
+		formatRespMap := map[string]interface{}{
+			"type":                resp.Format.Type,
+			"header_row":          resp.Format.HeaderRow,
+			"column_delimiter":    resp.Format.ColumnDelimiter,
+			"row_delimiter":       resp.Format.RowDelimiter,
+			"array_flatten_depth": resp.Format.ArrayFlattenDepth,
+			"strip_prefix":        resp.Format.StripPrefix,
+			"horizontal":          resp.Format.Horizontal,
+		}
 
 		arraySelect := resp.Format.ArraySelection
 		if len(arraySelect) > 0 {
+
 			selectJson, err := json.Marshal(arraySelect)
 			if err != nil {
 				return diag.FromErr(utils.MarshalJsonError(err))
 			}
 
-			arraySelection, err = structure.NormalizeJsonString(string(selectJson))
+			arraySelectString, err = structure.NormalizeJsonString(string(selectJson))
 			if err != nil {
 				return diag.FromErr(utils.NormalizingJsonError(err))
 			}
@@ -616,28 +611,72 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 
 		fieldSelect := resp.Format.FieldSelection
 		if len(fieldSelect) > 0 {
-			selectJson, err := json.Marshal(arraySelect)
+
+			selectJson, err := json.Marshal(fieldSelect)
 			if err != nil {
 				return diag.FromErr(utils.MarshalJsonError(err))
 			}
 
-			fieldSelection, err = structure.NormalizeJsonString(string(selectJson))
+			fieldSelectString, err = structure.NormalizeJsonString(string(selectJson))
 			if err != nil {
 				return diag.FromErr(utils.NormalizingJsonError(err))
 			}
 		}
 
-		err = data.Set("format", []interface{}{
-			map[string]interface{}{
-				"type":                resp.Format.Type,
-				"header_row":          resp.Format.HeaderRow,
-				"column_delimiter":    resp.Format.ColumnDelimiter,
-				"row_delimiter":       resp.Format.RowDelimiter,
-				"array_flatten_depth": resp.ArrayFlattenDepth,
-				"array_selection":     arraySelection,
-				"field_selection":     fieldSelection,
-			},
-		})
+		/*
+			vertSelect := resp.Format.VerticalSelection
+			if len(vertSelect) > 0 {
+				selectJson, err := json.Marshal(vertSelect)
+				if err != nil {
+					return diag.FromErr(utils.MarshalJsonError(err))
+				}
+
+				vertSelectString, err = structure.NormalizeJsonString(string(selectJson))
+				if err != nil {
+					return diag.FromErr(utils.NormalizingJsonError(err))
+				}
+			}
+		*/
+
+		formatList := data.Get("format").(*schema.Set).List()
+		if len(formatList) > 0 {
+			var arrayMap []map[string]interface{}
+			var arrayStateMap []map[string]interface{}
+			var fieldMap []map[string]interface{}
+			var fieldStateMap []map[string]interface{}
+			//var vertMap []map[string]interface{}
+			//var vertStateMap []map[string]interface{}
+			formatMap := formatList[0].(map[string]interface{})
+
+			arraySelectStateString := formatMap["array_selection"].(string)
+			_ = json.Unmarshal([]byte(arraySelectString), &arrayMap)
+			_ = json.Unmarshal([]byte(arraySelectStateString), &arrayStateMap)
+			if !reflect.DeepEqual(arrayMap, arrayStateMap) {
+				formatRespMap["array_selection"] = arraySelectString
+			}
+
+			fieldSelectStateString := formatMap["field_selection"].(string)
+			_ = json.Unmarshal([]byte(fieldSelectString), &fieldMap)
+			_ = json.Unmarshal([]byte(fieldSelectStateString), &fieldStateMap)
+			if !reflect.DeepEqual(fieldMap, fieldStateMap) {
+				formatRespMap["field_selection"] = fieldSelectString
+			}
+
+			/*
+				vertSelectStateString := formatMap["vertical_selection"].(string)
+				_ = json.Unmarshal([]byte(vertSelectString), &vertMap)
+				_ = json.Unmarshal([]byte(vertSelectStateString), &vertStateMap)
+				if !reflect.DeepEqual(vertMap, vertStateMap) {
+					formatRespMap["vertical_selection"] = vertSelectString
+				}
+			*/
+		} else {
+			formatRespMap["array_selection"] = arraySelectString
+			formatRespMap["field_selection"] = fieldSelectString
+			//formatRespMap["vertical_selection"] = vertSelectString
+		}
+
+		err = data.Set("format", []interface{}{formatRespMap})
 
 		if err != nil {
 			return diag.FromErr(err)
@@ -670,13 +709,24 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	}
 
 	if resp.Options != nil {
-		err = data.Set("options", []interface{}{
-			map[string]interface{}{
-				"ignore_irregular": resp.Options.IgnoreIrregular,
-				"compression":      resp.Compression,
-			},
-		})
+		options := map[string]interface{}{
+			"ignore_irregular": resp.Options.IgnoreIrregular,
+			"compression":      resp.Compression,
+		}
 
+		if len(resp.Options.ColTypes) > 0 {
+			colTypes, _ := json.Marshal(resp.Options.ColTypes)
+			colTypesJson, _ := structure.NormalizeJsonString(string(colTypes))
+			options["col_types"] = colTypesJson
+		}
+
+		if len(resp.Options.ColSelection) > 0 {
+			colSelect, _ := json.Marshal(resp.Options.ColSelection)
+			colSelectJson, _ := structure.NormalizeJsonString(string(colSelect))
+			options["col_selection"] = colSelectJson
+		}
+
+		err = data.Set("options", []interface{}{options})
 		if err != nil {
 			return diag.FromErr(err)
 		}
