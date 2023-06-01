@@ -15,7 +15,7 @@ import (
 func TestAccSubAccount(t *testing.T) {
 	testUser := generateName("acc-test-tf-provider-user")
 	resourceName := "chaossearch_sub_account.sub-account"
-	resource.Test(t, resource.TestCase{
+	defer resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
 		ExternalProviders: testAccExternalProviders,
 		PreCheck: func() {
@@ -30,6 +30,7 @@ func TestAccSubAccount(t *testing.T) {
 			},
 		},
 	})
+	t.Parallel()
 }
 
 func testAccSubAccountConfig(username string) string {

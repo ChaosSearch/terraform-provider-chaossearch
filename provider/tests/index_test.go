@@ -11,24 +11,31 @@ import (
 )
 
 func TestAccIndex(t *testing.T) {
-	resourceName := "chaossearch_index_model.model"
-	bucketName := generateName("acc-test-tf-provider-index")
-	resource.Test(t, resource.TestCase{
+	defer resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
 		ExternalProviders: testAccExternalProviders,
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		Steps: []resource.TestStep{
-			{
-				Config: testAccIndexConfig(bucketName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccIndexExists(resourceName, bucketName),
-					resource.TestCheckResourceAttr(resourceName, "bucket", bucketName),
-				),
-			},
+			testIndexStep(
+				testAccIndexConfig,
+				"chaossearch_index_model.model",
+				generateName("acc-test-tf-provider-index"),
+			),
 		},
 	})
+	t.Parallel()
+}
+
+func testIndexStep(config func(string) string, rsrcName, objName string) resource.TestStep {
+	return resource.TestStep{
+		Config: testAccIndexConfig(objName),
+		Check: resource.ComposeTestCheckFunc(
+			testAccIndexExists(rsrcName, objName),
+			resource.TestCheckResourceAttr(rsrcName, "bucket_name", objName),
+		),
+	}
 }
 
 func testAccIndexConfig(bucket string) string {

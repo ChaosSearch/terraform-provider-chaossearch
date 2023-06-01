@@ -432,3 +432,15 @@ type CreateDestinationResponse struct {
 	Ok      bool   `json:"ok"`
 	Version int    `json:"version"`
 }
+
+type ReadDestinationResponse struct {
+	Destinations []Destination `json:"destinations"`
+}
+
+type Destination struct {
+	Id            string         `json:"id"`
+	Type          string         `json:"type"`
+	Name          string         `json:"name"`
+	Slack         *Slack         `json:"slack,omitempty"`
+	CustomWebhook *CustomWebhook `json:"custom_webhook,omitempty"`
+}

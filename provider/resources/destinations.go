@@ -115,6 +115,30 @@ func resourceDestinationCreate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceDestinationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*models.ProviderMeta).CSClient
+	resp, err := c.ReadDestination(ctx, &client.BasicRequest{
+		AuthToken: meta.(*models.ProviderMeta).Token,
+		Id:        data.Id(),
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	for _, dest := range resp.Destinations {
+		if dest.Id == data.Id() {
+			err := data.Set("name", dest.Name)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			err = data.Set("type", dest.Type)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	return nil
 }
 

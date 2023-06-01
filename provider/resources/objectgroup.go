@@ -85,7 +85,7 @@ func ResourceObjectGroup() *schema.Resource {
 						"strip_prefix": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							Default:  true,
+							Default:  false,
 						},
 						"horizontal": {
 							Type:     schema.TypeBool,
@@ -586,13 +586,12 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		//var vertSelectString string
 
 		formatRespMap := map[string]interface{}{
-			"type":                resp.Format.Type,
-			"header_row":          resp.Format.HeaderRow,
-			"column_delimiter":    resp.Format.ColumnDelimiter,
-			"row_delimiter":       resp.Format.RowDelimiter,
-			"array_flatten_depth": resp.Format.ArrayFlattenDepth,
-			"strip_prefix":        resp.Format.StripPrefix,
-			"horizontal":          resp.Format.Horizontal,
+			"type":             resp.Format.Type,
+			"header_row":       resp.Format.HeaderRow,
+			"column_delimiter": resp.Format.ColumnDelimiter,
+			"row_delimiter":    resp.Format.RowDelimiter,
+			"strip_prefix":     resp.Format.StripPrefix,
+			"horizontal":       resp.Format.Horizontal,
 		}
 
 		arraySelect := resp.Format.ArraySelection
@@ -670,6 +669,8 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 					formatRespMap["vertical_selection"] = vertSelectString
 				}
 			*/
+			formatRespMap["array_flatten_depth"] = formatMap["array_flatten_depth"]
+
 		} else {
 			formatRespMap["array_selection"] = arraySelectString
 			formatRespMap["field_selection"] = fieldSelectString

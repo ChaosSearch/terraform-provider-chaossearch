@@ -36,6 +36,25 @@ func (c *CSClient) CreateDestination(
 	return &resp, nil
 }
 
+func (c *CSClient) ReadDestination(ctx context.Context, req *BasicRequest) (*ReadDestinationResponse, error) {
+	var resp ReadDestinationResponse
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/kibana/api/alerting/destinations/%s", c.Config.URL, req.Id),
+		RequestType: GET,
+		AuthToken:   req.AuthToken,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("Read Destination Failure => %s", err)
+	}
+
+	defer httpResp.Body.Close()
+	if err := c.unmarshalJSONBody(httpResp.Body, &resp); err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
 func (c *CSClient) UpdateDestination(
 	ctx context.Context,
 	req *CreateDestinationRequest,
