@@ -44,7 +44,9 @@ func testAccIndexConfig(bucket string) string {
 		resource "chaossearch_index_model" "model" {
 			bucket_name = "%s"
 			model_mode = 0
-			delete_enabled = true
+			options {
+				delete_enabled = true
+			}
 			depends_on = [
 			  chaossearch_object_group.csv-og
 			]

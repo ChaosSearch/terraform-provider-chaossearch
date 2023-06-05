@@ -96,7 +96,7 @@ func testAccViewPredsConfig(viewName, bucketName string) string {
 		time_field_name  = "@timestamp"
 		filter {
 		  predicate {
-			type = "chaossumo.query.NIRFrontend.Request.Predicate.Or"
+			type  = "chaossumo.query.NIRFrontend.Request.Predicate.Or"
 			preds = [
 				jsonencode(
 				  {

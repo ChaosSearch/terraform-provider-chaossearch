@@ -12,6 +12,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	BucketName     = "bucket_name"
+	ModelMode      = "model_mode"
+	Result         = "result"
+	Indexed        = "indexed"
+	Options        = "options"
+	DeleteEnabled  = "delete_enabled"
+	DeleteTimeout  = "delete_timeout"
+	SkipIndexPause = "skip_index_pause"
+)
+
 func ResourceIndexModel() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: createResourceIndexModel,
@@ -21,51 +32,73 @@ func ResourceIndexModel() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"bucket_name": {
+			BucketName: {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Required: true,
 			},
-			"model_mode": {
+			ModelMode: {
 				Type:     schema.TypeInt,
 				ForceNew: true,
 				Required: true,
 			},
-			"result": {
+			Result: {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"indexed": {
+			Indexed: {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"delete_enabled": {
-				Type:     schema.TypeBool,
+			Options: {
+				Type:     schema.TypeSet,
 				Optional: true,
-				Default:  false,
 				ForceNew: true,
-			},
-			"delete_timeout": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     0,
-				ForceNew:    true,
-				Description: "The amount of time before a delete request times out, in seconds",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						DeleteEnabled: {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+							ForceNew: true,
+						},
+						DeleteTimeout: {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Default:     0,
+							ForceNew:    true,
+							Description: "The amount of time before a delete request times out, in seconds",
+						},
+						SkipIndexPause: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							Description: "Enable if you don't want to wait for indexing to complete",
+						},
+					},
+				},
 			},
 		},
 	}
 }
 
 func createResourceIndexModel(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var skipIndexPause bool
+	options := data.Get(Options).(*schema.Set).List()
+	if len(options) > 0 {
+		optionsMap := options[0].(map[string]interface{})
+		skipIndexPause = optionsMap[SkipIndexPause].(bool)
+	}
+
 	var bucketName string
 	var modelMode int
 	c := meta.(*models.ProviderMeta).CSClient
-	if data.Get("bucket_name") != nil {
-		bucketName = data.Get("bucket_name").(string)
+	if data.Get(BucketName) != nil {
+		bucketName = data.Get(BucketName).(string)
 	}
 
-	if data.Get("model_mode") != nil {
-		modelMode = data.Get("model_mode").(int)
+	if data.Get(ModelMode) != nil {
+		modelMode = data.Get(ModelMode).(int)
 	}
 
 	authToken := meta.(*models.ProviderMeta).Token
@@ -81,31 +114,38 @@ func createResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 	}
 
 	data.SetId(fmt.Sprintf("BucketName: %s, Result: %s", resp.BucketName, strconv.FormatBool(resp.Result)))
-	err = data.Set("bucket_name", resp.BucketName)
+	err = data.Set(BucketName, resp.BucketName)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = data.Set("result", resp.Result)
+	err = data.Set(Result, resp.Result)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	// Confirm index status before ending create
-	indexed := false
-	for !indexed {
-		checkResp, err := c.CheckIndexModel(ctx, bucketName, authToken)
+	if !skipIndexPause {
+		indexed := false
+		for !indexed {
+			checkResp, err := c.CheckIndexModel(ctx, bucketName, authToken)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			indexed = checkResp.Indexed
+			time.Sleep(15 * time.Second)
+		}
+
+		err = data.Set(Indexed, indexed)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		indexed = checkResp.Indexed
-		time.Sleep(15 * time.Second)
-	}
-
-	err = data.Set("indexed", indexed)
-	if err != nil {
-		return diag.FromErr(err)
+	} else {
+		err = data.Set(Indexed, false)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return nil
@@ -116,14 +156,20 @@ func readResourceIndexModel(ctx context.Context, data *schema.ResourceData, meta
 }
 
 func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	deleteEnabled := data.Get("delete_enabled").(bool)
-	deleteTimeout := data.Get("delete_timeout").(int)
+	var deleteEnabled bool
+	var deleteTimeout int
+	options := data.Get(Options).(*schema.Set).List()
+	if len(options) > 0 {
+		optionsMap := options[0].(map[string]interface{})
+		deleteEnabled = optionsMap[DeleteEnabled].(bool)
+		deleteTimeout = optionsMap[DeleteTimeout].(int)
+	}
 
 	if deleteEnabled {
 		var listBucketResp *client.ListBucketResponse
 		c := meta.(*models.ProviderMeta).CSClient
 		authToken := meta.(*models.ProviderMeta).Token
-		bucketName := data.Get("bucket_name").(string)
+		bucketName := data.Get(BucketName).(string)
 		listBucketResp, err := c.ReadIndexModel(
 			ctx,
 			bucketName,

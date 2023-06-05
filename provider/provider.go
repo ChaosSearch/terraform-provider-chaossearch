@@ -79,6 +79,7 @@ func Provider() *schema.Provider {
 			Options: {
 				Type:     schema.TypeSet,
 				Optional: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						RetryCount: {

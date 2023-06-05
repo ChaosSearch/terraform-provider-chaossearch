@@ -1,3 +1,11 @@
+## 1.0.14
+
+### Enhancements:
+* provider/tests/destinations_test.go: Init destination testing
+* provider/tests/*: Enhance test extensibility, ensure tests run in parallel
+* provider/resources/index.go: Moved extra configurations to an `options` block
+* provider/resources/index.go: introduces `skip_index_pause` If you don't want to wait for index completion
+
 ## 1.0.13
 
 ### Bug Fixes:
