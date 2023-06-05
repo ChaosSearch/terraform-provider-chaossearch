@@ -403,6 +403,7 @@ func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 		}
 	}
 
+	transformsArr := data.Get("transforms").([]interface{})
 	if len(resp.Transforms) > 0 {
 		transforms := make([]string, len(resp.Transforms))
 		for index, transformItem := range resp.Transforms {
@@ -429,7 +430,7 @@ func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 			transforms[index] = transformJson
 		}
 
-		err = data.Set("transforms", transforms)
+		err = data.Set("transforms", transformsArr)
 		if err != nil {
 			return diag.FromErr(err)
 		}

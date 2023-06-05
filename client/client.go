@@ -139,7 +139,7 @@ func (client *CSClient) createAndSendReq(
 	}
 
 	httpResp, err = client.httpClient.Do(httpReq)
-	if httpResp == nil || (httpResp.StatusCode < 200 || httpResp.StatusCode >= 300) {
+	if httpResp == nil || (httpResp.StatusCode < 200 || httpResp.StatusCode >= 300) || err != nil {
 		for _, backoff := range backoffSchedule {
 			retryResp, err := client.httpClient.Do(httpReq)
 			if err == nil && (retryResp.StatusCode >= 200 && retryResp.StatusCode < 300) {

@@ -12,12 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+const csvSource string = "chaossearch-tf-provider-test"
+const jsonSource string = "chaossearch-self-service-users"
+
 func TestAccObjectGroup(t *testing.T) {
-	csvResourceName := "chaossearch_object_group.csv-og"
-	csvBucketName := generateName("acc-test-tf-csv-og")
-	jsonResourceName := "chaossearch_object_group.json-og"
-	jsonBucketName := generateName("acc-test-tf-json-og")
-	resource.Test(t, resource.TestCase{
+	defer resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
 		ExternalProviders: testAccExternalProviders,
 		PreCheck: func() {
@@ -25,22 +24,29 @@ func TestAccObjectGroup(t *testing.T) {
 		},
 		CheckDestroy: testAccObjectGroupDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccObjectGroupConfigCSV(csvBucketName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccObjectGroupExists(csvResourceName, csvBucketName),
-					resource.TestCheckResourceAttr(csvResourceName, "bucket", csvBucketName),
-				),
-			},
-			{
-				Config: testAccObjectGroupConfigJSON(jsonBucketName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccObjectGroupExists(jsonResourceName, jsonBucketName),
-					resource.TestCheckResourceAttr(jsonResourceName, "bucket", jsonBucketName),
-				),
-			},
+			testOGStep(
+				testAccObjectGroupConfigCSV,
+				"chaossearch_object_group.csv-og",
+				generateName("acc-test-tf-csv-og"),
+			),
+			testOGStep(
+				testAccObjectGroupConfigJSON,
+				"chaossearch_object_group.json-og",
+				generateName("acc-test-tf-json-og"),
+			),
 		},
 	})
+	t.Parallel()
+}
+
+func testOGStep(config func(string) string, rsrcName, objName string) resource.TestStep {
+	return resource.TestStep{
+		Config: config(objName),
+		Check: resource.ComposeTestCheckFunc(
+			testAccObjectGroupExists(rsrcName, objName),
+			resource.TestCheckResourceAttr(rsrcName, "bucket", objName),
+		),
+	}
 }
 
 func testAccObjectGroupConfigCSV(bucket string) string {
@@ -89,7 +95,7 @@ func testAccObjectGroupConfigJSON(bucket string) string {
 				"type": "blacklist",
 				"excludes": [
 					"email",
-					"hq_phone
+					"hq_phone"
 				]
 			}])
 		  }

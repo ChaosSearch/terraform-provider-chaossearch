@@ -12,8 +12,11 @@ Check out the _Index_ documentation here: [Index Docs](https://docs.chaossearch.
 resource "chaossearch_index_model" "index" {
   bucket_name    = ""
   model_mode     = 0
-  delete_enabled = false
-  delete_timeout = 0
+  options {
+    delete_enabled = false
+    delete_timeout = 0
+    skip_index_pause = false
+  }
 }
 ```
 
@@ -32,6 +35,7 @@ resource "chaossearch_index_model" "index" {
   * Defaults to `0`
   * This does not disable the _Index_ delete call, only times out the _Index_ delete confirmation
   * If this triggers an Exception, you will have to manually confirm _Index_ deletion in your ChaosSearch cluster
+* `skip_index_pause` - **(Optional)** Enable if you don't want to wait for indexing to complete
 
 ## Attribute Reference
 * `indexed` - Reflects the status of whether or not an _Object Group_ has been indexed

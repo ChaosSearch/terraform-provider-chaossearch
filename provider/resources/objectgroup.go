@@ -85,7 +85,7 @@ func ResourceObjectGroup() *schema.Resource {
 						"strip_prefix": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							Default:  true,
+							Computed: true,
 						},
 						"horizontal": {
 							Type:     schema.TypeBool,
@@ -306,6 +306,10 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 
 		if formatMap["strip_prefix"] != nil {
 			stripPrefix = formatMap["strip_prefix"].(bool)
+		} else if typeStr == "JSON" {
+			stripPrefix = true
+		} else {
+			stripPrefix = false
 		}
 
 		if formatMap["horizontal"] != nil {
@@ -583,16 +587,15 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	if resp.Format != nil {
 		var arraySelectString string
 		var fieldSelectString string
-		//var vertSelectString string
+		var vertSelectString string
 
 		formatRespMap := map[string]interface{}{
-			"type":                resp.Format.Type,
-			"header_row":          resp.Format.HeaderRow,
-			"column_delimiter":    resp.Format.ColumnDelimiter,
-			"row_delimiter":       resp.Format.RowDelimiter,
-			"array_flatten_depth": resp.Format.ArrayFlattenDepth,
-			"strip_prefix":        resp.Format.StripPrefix,
-			"horizontal":          resp.Format.Horizontal,
+			"type":             resp.Format.Type,
+			"header_row":       resp.Format.HeaderRow,
+			"column_delimiter": resp.Format.ColumnDelimiter,
+			"row_delimiter":    resp.Format.RowDelimiter,
+			"strip_prefix":     resp.Format.StripPrefix,
+			"horizontal":       resp.Format.Horizontal,
 		}
 
 		arraySelect := resp.Format.ArraySelection
@@ -611,7 +614,6 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 
 		fieldSelect := resp.Format.FieldSelection
 		if len(fieldSelect) > 0 {
-
 			selectJson, err := json.Marshal(fieldSelect)
 			if err != nil {
 				return diag.FromErr(utils.MarshalJsonError(err))
@@ -623,20 +625,18 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 			}
 		}
 
-		/*
-			vertSelect := resp.Format.VerticalSelection
-			if len(vertSelect) > 0 {
-				selectJson, err := json.Marshal(vertSelect)
-				if err != nil {
-					return diag.FromErr(utils.MarshalJsonError(err))
-				}
-
-				vertSelectString, err = structure.NormalizeJsonString(string(selectJson))
-				if err != nil {
-					return diag.FromErr(utils.NormalizingJsonError(err))
-				}
+		vertSelect := resp.Format.VerticalSelection
+		if len(vertSelect) > 0 {
+			selectJson, err := json.Marshal(vertSelect)
+			if err != nil {
+				return diag.FromErr(utils.MarshalJsonError(err))
 			}
-		*/
+
+			vertSelectString, err = structure.NormalizeJsonString(string(selectJson))
+			if err != nil {
+				return diag.FromErr(utils.NormalizingJsonError(err))
+			}
+		}
 
 		formatList := data.Get("format").(*schema.Set).List()
 		if len(formatList) > 0 {
@@ -644,8 +644,8 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 			var arrayStateMap []map[string]interface{}
 			var fieldMap []map[string]interface{}
 			var fieldStateMap []map[string]interface{}
-			//var vertMap []map[string]interface{}
-			//var vertStateMap []map[string]interface{}
+			var vertMap []map[string]interface{}
+			var vertStateMap []map[string]interface{}
 			formatMap := formatList[0].(map[string]interface{})
 
 			arraySelectStateString := formatMap["array_selection"].(string)
@@ -653,6 +653,8 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 			_ = json.Unmarshal([]byte(arraySelectStateString), &arrayStateMap)
 			if !reflect.DeepEqual(arrayMap, arrayStateMap) {
 				formatRespMap["array_selection"] = arraySelectString
+			} else {
+				formatRespMap["array_selection"] = arraySelectStateString
 			}
 
 			fieldSelectStateString := formatMap["field_selection"].(string)
@@ -660,20 +662,24 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 			_ = json.Unmarshal([]byte(fieldSelectStateString), &fieldStateMap)
 			if !reflect.DeepEqual(fieldMap, fieldStateMap) {
 				formatRespMap["field_selection"] = fieldSelectString
+			} else {
+				formatRespMap["field_selection"] = fieldSelectStateString
 			}
 
-			/*
-				vertSelectStateString := formatMap["vertical_selection"].(string)
-				_ = json.Unmarshal([]byte(vertSelectString), &vertMap)
-				_ = json.Unmarshal([]byte(vertSelectStateString), &vertStateMap)
-				if !reflect.DeepEqual(vertMap, vertStateMap) {
-					formatRespMap["vertical_selection"] = vertSelectString
-				}
-			*/
+			vertSelectStateString := formatMap["vertical_selection"].(string)
+			_ = json.Unmarshal([]byte(vertSelectString), &vertMap)
+			_ = json.Unmarshal([]byte(vertSelectStateString), &vertStateMap)
+			if !reflect.DeepEqual(vertMap, vertStateMap) {
+				formatRespMap["vertical_selection"] = vertSelectString
+			} else {
+				formatRespMap["vertical_selection"] = vertSelectStateString
+			}
+
+			formatRespMap["array_flatten_depth"] = formatMap["array_flatten_depth"]
 		} else {
 			formatRespMap["array_selection"] = arraySelectString
 			formatRespMap["field_selection"] = fieldSelectString
-			//formatRespMap["vertical_selection"] = vertSelectString
+			formatRespMap["vertical_selection"] = vertSelectString
 		}
 
 		err = data.Set("format", []interface{}{formatRespMap})

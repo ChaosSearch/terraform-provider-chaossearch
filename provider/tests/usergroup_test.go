@@ -14,7 +14,7 @@ import (
 func TestAccUserGroup(t *testing.T) {
 	resourceName := "chaossearch_user_group.user_group_create"
 	groupName := generateName("acc-test-tf-provider-ug")
-	resource.Test(t, resource.TestCase{
+	defer resource.Test(t, resource.TestCase{
 		Providers:         testAccProviders,
 		ExternalProviders: testAccExternalProviders,
 		PreCheck: func() {
@@ -29,6 +29,7 @@ func TestAccUserGroup(t *testing.T) {
 			},
 		},
 	})
+	t.Parallel()
 }
 
 func testAccUserGroupConfig(groupName string) string {

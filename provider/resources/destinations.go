@@ -12,6 +12,21 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+const (
+	Name          = "name"
+	Type          = "type"
+	CustomWebhook = "custom_webhook"
+	Scheme        = "scheme"
+	Host          = "host"
+	Url           = "url"
+	Path          = "path"
+	Port          = "port"
+	QueryParams   = "query_params"
+	HeaderParams  = "header_params"
+	Method        = "method"
+	Slack         = "slack"
+)
+
 func ResourceDestination() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceDestinationCreate,
@@ -22,54 +37,54 @@ func ResourceDestination() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"name": {
+			Name: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"type": {
+			Type: {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"custom_webhook": {
+			CustomWebhook: {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"scheme": {
+						Scheme: {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "HTTPS",
 						},
-						"host": {
+						Host: {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"url": {
+						Url: {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"path": {
+						Path: {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"port": {
+						Port: {
 							Type:     schema.TypeInt,
 							Optional: true,
 							Default:  -1,
 						},
-						"query_params": {
+						QueryParams: {
 							Type:         schema.TypeString,
 							Optional:     true,
 							ValidateFunc: validation.StringIsJSON,
 							Default:      `{"":""}`,
 						},
-						"header_params": {
+						HeaderParams: {
 							Type:         schema.TypeString,
 							Optional:     true,
 							ValidateFunc: validation.StringIsJSON,
 							Default:      `{"Content-Type": "application/json"}`,
 						},
-						"method": {
+						Method: {
 							Type:     schema.TypeString,
 							Optional: true,
 							Default:  "POST",
@@ -77,12 +92,12 @@ func ResourceDestination() *schema.Resource {
 					},
 				},
 			},
-			"slack": {
+			Slack: {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"url": {
+						Url: {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -115,6 +130,30 @@ func resourceDestinationCreate(ctx context.Context, data *schema.ResourceData, m
 }
 
 func resourceDestinationRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*models.ProviderMeta).CSClient
+	resp, err := c.ReadDestination(ctx, &client.BasicRequest{
+		AuthToken: meta.(*models.ProviderMeta).Token,
+		Id:        data.Id(),
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	for _, dest := range resp.Destinations {
+		if dest.Id == data.Id() {
+			err := data.Set(Name, dest.Name)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			err = data.Set(Type, dest.Type)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -153,39 +192,39 @@ func constructCreateDestinationRequest(
 ) (*client.CreateDestinationRequest, diag.Diagnostics) {
 	req := client.CreateDestinationRequest{
 		AuthToken: meta.(*models.ProviderMeta).Token,
-		Name:      data.Get("name").(string),
-		Type:      data.Get("type").(string),
+		Name:      data.Get(Name).(string),
+		Type:      data.Get(Type).(string),
 	}
 
-	slackList := data.Get("slack").(*schema.Set).List()
+	slackList := data.Get(Slack).(*schema.Set).List()
 	if len(slackList) > 0 {
 		slackMap := slackList[0].(map[string]interface{})
 		req.Slack = &client.Slack{
-			Url: slackMap["url"].(string),
+			Url: slackMap[Url].(string),
 		}
 	}
 
-	customList := data.Get("custom_webhook").(*schema.Set).List()
+	customList := data.Get(CustomWebhook).(*schema.Set).List()
 	if len(customList) > 0 {
 		customMap := customList[0].(map[string]interface{})
-		if customMap["url"].(string) != "" {
+		if customMap[Url].(string) != "" {
 			req.CustomWebhook = &client.CustomWebhook{
-				Url:    customMap["url"].(string),
-				Scheme: customMap["scheme"].(string),
-				Method: customMap["method"].(string),
-				Port:   customMap["port"].(int),
+				Url:    customMap[Url].(string),
+				Scheme: customMap[Scheme].(string),
+				Method: customMap[Method].(string),
+				Port:   customMap[Port].(int),
 			}
 		} else {
 			req.CustomWebhook = &client.CustomWebhook{
-				Scheme: customMap["scheme"].(string),
-				Method: customMap["method"].(string),
-				Host:   customMap["host"].(string),
-				Port:   customMap["port"].(int),
-				Path:   customMap["path"].(string),
+				Scheme: customMap[Scheme].(string),
+				Method: customMap[Method].(string),
+				Host:   customMap[Host].(string),
+				Port:   customMap[Port].(int),
+				Path:   customMap[Path].(string),
 			}
 		}
 
-		queryParamString := customMap["query_params"].(string)
+		queryParamString := customMap[QueryParams].(string)
 		if queryParamString != "" {
 			err := json.Unmarshal([]byte(queryParamString), &req.CustomWebhook.QueryParams)
 			if err != nil {
@@ -193,7 +232,7 @@ func constructCreateDestinationRequest(
 			}
 		}
 
-		headerParamString := customMap["header_params"].(string)
+		headerParamString := customMap[HeaderParams].(string)
 		if headerParamString != "" {
 			err := json.Unmarshal([]byte(headerParamString), &req.CustomWebhook.HeaderParams)
 			if err != nil {
