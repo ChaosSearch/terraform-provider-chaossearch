@@ -1,3 +1,8 @@
+## 1.0.15
+
+### Enhancements:
+* provider/resources/objectgroup.go: `strip_prefix` is no longer configurable, but will be decided based on format type
+
 ## 1.0.14
 
 ### Enhancements:

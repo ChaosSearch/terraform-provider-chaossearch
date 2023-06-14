@@ -68,10 +68,6 @@ func DataSourceObjectGroup() *schema.Resource {
 							Type:     schema.TypeInt,
 							Computed: true,
 						},
-						"strip_prefix": {
-							Type:     schema.TypeBool,
-							Computed: true,
-						},
 						"horizontal": {
 							Type:     schema.TypeBool,
 							Computed: true,

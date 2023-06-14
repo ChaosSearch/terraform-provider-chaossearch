@@ -82,11 +82,6 @@ func ResourceObjectGroup() *schema.Resource {
 							Optional: true,
 							Default:  0,
 						},
-						"strip_prefix": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Computed: true,
-						},
 						"horizontal": {
 							Type:     schema.TypeBool,
 							Optional: true,
@@ -288,6 +283,12 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 			typeStr = formatMap["type"].(string)
 		}
 
+		if typeStr != "JSON" {
+			stripPrefix = false
+		} else {
+			stripPrefix = true
+		}
+
 		if formatMap["column_delimiter"] != nil {
 			columnDelimit = formatMap["column_delimiter"].(string)
 		}
@@ -302,14 +303,6 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 
 		if formatMap["array_flatten_depth"] != nil {
 			arrayFlattenDepth = formatMap["array_flatten_depth"].(int)
-		}
-
-		if formatMap["strip_prefix"] != nil {
-			stripPrefix = formatMap["strip_prefix"].(bool)
-		} else if typeStr == "JSON" {
-			stripPrefix = true
-		} else {
-			stripPrefix = false
 		}
 
 		if formatMap["horizontal"] != nil {
@@ -594,7 +587,6 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 			"header_row":       resp.Format.HeaderRow,
 			"column_delimiter": resp.Format.ColumnDelimiter,
 			"row_delimiter":    resp.Format.RowDelimiter,
-			"strip_prefix":     resp.Format.StripPrefix,
 			"horizontal":       resp.Format.Horizontal,
 		}
 
