@@ -1,6 +1,5 @@
 linters:
   enable:
-    - deadcode
     - errcheck
     - goconst
     - gofmt
@@ -11,9 +10,7 @@ linters:
     - megacheck
     - misspell
     - nakedret
-    - structcheck
     - unconvert
-    - varcheck
   enable-all: false
 run:
   skip-files:

@@ -17,7 +17,7 @@ func DataSourceObjectGroup() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"bucket": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"public": {
 				Type:     schema.TypeBool,
@@ -74,11 +74,15 @@ func DataSourceObjectGroup() *schema.Resource {
 						},
 						"array_selection": {
 							Type:     schema.TypeString,
-							Computed: true,
+							Optional: true,
 						},
 						"field_selection": {
 							Type:     schema.TypeString,
-							Computed: true,
+							Optional: true,
+						},
+						"vertical_selection": {
+							Type:     schema.TypeString,
+							Optional: true,
 						},
 					},
 				},
@@ -95,6 +99,7 @@ func DataSourceObjectGroup() *schema.Resource {
 						"overall": {
 							Type:     schema.TypeInt,
 							Computed: true,
+							Default:  -1,
 						},
 					},
 				},
@@ -106,7 +111,7 @@ func DataSourceObjectGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"field": {
 							Type:     schema.TypeString,
-							Computed: true,
+							Required: true,
 						},
 						"range": {
 							Type:     schema.TypeSet,
@@ -176,11 +181,15 @@ func DataSourceObjectGroup() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"ignore_irregular": {
-							Type:     schema.TypeBool,
+						"col_types": {
+							Type:     schema.TypeString,
 							Computed: true,
 						},
-						"col_types": {
+						"col_renames": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"col_selection": {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
@@ -208,7 +217,7 @@ func DataSourceObjectGroup() *schema.Resource {
 			},
 			"partition_by": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 		},
 	}
