@@ -99,7 +99,6 @@ func DataSourceObjectGroup() *schema.Resource {
 						"overall": {
 							Type:     schema.TypeInt,
 							Computed: true,
-							Default:  -1,
 						},
 					},
 				},
