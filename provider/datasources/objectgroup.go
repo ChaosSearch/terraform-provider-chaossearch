@@ -74,15 +74,15 @@ func DataSourceObjectGroup() *schema.Resource {
 						},
 						"array_selection": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"field_selection": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"vertical_selection": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 					},
 				},
@@ -110,7 +110,7 @@ func DataSourceObjectGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"field": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 						"range": {
 							Type:     schema.TypeSet,
