@@ -1,13 +1,9 @@
-## 1.0.16
-
-### Enhancements:
-* .github/workflows/release.yml: Update golang version to match module
-* provider/resources/objectgroup.go: remove `ignore_irregular` from config due to being forced true
-
 ## 1.0.15
 
 ### Enhancements:
 * provider/resources/objectgroup.go: `strip_prefix` is no longer configurable, but will be decided based on format type
+* .github/workflows/release.yml: Update golang version to match module
+* provider/resources/objectgroup.go: remove `ignore_irregular` from config due to being forced true
 
 ## 1.0.14
 
