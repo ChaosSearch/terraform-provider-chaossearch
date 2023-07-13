@@ -1,3 +1,9 @@
+## 1.0.16
+
+### Enhancements:
+* .github/workflows/release.yml: Update golang version to match module
+* provider/resources/objectgroup.go: remove `ignore_irregular` from config due to being forced true
+
 ## 1.0.15
 
 ### Enhancements:

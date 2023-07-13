@@ -68,7 +68,6 @@ func testAccObjectGroupConfigCSV(bucket string) string {
 			col_types = jsonencode({
 			  "Period": "Timeval"
 			})
-			ignore_irregular = true
 		  }
 		  filter {
 			field  = "key"
@@ -106,7 +105,6 @@ func testAccObjectGroupConfigJSON(bucket string) string {
 			col_types = jsonencode({
 			  "createddate.value": "Timeval"
 			})
-			ignore_irregular = true
 		  }
 		  filter {
 			field = "key"

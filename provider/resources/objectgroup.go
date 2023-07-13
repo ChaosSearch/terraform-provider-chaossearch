@@ -201,11 +201,6 @@ func ResourceObjectGroup() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"ignore_irregular": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  true,
-						},
 						"col_types": {
 							Type:         schema.TypeString,
 							Optional:     true,
@@ -250,7 +245,6 @@ func ResourceObjectGroup() *schema.Resource {
 			},
 		},
 	}
-
 }
 
 func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -708,8 +702,7 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 
 	if resp.Options != nil {
 		options := map[string]interface{}{
-			"ignore_irregular": resp.Options.IgnoreIrregular,
-			"compression":      resp.Compression,
+			"compression": resp.Compression,
 		}
 
 		if len(resp.Options.ColTypes) > 0 {
