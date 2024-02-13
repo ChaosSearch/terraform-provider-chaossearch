@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 1.0.14"
+      version = "~> 1.0.16"
       source  = "chaossearch/chaossearch"
     }
   }

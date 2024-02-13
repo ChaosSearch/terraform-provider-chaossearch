@@ -1,3 +1,9 @@
+## 1.0.16
+
+### Enhancements:
+* docs/guides/*: Added some basic guides on how to manage different resources with dependencies
+* docs/resources/subaccount.md: Add group_ids to example
+
 ## 1.0.15
 
 ### Enhancements:
