@@ -63,7 +63,6 @@ type ReadObjGroupResp struct {
 	Options            *Options     `json:"options"`
 	RegionAvailability []string     `json:"regionAvailability"`
 	Source             string       `json:"source"`
-	Compression        string
 	Pattern            string
 	PartitionBy        interface{} `json:"partitionBy"`
 	SourceBucket       string

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -701,20 +702,42 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 	}
 
 	if resp.Options != nil {
-		options := map[string]interface{}{
-			"compression": resp.Compression,
+		var options map[string]interface{}
+		optionsList := data.Get("options").(*schema.Set).List()
+		optionsMap := optionsList[0].(map[string]interface{})
+		compression := optionsMap["compression"].(string)
+
+		if strings.EqualFold(resp.Options.Compression, compression) {
+			options = map[string]interface{}{"compression": compression}
+		} else {
+			options = map[string]interface{}{"compression": resp.Options.Compression}
 		}
 
-		if len(resp.Options.ColTypes) > 0 {
+		colTypesString := optionsMap["col_types"].(string)
+		if colTypesString != "" {
+			options["col_types"] = colTypesString
+		} else if len(resp.Options.ColTypes) > 0 {
 			colTypes, _ := json.Marshal(resp.Options.ColTypes)
 			colTypesJson, _ := structure.NormalizeJsonString(string(colTypes))
 			options["col_types"] = colTypesJson
 		}
 
-		if len(resp.Options.ColSelection) > 0 {
+		colSelectionString := optionsMap["col_selection"].(string)
+		if colSelectionString != "" {
+			options["col_selection"] = colSelectionString
+		} else if len(resp.Options.ColSelection) > 0 {
 			colSelect, _ := json.Marshal(resp.Options.ColSelection)
 			colSelectJson, _ := structure.NormalizeJsonString(string(colSelect))
 			options["col_selection"] = colSelectJson
+		}
+
+		colRenamesString := optionsMap["col_renames"].(string)
+		if colRenamesString != "" {
+			options["col_renames"] = colRenamesString
+		} else if len(resp.Options.ColRenames) > 0 {
+			colRenames, _ := json.Marshal(resp.Options.ColRenames)
+			colRenamesJson, _ := structure.NormalizeJsonString(string(colRenames))
+			options["col_renames"] = colRenamesJson
 		}
 
 		err = data.Set("options", []interface{}{options})
