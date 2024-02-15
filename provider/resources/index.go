@@ -158,6 +158,9 @@ func readResourceIndexModel(ctx context.Context, data *schema.ResourceData, meta
 func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var deleteEnabled bool
 	var deleteTimeout int
+	var bucketName string
+	c := meta.(*models.ProviderMeta).CSClient
+
 	options := data.Get(Options).(*schema.Set).List()
 	if len(options) > 0 {
 		optionsMap := options[0].(map[string]interface{})
@@ -165,9 +168,24 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 		deleteTimeout = optionsMap[DeleteTimeout].(int)
 	}
 
+	authToken := meta.(*models.ProviderMeta).Token
+	if data.Get(BucketName) != nil {
+		bucketName = data.Get(BucketName).(string)
+	}
+
+	indexModel := &client.IndexModelRequest{
+		AuthToken:  authToken,
+		BucketName: bucketName,
+		ModelMode:  -1,
+	}
+
+	_, err := c.CreateIndexModel(ctx, indexModel)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if deleteEnabled {
 		var listBucketResp *client.ListBucketResponse
-		c := meta.(*models.ProviderMeta).CSClient
 		authToken := meta.(*models.ProviderMeta).Token
 		bucketName := data.Get(BucketName).(string)
 		listBucketResp, err := c.ReadIndexModel(
@@ -181,9 +199,11 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 		}
 
 		if listBucketResp.Contents != nil {
-			err = c.DeleteIndexModel(ctx, listBucketResp.Contents.Key, authToken)
-			if err != nil {
-				return diag.FromErr(err)
+			for _, content := range *listBucketResp.Contents {
+				err = c.DeleteIndexModel(ctx, content.Key, authToken)
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 
 			// await return until index confirmed deletion
@@ -195,9 +215,14 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 					return diag.FromErr(err)
 				}
 
-				if listBucketResp.Contents == nil {
-					break
-				} else if listBucketResp.Contents.Key == "" {
+				contentEmpty := true
+				for _, content := range *listBucketResp.Contents {
+					if content.Key != "" {
+						contentEmpty = false
+					}
+				}
+
+				if contentEmpty {
 					break
 				}
 

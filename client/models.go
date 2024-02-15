@@ -20,12 +20,12 @@ type Tag struct {
 }
 
 type ListBucketResponse struct {
-	Name        string    `xml:"Name"`
-	KeyCount    int       `xml:"KeyCount"`
-	MaxKeys     int       `xml:"MaxKeys"`
-	Delimiter   string    `xml:"Delimiter"`
-	IsTruncated bool      `xml:"IsTruncated"`
-	Contents    *Contents `xml:"Contents"`
+	Name        string      `xml:"Name"`
+	KeyCount    int         `xml:"KeyCount"`
+	MaxKeys     int         `xml:"MaxKeys"`
+	Delimiter   string      `xml:"Delimiter"`
+	IsTruncated bool        `xml:"IsTruncated"`
+	Contents    *[]Contents `xml:"Contents"`
 }
 
 type Contents struct {
@@ -221,30 +221,30 @@ type State struct {
 //user group create related models
 
 type StartsWith struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
 }
 
 type Equals struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
 }
 
 type NotEquals struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
 }
 
 type Like struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
 }
 
 type Condition struct {
-	StartsWith StartsWith
-	Equals     Equals
-	NotEquals  NotEquals
-	Like       Like
+	StartsWith *StartsWith `json:"StartsWith,omitempty"`
+	Equals     *Equals     `json:"Equals,omitempty"`
+	NotEquals  *NotEquals  `json:"NotEquals,omitempty"`
+	Like       *Like       `json:"Like,omitempty"`
 }
 
 type ConditionGroup struct {
-	Conditions []Condition `json:"Conditions"`
+	Conditions []Condition `json:"Conditions,omitempty"`
 }
 
 type Permission struct {
@@ -252,7 +252,7 @@ type Permission struct {
 	Version        string
 	Actions        []interface{}
 	Resources      []interface{}
-	ConditionGroup ConditionGroup `json:"Condition"`
+	ConditionGroup ConditionGroup `json:"Condition,omitempty"`
 }
 
 type CreateUserGroupRequest struct {
