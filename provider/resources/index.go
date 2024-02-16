@@ -128,12 +128,21 @@ func createResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 	if !skipIndexPause {
 		indexed := false
 		for !indexed {
-			checkResp, err := c.CheckIndexModel(ctx, bucketName, authToken)
+			listBucketResp, err := c.ReadIndexModel(
+				ctx,
+				bucketName,
+				authToken,
+			)
+
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
-			indexed = checkResp.Indexed
+			if len(listBucketResp.Contents) > 0 {
+				indexed = true
+				break
+			}
+
 			time.Sleep(15 * time.Second)
 		}
 
@@ -159,6 +168,7 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 	var deleteEnabled bool
 	var deleteTimeout int
 	var bucketName string
+	var indexing bool
 	c := meta.(*models.ProviderMeta).CSClient
 
 	options := data.Get(Options).(*schema.Set).List()
@@ -173,15 +183,28 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 		bucketName = data.Get(BucketName).(string)
 	}
 
-	indexModel := &client.IndexModelRequest{
+	_, err := c.CreateIndexModel(ctx, &client.IndexModelRequest{
 		AuthToken:  authToken,
 		BucketName: bucketName,
 		ModelMode:  -1,
-	}
+	})
 
-	_, err := c.CreateIndexModel(ctx, indexModel)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	indexing = true
+	for indexing {
+		time.Sleep(15 * time.Second)
+		metadataResp, err := c.ReadBucketDataset(ctx, authToken, bucketName)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if *metadataResp.State.Status != "Indexing" {
+			indexing = false
+			break
+		}
 	}
 
 	if deleteEnabled {
@@ -199,7 +222,7 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 		}
 
 		if listBucketResp.Contents != nil {
-			for _, content := range *listBucketResp.Contents {
+			for _, content := range listBucketResp.Contents {
 				err = c.DeleteIndexModel(ctx, content.Key, authToken)
 				if err != nil {
 					return diag.FromErr(err)
@@ -216,7 +239,7 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 				}
 
 				contentEmpty := true
-				for _, content := range *listBucketResp.Contents {
+				for _, content := range listBucketResp.Contents {
 					if content.Key != "" {
 						contentEmpty = false
 					}

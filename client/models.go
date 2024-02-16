@@ -20,12 +20,12 @@ type Tag struct {
 }
 
 type ListBucketResponse struct {
-	Name        string      `xml:"Name"`
-	KeyCount    int         `xml:"KeyCount"`
-	MaxKeys     int         `xml:"MaxKeys"`
-	Delimiter   string      `xml:"Delimiter"`
-	IsTruncated bool        `xml:"IsTruncated"`
-	Contents    *[]Contents `xml:"Contents"`
+	Name        string     `xml:"Name"`
+	KeyCount    int        `xml:"KeyCount"`
+	MaxKeys     int        `xml:"MaxKeys"`
+	Delimiter   string     `xml:"Delimiter"`
+	IsTruncated bool       `xml:"IsTruncated"`
+	Contents    []Contents `xml:"Contents"`
 }
 
 type Contents struct {
@@ -43,6 +43,19 @@ type BasicRequest struct {
 
 type Metadata struct {
 	CreationDate int64 `json:"creationDate"`
+}
+
+type ReadBucketDatasetResp struct {
+	Bucket             string       `json:"bucket"`
+	ContentType        string       `json:"contentType"`
+	ObjectFilter       ObjectFilter `json:"filter"`
+	Format             Format       `json:"format"`
+	Id                 string       `json:"id"`
+	Interval           Interval     `json:"interval"`
+	Options            Options      `json:"options"`
+	RegionAvailability []string     `json:"regionAvailability"`
+	Source             string       `json:"source"`
+	State              State        `json:"state"`
 }
 
 type ObjectFilter struct {
@@ -215,7 +228,9 @@ type Predicate struct {
 }
 
 type State struct {
-	Type string `json:"_type,omitempty"`
+	Type              string  `json:"_type,omitempty"`
+	Status            *string `json:"status,omitempty"`
+	TargetActiveIndex *int    `json:"targetActiveIndex,omitempty"`
 }
 
 //user group create related models
@@ -244,7 +259,7 @@ type Condition struct {
 }
 
 type ConditionGroup struct {
-	Conditions []Condition `json:"Conditions,omitempty"`
+	Conditions []*Condition `json:"Conditions,omitempty"`
 }
 
 type Permission struct {
@@ -252,7 +267,7 @@ type Permission struct {
 	Version        string
 	Actions        []interface{}
 	Resources      []interface{}
-	ConditionGroup ConditionGroup `json:"Condition,omitempty"`
+	ConditionGroup *ConditionGroup `json:"Condition,omitempty"`
 }
 
 type CreateUserGroupRequest struct {

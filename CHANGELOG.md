@@ -3,9 +3,11 @@
 ### Enhancements:
 * docs/guides/*: Added some basic guides on how to manage different resources with dependencies
 * docs/resources/subaccount.md: Add group_ids to example
+* provider/resources/index.go: Invoke a pause, validate state, and ensure all indexes are deleted on tear down
 
 ### Bug Fixes:
 * provider/resources/objectgroup.go: Fixed updates in place for `options` on apply
+* client/models.go: Adjust Conditions so that they are omited when empty for `user_groups`
 
 ## 1.0.15
 

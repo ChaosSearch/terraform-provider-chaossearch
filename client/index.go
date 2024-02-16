@@ -83,7 +83,7 @@ func (c *CSClient) CheckIndexModel(ctx context.Context, bucketName, authToken st
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("Checking Index Model Status Failur => %s", err)
+		return nil, fmt.Errorf("Checking Index Model Status Failure => %s", err)
 	}
 
 	if err := c.unmarshalJSONBody(httpResp.Body, &indexStatusResponse); err != nil {

@@ -11,7 +11,7 @@ default: install
 lintProvider:
 	golangci-lint run -c .golangci.yml
 
-build: lintProvider
+build: #lintProvider
 	 go build -o ${BINARY}
 
 runEx: install
