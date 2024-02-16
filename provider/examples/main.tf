@@ -281,6 +281,21 @@ resource "chaossearch_view" "view-transforms" {
         }
       ]
     }),
+    jsonencode({
+      "_type": "MaterializeJQTransform",
+      "inputField": "Data_value",
+      "queries": ["jq-query"],
+      "outputFields": [
+        {
+          "name": "Whole",
+          "type": "NUMBER"
+        },
+        {
+          "name": "Decimal",
+          "type": "NUMBER"
+        }
+      ]
+    }),
   ]
   depends_on = [
     chaossearch_index_model.model

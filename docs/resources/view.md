@@ -141,6 +141,28 @@ resource "chaossearch_view" "view-transforms" {
         }
       ]
     }),
+    jsonencode({
+      "_type": "MaterializeJQTransform",
+      "inputField": "Data_value",
+      "queries": ["jq-query"],
+      "outputFields": [
+        {
+          "name": "Whole",
+          "type": "NUMBER"
+        }
+      ]
+    }),
+    jsonencode({
+      "_type": "MaterializeJSONTransform",
+      "inputField": "Data_value",
+      "paths": ["json-path"],
+      "outputFields": [
+        {
+          "name": "Whole",
+          "type": "NUMBER"
+        }
+      ]
+    })
   ]
 }
 ```

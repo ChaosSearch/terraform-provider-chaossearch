@@ -176,6 +176,7 @@ type Transform struct {
 	KeyPart      int             `json:"keyPart"`
 	Pattern      string          `json:"pattern,omitempty"`
 	Paths        []string        `json:"paths,omitempty"`
+	Queries      []string        `json:"queries,omitempty"`
 	Vertical     []string        `json:"vertical,omitempty"`
 	Format       float32         `json:"format,omitempty"`
 }
