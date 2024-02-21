@@ -100,3 +100,6 @@ terraform.rc
 **/*.tfstate
 **/terraform.txt\
 **/*.tfvars
+
+# Custom ignores
+*.code-workspace

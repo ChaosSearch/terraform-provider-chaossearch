@@ -106,9 +106,25 @@ func ResourceObjectGroup() *schema.Resource {
 					},
 				},
 			},
-			"live_events": {
+			"live_events_aws": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"live_events_gcp": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"project_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"subscription_id": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
 			},
 			"index_retention": {
 				Type:     schema.TypeSet,
@@ -496,7 +512,6 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		Format:            format,
 		IndexRetention:    indexRetention,
 		Filter:            filters,
-		LiveEvents:        data.Get("live_events").(string),
 		PartitionBy:       data.Get("partition_by").(string),
 		TargetActiveIndex: data.Get("target_active_index").(int),
 		Options:           options,
@@ -505,6 +520,20 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 			Column: 0,
 		},
 		Realtime: false,
+	}
+
+	liveEventsAws := data.Get("live_events_aws").(string)
+	liveEventsGcp := data.Get("live_events_gcp").(*schema.Set).List()
+	if liveEventsAws != "" && len(liveEventsGcp) > 0 {
+		return diag.Errorf("Live Events found defined for both AWS and GCP, please ensure you configure only one for your cluster type")
+	} else if liveEventsAws != "" {
+		createObjectGroupRequest.LiveEventsAws = liveEventsAws
+	} else if len(liveEventsGcp) > 0 {
+		liveEventsMap := liveEventsGcp[0].(map[string]interface{})
+		createObjectGroupRequest.LiveEventsGcp = &client.LiveEventsGcp{
+			ProjectId:      liveEventsMap["project_id"].(string),
+			SubscriptionId: liveEventsMap["subscription_id"].(string),
+		}
 	}
 
 	if err := c.CreateObjectGroup(ctx, createObjectGroupRequest); err != nil {

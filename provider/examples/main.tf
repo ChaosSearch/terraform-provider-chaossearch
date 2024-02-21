@@ -62,7 +62,11 @@ resource "chaossearch_object_group" "create-object-group" {
   bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
   target_active_index = 1
-  //live_events = "test"
+  # live_events_aws = "test"
+  # live_events_gcp {
+  #   project_id = "test_id"
+  #   subscription_id = "some_test_id"
+  # }
   format {
     type             = "CSV"
     column_delimiter = ","

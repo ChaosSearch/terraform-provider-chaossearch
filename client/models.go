@@ -96,9 +96,15 @@ type CreateObjectGroupRequest struct {
 	Filter            []Filter
 	Options           *Options
 	Realtime          bool
-	LiveEvents        string
+	LiveEventsAws     string
+	LiveEventsGcp     *LiveEventsGcp
 	PartitionBy       string
 	TargetActiveIndex int
+}
+
+type LiveEventsGcp struct {
+	ProjectId      string
+	SubscriptionId string
 }
 
 type Format struct {
