@@ -11,7 +11,11 @@ Check out the _Object Group_ documentation here: [Object Group Docs](https://doc
 resource "chaossearch_object_group" "create-object-group" {
   bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
-  live_events = "arn:partition:service:region:account-id:resource-id"
+  live_events_aws = "arn:partition:service:region:account-id:resource-id"
+  live_events_gcp {
+    project_id = "test_id"
+    subscription_id = "some_test_id"
+  }
   format {
     type             = "CSV"
     column_delimiter = ","
@@ -86,7 +90,10 @@ resource "chaossearch_object_group" "create-object-group" {
 ## Argument Reference
 * `bucket` - **(Required)** Name of the object group
 * `source` - **(Required)** Name of the bucket where your data is stored
-* `live_events` - **(Optional)** The SQS Arn for live event streaming
+* `live_events_aws` - **(Optional)** The SQS Arn for live event streaming
+* `live_events_gcp` - **(Optional)** A config block for defining live events in GCP
+  * `project_id` - **(Required)** Your GCP project ID
+  * `subscription_id` - **(Required)** Your subscription topic ID
 * `format` - **(Optional)** A config block used for file formatting specifics
   * `type` - **(Optional)** Specifies the type of file
   * `column_delimiter` - **(Optional)** Specifies the character for separating columns

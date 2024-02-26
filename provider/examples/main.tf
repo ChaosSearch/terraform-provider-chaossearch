@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     chaossearch = {
-      version = "~> 1.0.14"
+      version = "~> 1.0.16"
       source  = "chaossearch/chaossearch"
     }
   }
@@ -62,7 +62,11 @@ resource "chaossearch_object_group" "create-object-group" {
   bucket = "tf-provider"
   source = "chaossearch-tf-provider-test"
   target_active_index = 1
-  //live_events = "test"
+  # live_events_aws = "test"
+  # live_events_gcp {
+  #   project_id = "test_id"
+  #   subscription_id = "some_test_id"
+  # }
   format {
     type             = "CSV"
     column_delimiter = ","
@@ -270,6 +274,21 @@ resource "chaossearch_view" "view-transforms" {
       "_type": "MaterializeRegexTransform",
       "inputField": "Data_value",
       "pattern": "(\\d+)\\.(\\d+)"
+      "outputFields": [
+        {
+          "name": "Whole",
+          "type": "NUMBER"
+        },
+        {
+          "name": "Decimal",
+          "type": "NUMBER"
+        }
+      ]
+    }),
+    jsonencode({
+      "_type": "MaterializeJQTransform",
+      "inputField": "Data_value",
+      "queries": ["jq-query"],
       "outputFields": [
         {
           "name": "Whole",

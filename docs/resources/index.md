@@ -23,9 +23,9 @@ resource "chaossearch_index_model" "index" {
 ## Argument Reference
 * `bucket_name` - **(Required)** Name of _Object Group_ to be indexed
 * `model_mode` - **(Required)** The mode you wish to set your index to. Values Include:
-  * `-1` Restart Indexing
+  * `1` Restart Indexing
   * `0` Start Indexing
-  * `1` Pause Indexing
+  * `-1` Pause Indexing
 * `delete_enabled` - **(Optional)** Enables or Disables _Index_ deletion
   * Defaults to `false`
   * **WARNING** Do not put `delete_enabled = true` in to source control.

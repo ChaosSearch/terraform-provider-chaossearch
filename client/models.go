@@ -20,12 +20,12 @@ type Tag struct {
 }
 
 type ListBucketResponse struct {
-	Name        string    `xml:"Name"`
-	KeyCount    int       `xml:"KeyCount"`
-	MaxKeys     int       `xml:"MaxKeys"`
-	Delimiter   string    `xml:"Delimiter"`
-	IsTruncated bool      `xml:"IsTruncated"`
-	Contents    *Contents `xml:"Contents"`
+	Name        string     `xml:"Name"`
+	KeyCount    int        `xml:"KeyCount"`
+	MaxKeys     int        `xml:"MaxKeys"`
+	Delimiter   string     `xml:"Delimiter"`
+	IsTruncated bool       `xml:"IsTruncated"`
+	Contents    []Contents `xml:"Contents"`
 }
 
 type Contents struct {
@@ -43,6 +43,19 @@ type BasicRequest struct {
 
 type Metadata struct {
 	CreationDate int64 `json:"creationDate"`
+}
+
+type ReadBucketDatasetResp struct {
+	Bucket             string       `json:"bucket"`
+	ContentType        string       `json:"contentType"`
+	ObjectFilter       ObjectFilter `json:"filter"`
+	Format             Format       `json:"format"`
+	Id                 string       `json:"id"`
+	Interval           Interval     `json:"interval"`
+	Options            Options      `json:"options"`
+	RegionAvailability []string     `json:"regionAvailability"`
+	Source             string       `json:"source"`
+	State              State        `json:"state"`
 }
 
 type ObjectFilter struct {
@@ -63,7 +76,6 @@ type ReadObjGroupResp struct {
 	Options            *Options     `json:"options"`
 	RegionAvailability []string     `json:"regionAvailability"`
 	Source             string       `json:"source"`
-	Compression        string
 	Pattern            string
 	PartitionBy        interface{} `json:"partitionBy"`
 	SourceBucket       string
@@ -84,9 +96,15 @@ type CreateObjectGroupRequest struct {
 	Filter            []Filter
 	Options           *Options
 	Realtime          bool
-	LiveEvents        string
+	LiveEventsAws     string
+	LiveEventsGcp     *LiveEventsGcp
 	PartitionBy       string
 	TargetActiveIndex int
+}
+
+type LiveEventsGcp struct {
+	ProjectId      string
+	SubscriptionId string
 }
 
 type Format struct {
@@ -164,6 +182,7 @@ type Transform struct {
 	KeyPart      int             `json:"keyPart"`
 	Pattern      string          `json:"pattern,omitempty"`
 	Paths        []string        `json:"paths,omitempty"`
+	Queries      []string        `json:"queries,omitempty"`
 	Vertical     []string        `json:"vertical,omitempty"`
 	Format       float32         `json:"format,omitempty"`
 }
@@ -216,36 +235,38 @@ type Predicate struct {
 }
 
 type State struct {
-	Type string `json:"_type,omitempty"`
+	Type              string  `json:"_type,omitempty"`
+	Status            *string `json:"status,omitempty"`
+	TargetActiveIndex *int    `json:"targetActiveIndex,omitempty"`
 }
 
 //user group create related models
 
 type StartsWith struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
 }
 
 type Equals struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
 }
 
 type NotEquals struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
 }
 
 type Like struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title"`
+	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
 }
 
 type Condition struct {
-	StartsWith StartsWith
-	Equals     Equals
-	NotEquals  NotEquals
-	Like       Like
+	StartsWith *StartsWith `json:"StartsWith,omitempty"`
+	Equals     *Equals     `json:"Equals,omitempty"`
+	NotEquals  *NotEquals  `json:"NotEquals,omitempty"`
+	Like       *Like       `json:"Like,omitempty"`
 }
 
 type ConditionGroup struct {
-	Conditions []Condition `json:"Conditions"`
+	Conditions []*Condition `json:"Conditions,omitempty"`
 }
 
 type Permission struct {
@@ -253,7 +274,7 @@ type Permission struct {
 	Version        string
 	Actions        []interface{}
 	Resources      []interface{}
-	ConditionGroup ConditionGroup `json:"Condition"`
+	ConditionGroup *ConditionGroup `json:"Condition,omitempty"`
 }
 
 type CreateUserGroupRequest struct {

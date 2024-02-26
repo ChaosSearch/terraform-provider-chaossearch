@@ -214,8 +214,18 @@ func marshalCreateObjectGroupRequest(req *CreateObjectGroupRequest) ([]byte, err
 		"targetActiveIndex": req.TargetActiveIndex,
 	}
 
-	if req.LiveEvents != "" {
-		body["liveEvents"] = req.LiveEvents
+	if req.LiveEventsAws != "" && req.LiveEventsGcp != nil {
+		return nil, fmt.Errorf("Found both LiveEventsAws and LiveEventsGcp during CreateObjectGroupRequest marshalling")
+	}
+	if req.LiveEventsAws != "" {
+		body["liveEvents"] = req.LiveEventsAws
+	}
+
+	if req.LiveEventsGcp != nil {
+		body["liveEvents"] = map[string]string{
+			"projectId":      req.LiveEventsGcp.ProjectId,
+			"subscriptionId": req.LiveEventsGcp.SubscriptionId,
+		}
 	}
 
 	if req.PartitionBy != "" {

@@ -1,3 +1,18 @@
+## 1.0.16
+
+### Enhancements:
+* docs/guides/*: Added some basic guides on how to manage different resources with dependencies
+* docs/resources/subaccount.md: Add group_ids to example
+* docs/resources/view.md: Add an example JQ Transform
+* docs/resources/objectgroup.md: Update live events examples to reflect gcp additions
+* provider/resources/index.go: Invoke a pause, validate state, and ensure all indexes are deleted on tear down
+* provider/resources/objectgroup.go: Enable `live_events_gcp`, rename `live_events` -> `live_events_aws`
+* client/models.go: Extend out `Transforms` type to contain `queries` for JQ Transforms
+
+### Bug Fixes:
+* provider/resources/objectgroup.go: Fixed updates in place for `options` on apply
+* client/models.go: Adjust Conditions so that they are omited when empty for `user_groups`
+
 ## 1.0.15
 
 ### Enhancements:

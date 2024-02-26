@@ -13,6 +13,7 @@ resource "chaossearch_sub_account" "sub-account" {
   full_name = ""
   password  = ""
   hocon     = ["override.Services.worker.quota=50"]
+  group_ids = ["some_group_id"]
 }
 ```
 
