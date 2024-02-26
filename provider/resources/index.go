@@ -203,7 +203,6 @@ func deleteResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 
 		if *metadataResp.State.Status != "Indexing" {
 			indexing = false
-			break
 		}
 	}
 

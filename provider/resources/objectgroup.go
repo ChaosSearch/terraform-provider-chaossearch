@@ -525,7 +525,8 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	liveEventsAws := data.Get("live_events_aws").(string)
 	liveEventsGcp := data.Get("live_events_gcp").(*schema.Set).List()
 	if liveEventsAws != "" && len(liveEventsGcp) > 0 {
-		return diag.Errorf("Live Events found defined for both AWS and GCP, please ensure you configure only one for your cluster type")
+		err := "Live Events found defined for both AWS and GCP, please ensure you configure only one for your cluster type"
+		return diag.Errorf(err)
 	} else if liveEventsAws != "" {
 		createObjectGroupRequest.LiveEventsAws = liveEventsAws
 	} else if len(liveEventsGcp) > 0 {
