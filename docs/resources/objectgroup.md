@@ -90,6 +90,7 @@ resource "chaossearch_object_group" "create-object-group" {
 ## Argument Reference
 * `bucket` - **(Required)** Name of the object group
 * `source` - **(Required)** Name of the bucket where your data is stored
+* `live_events` - **(Optional)** **DEPRECATED** Renamed as `live_events_aws`
 * `live_events_aws` - **(Optional)** The SQS Arn for live event streaming
 * `live_events_gcp` - **(Optional)** A config block for defining live events in GCP
   * `project_id` - **(Required)** Your GCP project ID

@@ -193,21 +193,21 @@ type ViewFieldSpec struct {
 }
 
 type ReadViewResponse struct {
-	Type               string `json:"_type"`
-	Bucket             string
+	Type               string           `json:"_type"`
+	Bucket             string           `json:"bucket"`
 	FilterPredicate    *FilterPredicate `json:"filter"`
-	TimeFieldName      string
-	IndexPattern       string
-	CaseInsensitive    bool
+	TimeFieldName      string           `json:"timeFieldName"`
+	IndexPattern       string           `json:"indexPattern"`
+	CaseInsensitive    bool             `json:"_caseInsensitive"`
 	ArrayFlattenDepth  *int
-	IndexRetention     int `json:"overall"`
-	Cacheable          bool
+	IndexRetention     int  `json:"overall"`
+	Cacheable          bool `json:"_cacheable"`
 	Overwrite          bool
-	Sources            []interface{}
-	Transforms         []Transform
-	ID                 string    `json:"id"`
-	MetaData           *Metadata `json:"metadata"`
-	RegionAvailability []string  `json:"regionAvailability"`
+	Sources            []string    `json:"sources"`
+	Transforms         []Transform `json:"transforms"`
+	ID                 string      `json:"id"`
+	MetaData           *Metadata   `json:"metadata"`
+	RegionAvailability []string    `json:"regionAvailability"`
 	Compression        string
 	LiveEventsSqsArn   string
 	SourceBucket       string
