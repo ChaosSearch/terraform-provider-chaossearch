@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-const csvSource string = "chaossearch-tf-provider-test"
-const jsonSource string = "chaossearch-self-service-users"
+const csvSource string = "chaossearch-trial-data-staging"
+const jsonSource string = "chaos-watch-playground"
 
 func TestAccObjectGroup(t *testing.T) {
 	defer resource.Test(t, resource.TestCase{
@@ -66,12 +66,12 @@ func testAccObjectGroupConfigCSV(bucket string) string {
 		  }
 		  options {
 			col_types = jsonencode({
-			  "Period": "Timeval"
+			  "lpep_pickup_datetime": "Timeval"
 			})
 		  }
 		  filter {
 			field  = "key"
-			prefix = "ec"
+			prefix = "green_tripdata/"
 		  }
 		  filter {
 			field = "key"
@@ -85,33 +85,31 @@ func testAccObjectGroupConfigJSON(bucket string) string {
 	return fmt.Sprintf(`
 		%s
 		resource "chaossearch_object_group" "json-og" {
-		  bucket = "%s"
-		  source = "%s"
-		  format {
-			type                = "JSON"
-			array_flatten_depth = -1
-			field_selection     = jsonencode([{
-				"type": "blacklist",
-				"excludes": [
-					"email",
-					"hq_phone"
-				]
-			}])
-		  }
-		  index_retention {
-			overall = -1
-		  }
-		  options {
-			col_types = jsonencode({
-			  "createddate.value": "Timeval"
-			})
-		  }
-		  filter {
-			field = "key"
-			regex = ".*"
-		  }
-		}
+			bucket = "%s"
+			source = "%s"
+			format {
+				type = "JSON"
+			}
+			index_retention {
+				overall = -1
+			}
+			filter {
+				field = "key"
+				prefix = "persist/s3-queue-check-metrics/"
+			}
 		
+			filter {
+				field = "key"
+				regex = ".*"
+			}
+			options {
+				compression = "GZIP"
+				col_types = jsonencode({
+					"timestamp": "Timeval",
+					"slices.LastModified": "Timeval"
+				})
+			}
+		}
 	`, testAccProviderConfigBlock(), bucket, jsonSource)
 }
 

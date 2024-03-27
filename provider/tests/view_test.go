@@ -138,24 +138,11 @@ func testAccViewTransformsConfig(viewName, bucketName string) string {
 		index_retention  = -1
 		overwrite        = true
 		sources          = ["%s"]
-		time_field_name  = "Period"
-		filter {
-		  predicate {
-			type = "chaossumo.query.NIRFrontend.Request.Predicate.Negate"
-			pred {
-			  type  = "chaossumo.query.NIRFrontend.Request.Predicate.TextMatch"
-			  field = "STATUS"
-			  query = "*F*"
-			  state {
-				type = "chaossumo.query.QEP.Predicate.TextMatchState.Exact"
-			  }
-			}
-		  }
-		}
+		time_field_name  = "timestamp"
 		transforms = [
 		  jsonencode({
 			"_type": "MaterializeRegexTransform",
-			"inputField": "Data_value",
+			"inputField": "latency_seconds",
 			"pattern": "(\\d+)\\.(\\d+)"
 			"outputFields": [
 			  {
