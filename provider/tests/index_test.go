@@ -48,10 +48,10 @@ func testAccIndexConfig(bucket string) string {
 				delete_enabled = true
 			}
 			depends_on = [
-			  chaossearch_object_group.csv-og
+			  chaossearch_object_group.json-og
 			]
 		  }
-	`, testAccObjectGroupConfigCSV(bucket), bucket)
+	`, testAccObjectGroupConfigJSON(bucket), bucket)
 }
 
 func testAccIndexExists(resourceName, bucketName string) resource.TestCheckFunc {

@@ -112,9 +112,9 @@ func resourceGroupRead(ctx context.Context, data *schema.ResourceData, meta inte
 		return diag.FromErr(err)
 	}
 
-	if err := data.Set("permissions", userGroupContent[0]["permissions"]); err != nil {
-		return diag.FromErr(err)
-	}
+	// if err := data.Set("permissions", userGroupContent[0]["permissions"]); err != nil {
+	// 	return diag.FromErr(err)
+	// }
 
 	return diags
 }

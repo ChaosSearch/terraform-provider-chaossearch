@@ -1,3 +1,10 @@
+## 1.0.17
+
+### Bug Fixes:
+* client/models.go: Fix some json mappings for ReadeViewResp
+* provider/resources/objectgroup.go: Re-add `live_events`, add a deprecation warning, ensure it conflicts with other live_events configuratios
+* provider/provider.go: Add small validation func for ensuring the cluster url starts with `https://`
+
 ## 1.0.16
 
 ### Enhancements:

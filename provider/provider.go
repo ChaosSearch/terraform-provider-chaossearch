@@ -9,6 +9,7 @@ import (
 	"cs-tf-provider/provider/resources"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -31,9 +32,10 @@ func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			Url: {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("CS_URL", ""),
+				Type:         schema.TypeString,
+				Required:     true,
+				DefaultFunc:  schema.EnvDefaultFunc("CS_URL", ""),
+				ValidateFunc: validateUrl,
 			},
 			AccessKeyID: {
 				Type:        schema.TypeString,
@@ -229,4 +231,13 @@ func getConfig(ctx context.Context, data *schema.ResourceData, value string) (st
 	}
 
 	return cred, nil
+}
+
+func validateUrl(i interface{}, k string) (warnings []string, errors []error) {
+	url := i.(string)
+	if !strings.HasPrefix(url, "https://") {
+		return nil, []error{fmt.Errorf("Invalid URL, must start with 'https://'")}
+	}
+
+	return nil, nil
 }

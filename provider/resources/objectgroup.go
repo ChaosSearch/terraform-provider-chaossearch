@@ -106,13 +106,21 @@ func ResourceObjectGroup() *schema.Resource {
 					},
 				},
 			},
+			"live_events": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"live_events_aws", "live_events_gcp"},
+				Deprecated:    "Use `live_events_aws` for this value",
+			},
 			"live_events_aws": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"live_events", "live_events_gcp"},
 			},
 			"live_events_gcp": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:          schema.TypeSet,
+				Optional:      true,
+				ConflictsWith: []string{"live_events_aws", "live_events"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"project_id": {
@@ -522,8 +530,16 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 		Realtime: false,
 	}
 
+	liveEvents := data.Get("live_events").(string)
 	liveEventsAws := data.Get("live_events_aws").(string)
 	liveEventsGcp := data.Get("live_events_gcp").(*schema.Set).List()
+
+	if liveEvents != "" && liveEventsAws != "" {
+		return diag.Errorf("Both live_events and live_events_aws found defined, please only use one")
+	} else if liveEvents != "" {
+		liveEventsAws = liveEvents
+	}
+
 	if liveEventsAws != "" && len(liveEventsGcp) > 0 {
 		err := "Live Events found defined for both AWS and GCP, please ensure you configure only one for your cluster type"
 		return diag.Errorf(err)
