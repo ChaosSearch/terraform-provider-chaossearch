@@ -1,3 +1,11 @@
+## 1.0.18
+
+### Enhancements:
+* provider/resources/objectgroup.go: Check for specific field changes prior to sending an update for Object Groups
+
+### Bug Fixes:
+* provider/resources/index.go: Skip indexing await if the chosen model mode < 0
+
 ## 1.0.17
 
 ### Bug Fixes:

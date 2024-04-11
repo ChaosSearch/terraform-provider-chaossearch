@@ -125,7 +125,7 @@ func createResourceIndexModel(ctx context.Context, data *schema.ResourceData, me
 	}
 
 	// Confirm index status before ending create
-	if !skipIndexPause {
+	if !skipIndexPause && modelMode >= 0 {
 		indexed := false
 		for !indexed {
 			listBucketResp, err := c.ReadIndexModel(
