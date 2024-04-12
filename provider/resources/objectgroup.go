@@ -844,42 +844,68 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 	var indexRetention int
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
+	hasChanges := data.HasChanges(
+		"target_active_index",
+		"index_parallelism",
+		"live_events_parallelism",
+	)
 
-	indexList := data.Get("index_retention").(*schema.Set).List()
-	if len(indexList) > 0 {
-		indexMap := indexList[0].(map[string]interface{})
-		if indexMap["overall"] != nil {
-			indexRetention = indexMap["overall"].(int)
+	if data.HasChange("index_retention") {
+		oldVal, newVal := data.GetChange("index_retention")
+		if oldVal != nil && newVal != nil {
+			var oldOverall int
+			var newOverall int
+			if oldValList := oldVal.(*schema.Set).List(); len(oldValList) > 0 {
+				oldOverall = oldValList[0].(map[string]interface{})["overall"].(int)
+			}
+
+			if newValList := newVal.(*schema.Set).List(); len(newValList) > 0 {
+				newOverall = newValList[0].(map[string]interface{})["overall"].(int)
+			}
+
+			if oldOverall != newOverall {
+				hasChanges = true
+			}
 		}
 	}
 
-	if indexRetention == 0 || indexRetention < -1 {
-		return diag.Errorf(`Failure Updating Object Group => Invalid Index Retention
-			Note:
-				index_retention.overall cannot == 0 or < -1 during update
-		`)
-	}
+	if hasChanges {
+		indexList := data.Get("index_retention").(*schema.Set).List()
+		if len(indexList) > 0 {
+			indexMap := indexList[0].(map[string]interface{})
+			if indexMap["overall"] != nil {
+				indexRetention = indexMap["overall"].(int)
+			}
+		}
 
-	activeIndex := data.Get("target_active_index").(int)
-	if activeIndex == 0 || activeIndex < -1 {
-		return diag.Errorf(`Failure Updating Object Group => Invalid Active Index
-			Note:
-				target_active_index cannot == 0 or < -1 during update
-				This value is optional on create, but required on update.
-		`)
-	}
+		if indexRetention == 0 || indexRetention < -1 {
+			return diag.Errorf(`Failure Updating Object Group => Invalid Index Retention
+				Note:
+					index_retention.overall cannot == 0 or < -1 during update
+			`)
+		}
 
-	updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
-		AuthToken:             tokenValue,
-		Bucket:                data.Get("bucket").(string),
-		IndexParallelism:      data.Get("index_parallelism").(int),
-		IndexRetention:        indexRetention,
-		TargetActiveIndex:     activeIndex,
-		LiveEventsParallelism: data.Get("live_events_parallelism").(int),
-	}
+		activeIndex := data.Get("target_active_index").(int)
+		if activeIndex == 0 || activeIndex < -1 {
+			return diag.Errorf(`Failure Updating Object Group => Invalid Active Index
+				Note:
+					target_active_index cannot == 0 or < -1 during update
+					This value is optional on create, but required on update.
+			`)
+		}
 
-	if err := c.UpdateObjectGroup(ctx, updateObjectGroupRequest); err != nil {
-		return diag.FromErr(err)
+		updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
+			AuthToken:             tokenValue,
+			Bucket:                data.Get("bucket").(string),
+			IndexParallelism:      data.Get("index_parallelism").(int),
+			IndexRetention:        indexRetention,
+			TargetActiveIndex:     activeIndex,
+			LiveEventsParallelism: data.Get("live_events_parallelism").(int),
+		}
+
+		if err := c.UpdateObjectGroup(ctx, updateObjectGroupRequest); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ResourceObjectGroupRead(ctx, data, meta)

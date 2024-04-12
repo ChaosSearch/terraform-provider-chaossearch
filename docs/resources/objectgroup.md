@@ -87,6 +87,12 @@ resource "chaossearch_object_group" "create-object-group" {
 }
 ```
 
+**Note:** Update calls are only made when changes are detected for the following values (Requires OG/Index Model to be paused to apply):
+* `index_retention.overall`
+* `target_active_index`
+* `index_parallelism`
+* `live_events_parallelism` 
+
 ## Argument Reference
 * `bucket` - **(Required)** Name of the object group
 * `source` - **(Required)** Name of the bucket where your data is stored
