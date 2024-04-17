@@ -72,11 +72,23 @@ func (c *CSClient) UpdateObjectGroup(ctx context.Context, req *UpdateObjectGroup
 
 func marshalUpdateObjectGroupRequest(req *UpdateObjectGroupRequest) ([]byte, error) {
 	body := map[string]interface{}{
-		"bucket":                req.Bucket,
-		"indexParallelism":      req.IndexParallelism,
-		"indexRetention":        req.IndexRetention,
-		"targetActiveIndex":     req.TargetActiveIndex,
-		"liveEventsParallelism": req.LiveEventsParallelism,
+		"bucket": req.Bucket,
+	}
+
+	if req.IndexParallelism != nil {
+		body["indexParallelism"] = req.IndexParallelism
+	}
+
+	if req.IndexRetention != nil {
+		body["indexRetention"] = req.IndexRetention
+	}
+
+	if req.TargetActiveIndex != nil {
+		body["targetActiveIndex"] = req.TargetActiveIndex
+	}
+
+	if req.LiveEventsParallelism != nil {
+		body["liveEventsParallelism"] = req.LiveEventsParallelism
 	}
 
 	bodyAsBytes, err := json.Marshal(body)

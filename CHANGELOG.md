@@ -1,3 +1,8 @@
+## 1.0.19
+
+### Enhancements:
+* provider/resources/objectgroup.go: Decouple `target_active_index`, `index_retention`, `index_parallelism`, and `live_events_parallelism`
+
 ## 1.0.18
 
 ### Enhancements:

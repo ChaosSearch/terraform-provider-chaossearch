@@ -140,9 +140,9 @@ func ResourceObjectGroup() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"overall": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							Default:  -1,
+							Type:         schema.TypeInt,
+							Optional:     true,
+							ValidateFunc: validateIndexVal,
 						},
 					},
 				},
@@ -256,9 +256,9 @@ func ResourceObjectGroup() *schema.Resource {
 				Optional: true,
 			},
 			"target_active_index": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  -1,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ValidateFunc: validateIndexVal,
 			},
 			"live_events_parallelism": {
 				Type:     schema.TypeInt,
@@ -514,20 +514,23 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 
 	tokenValue := meta.(*models.ProviderMeta).Token
 	createObjectGroupRequest := &client.CreateObjectGroupRequest{
-		AuthToken:         tokenValue,
-		Bucket:            data.Get("bucket").(string),
-		Source:            data.Get("source").(string),
-		Format:            format,
-		IndexRetention:    indexRetention,
-		Filter:            filters,
-		PartitionBy:       data.Get("partition_by").(string),
-		TargetActiveIndex: data.Get("target_active_index").(int),
-		Options:           options,
+		AuthToken:      tokenValue,
+		Bucket:         data.Get("bucket").(string),
+		Source:         data.Get("source").(string),
+		Format:         format,
+		IndexRetention: indexRetention,
+		Filter:         filters,
+		PartitionBy:    data.Get("partition_by").(string),
+		Options:        options,
 		Interval: &client.Interval{
 			Mode:   0,
 			Column: 0,
 		},
 		Realtime: false,
+	}
+
+	if targetActiveIndex, ok := data.GetOk("target_active_index"); ok {
+		createObjectGroupRequest.TargetActiveIndex = targetActiveIndex.(*int)
 	}
 
 	liveEvents := data.Get("live_events").(string)
@@ -841,7 +844,6 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 }
 
 func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var indexRetention int
 	c := meta.(*models.ProviderMeta).CSClient
 	tokenValue := meta.(*models.ProviderMeta).Token
 	hasChanges := data.HasChanges(
@@ -870,40 +872,36 @@ func resourceObjectGroupUpdate(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	if hasChanges {
+		req := &client.UpdateObjectGroupRequest{
+			AuthToken: tokenValue,
+			Bucket:    data.Get("bucket").(string),
+		}
+
 		indexList := data.Get("index_retention").(*schema.Set).List()
 		if len(indexList) > 0 {
 			indexMap := indexList[0].(map[string]interface{})
 			if indexMap["overall"] != nil {
-				indexRetention = indexMap["overall"].(int)
+				val := indexMap["overall"].(int)
+				req.IndexRetention = &val
 			}
 		}
 
-		if indexRetention == 0 || indexRetention < -1 {
-			return diag.Errorf(`Failure Updating Object Group => Invalid Index Retention
-				Note:
-					index_retention.overall cannot == 0 or < -1 during update
-			`)
+		if activeIndex, ok := data.GetOk("target_active_index"); ok {
+			val := activeIndex.(int)
+			req.TargetActiveIndex = &val
 		}
 
-		activeIndex := data.Get("target_active_index").(int)
-		if activeIndex == 0 || activeIndex < -1 {
-			return diag.Errorf(`Failure Updating Object Group => Invalid Active Index
-				Note:
-					target_active_index cannot == 0 or < -1 during update
-					This value is optional on create, but required on update.
-			`)
+		if indexParallelism, ok := data.GetOk("index_parallelism"); ok {
+			val := indexParallelism.(int)
+			req.IndexParallelism = &val
 		}
 
-		updateObjectGroupRequest := &client.UpdateObjectGroupRequest{
-			AuthToken:             tokenValue,
-			Bucket:                data.Get("bucket").(string),
-			IndexParallelism:      data.Get("index_parallelism").(int),
-			IndexRetention:        indexRetention,
-			TargetActiveIndex:     activeIndex,
-			LiveEventsParallelism: data.Get("live_events_parallelism").(int),
+		if liveParallelism, ok := data.GetOk("live_events_parallelism"); ok {
+			val := liveParallelism.(int)
+			req.IndexParallelism = &val
 		}
 
-		if err := c.UpdateObjectGroup(ctx, updateObjectGroupRequest); err != nil {
+		if err := c.UpdateObjectGroup(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -982,4 +980,12 @@ func validateSelectionPolicy(i interface{}, k string) (warnings []string, errors
 	}
 
 	return warnings, errors
+}
+
+func validateIndexVal(i interface{}, k string) (warnings []string, errors []error) {
+	if i != nil && (i.(int) == 0 || i.(int) < -1) {
+		return nil, []error{fmt.Errorf("Value cannot == 0 or be < -1")}
+	}
+
+	return nil, nil
 }

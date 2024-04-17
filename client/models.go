@@ -99,7 +99,7 @@ type CreateObjectGroupRequest struct {
 	LiveEventsAws     string
 	LiveEventsGcp     *LiveEventsGcp
 	PartitionBy       string
-	TargetActiveIndex int
+	TargetActiveIndex *int
 }
 
 type LiveEventsGcp struct {
@@ -154,10 +154,10 @@ type Options struct {
 type UpdateObjectGroupRequest struct {
 	AuthToken             string
 	Bucket                string `json:"bucket"`
-	IndexParallelism      int    `json:"indexParallelism"`
-	IndexRetention        int    `json:"indexRetention"`
-	TargetActiveIndex     int    `json:"targetActiveIndex"`
-	LiveEventsParallelism int    `json:"liveEventsParallelism"`
+	IndexParallelism      *int   `json:"indexParallelism,omitempty"`
+	IndexRetention        *int   `json:"indexRetention,omitempty"`
+	TargetActiveIndex     *int   `json:"targetActiveIndex,omitempty"`
+	LiveEventsParallelism *int   `json:"liveEventsParallelism,omitempty"`
 }
 
 type CreateViewRequest struct {
