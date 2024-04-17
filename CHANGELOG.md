@@ -3,6 +3,9 @@
 ### Enhancements:
 * provider/resources/objectgroup.go: Decouple `target_active_index`, `index_retention`, `index_parallelism`, and `live_events_parallelism`
 
+### Bug Fixes:
+* client/models.go: Adjust `Condition` to be composed of interfaces, fixes missing condition types on creating `user_group`
+
 ## 1.0.18
 
 ### Enhancements:

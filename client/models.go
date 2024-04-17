@@ -240,29 +240,12 @@ type State struct {
 	TargetActiveIndex *int    `json:"targetActiveIndex,omitempty"`
 }
 
-//user group create related models
-
-type StartsWith struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
-}
-
-type Equals struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
-}
-
-type NotEquals struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
-}
-
-type Like struct {
-	ChaosDocumentAttributesTitle string `json:"chaos:document/attributes.title,omitempty"`
-}
-
+// user group create related models
 type Condition struct {
-	StartsWith *StartsWith `json:"StartsWith,omitempty"`
-	Equals     *Equals     `json:"Equals,omitempty"`
-	NotEquals  *NotEquals  `json:"NotEquals,omitempty"`
-	Like       *Like       `json:"Like,omitempty"`
+	StartsWith interface{} `json:"StartsWith,omitempty"`
+	Equals     interface{} `json:"Equals,omitempty"`
+	NotEquals  interface{} `json:"NotEquals,omitempty"`
+	Like       interface{} `json:"Like,omitempty"`
 }
 
 type ConditionGroup struct {
