@@ -530,7 +530,8 @@ func resourceObjectGroupCreate(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	if targetActiveIndex, ok := data.GetOk("target_active_index"); ok {
-		createObjectGroupRequest.TargetActiveIndex = targetActiveIndex.(*int)
+		val := targetActiveIndex.(int)
+		createObjectGroupRequest.TargetActiveIndex = &val
 	}
 
 	liveEvents := data.Get("live_events").(string)
