@@ -337,16 +337,20 @@ type IndexStatusResponse struct {
 	Indexed bool `json:"indexed"`
 }
 
-type CreateMonitorRequest struct {
-	Id         string      `json:"-"`
-	AuthToken  string      `json:"-"`
-	Name       string      `json:"name"`
-	Type       string      `json:"type"`
-	Enabled    bool        `json:"enabled"`
-	Schedule   Schedule    `json:"schedule"`
-	Inputs     []Input     `json:"inputs"`
-	Triggers   []Trigger   `json:"triggers"`
-	UIMetadata interface{} `json:"ui_metadata"`
+type MonitorBody struct {
+	Id          string      `json:"-"`
+	AuthToken   string      `json:"-"`
+	Name        string      `json:"name"`
+	Type        string      `json:"type"`
+	MonitorType string      `json:"monitor_type,omitempty"`
+	Enabled     bool        `json:"enabled"`
+	EnabledTime int         `json:"enabled_time,omitempty"`
+	GroupIds    []string    `json:"groupIds,omitempty"`
+	Schedule    Schedule    `json:"schedule"`
+	Inputs      []Input     `json:"inputs"`
+	Triggers    []Trigger   `json:"triggers"`
+	UIMetadata  interface{} `json:"ui_metadata"`
+	User        interface{} `json:"user,omitempty"`
 }
 
 type Schedule struct {
@@ -385,12 +389,12 @@ type Script struct {
 }
 
 type Action struct {
-	Name            string   `json:"name"`
-	DestinationId   string   `json:"destination_id"`
-	SubjectTemplate Script   `json:"subject_template"`
-	MessageTemplate Script   `json:"message_template"`
-	ThrottleEnabled bool     `json:"throttle_enabled,omitempty"`
-	Throttle        Throttle `json:"throttle,omitempty"`
+	Name            string    `json:"name"`
+	DestinationId   string    `json:"destination_id"`
+	SubjectTemplate Script    `json:"subject_template"`
+	MessageTemplate Script    `json:"message_template"`
+	ThrottleEnabled bool      `json:"throttle_enabled,omitempty"`
+	Throttle        *Throttle `json:"throttle,omitempty"`
 }
 
 type Throttle struct {
@@ -405,6 +409,16 @@ type CreateMonitorResponse struct {
 
 type MonitorResp struct {
 	Id string `json:"_id"`
+}
+
+type ReadMonitorResponse struct {
+	DayCount     int         `json:"dayCount"`
+	IfPimaryTerm int         `json:"ifPrimaryTerm"`
+	Version      int         `json:"version"`
+	IfSeqNo      int         `json:"ifSeqNo"`
+	Ok           bool        `json:"ok"`
+	ActiveCount  int         `json:"activeCount"`
+	Resp         MonitorBody `json:"resp"`
 }
 
 type CreateDestinationRequest struct {

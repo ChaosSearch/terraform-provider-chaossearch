@@ -195,8 +195,19 @@ func resourceMonitorCreate(ctx context.Context, data *schema.ResourceData, meta 
 }
 
 func resourceMonitorRead(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*models.ProviderMeta).CSClient
+	_, err := c.ReadMonitor(ctx, &client.BasicRequest{
+		AuthToken: meta.(*models.ProviderMeta).Token,
+		Id:        data.Id(),
+	})
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
+
 func resourceMonitorUpdate(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*models.ProviderMeta).CSClient
 	req, diagErr := constructCreateMonitorRequest(data, meta)
@@ -236,7 +247,7 @@ func extractScriptValues(scriptMap map[string]interface{}) client.Script {
 func constructCreateMonitorRequest(
 	data *schema.ResourceData,
 	meta interface{},
-) (*client.CreateMonitorRequest, diag.Diagnostics) {
+) (*client.MonitorBody, diag.Diagnostics) {
 	var triggers []client.Trigger
 	var actions []client.Action
 	var indices []string
@@ -268,14 +279,14 @@ func constructCreateMonitorRequest(
 			action := client.Action{
 				DestinationId:   actionMap["destination_id"].(string),
 				Name:            actionMap["name"].(string),
-				SubjectTemplate: extractScriptValues(msgMap),
-				MessageTemplate: extractScriptValues(subjectMap),
+				SubjectTemplate: extractScriptValues(subjectMap),
+				MessageTemplate: extractScriptValues(msgMap),
 			}
 
 			if actionMap["throttle_enabled"].(bool) {
 				throttleMap := utils.ConvertSetToMap(actionMap["throttle"])
 				action.ThrottleEnabled = true
-				action.Throttle = client.Throttle{
+				action.Throttle = &client.Throttle{
 					Value: throttleMap["value"].(int),
 					Unit:  throttleMap["unit"].(string),
 				}
@@ -295,7 +306,7 @@ func constructCreateMonitorRequest(
 		})
 	}
 
-	return &client.CreateMonitorRequest{
+	return &client.MonitorBody{
 		AuthToken: meta.(*models.ProviderMeta).Token,
 		Name:      data.Get("name").(string),
 		Type:      data.Get("type").(string),

@@ -9,7 +9,7 @@ import (
 
 func (c *CSClient) CreateMonitor(
 	ctx context.Context,
-	req *CreateMonitorRequest,
+	req *MonitorBody,
 ) (*CreateMonitorResponse, error) {
 	var resp CreateMonitorResponse
 	bodyAsBytes, err := marshalCreateMonitorRequest(req)
@@ -39,9 +39,35 @@ func (c *CSClient) CreateMonitor(
 	return &resp, nil
 }
 
+func (c *CSClient) ReadMonitor(
+	ctx context.Context,
+	req *BasicRequest,
+) (*ReadMonitorResponse, error) {
+	var resp ReadMonitorResponse
+	httpResp, err := c.createAndSendReq(ctx, ClientRequest{
+		Url:         fmt.Sprintf("%s/kibana/api/alerting/monitors/%s", c.Config.URL, req.Id),
+		RequestType: GET,
+		AuthToken:   req.AuthToken,
+		Headers: map[string]string{
+			"Cookie": fmt.Sprintf("chaossumo_session_token=%s", req.AuthToken),
+		},
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("Read Monitor Failure => %s", err)
+	}
+
+	if err := c.unmarshalJSONBody(httpResp.Body, &resp); err != nil {
+		return nil, err
+	}
+
+	defer httpResp.Body.Close()
+	return &resp, nil
+}
+
 func (c *CSClient) UpdateMonitor(
 	ctx context.Context,
-	req *CreateMonitorRequest,
+	req *MonitorBody,
 ) error {
 	bodyAsBytes, err := marshalCreateMonitorRequest(req)
 	if err != nil {
@@ -84,7 +110,7 @@ func (c *CSClient) DeleteMonitor(ctx context.Context, req *BasicRequest) error {
 	return nil
 }
 
-func marshalCreateMonitorRequest(req *CreateMonitorRequest) ([]byte, error) {
+func marshalCreateMonitorRequest(req *MonitorBody) ([]byte, error) {
 	req.UIMetadata = map[string]interface{}{}
 	bodyAsBytes, err := json.Marshal(req)
 	if err != nil {
