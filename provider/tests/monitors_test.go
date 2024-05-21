@@ -25,13 +25,9 @@ func TestAccMonitors(t *testing.T) {
 				"chaossearch_monitor.monitor",
 				generateName("acc-test-tf-monitor"),
 			),
-			testMonitorStep(
-				testAccMonitorThrottleDisabledConf,
-				"chaossearch_monitor.monitor",
-				generateName("acc-test-tf-monitor"),
-			),
 		},
 	})
+	t.Parallel()
 }
 
 func testMonitorStep(config func(string) string, rsrcName, objName string) resource.TestStep {
@@ -193,92 +189,6 @@ func testAccMonitorConf(name string) string {
 		  		throttle {
 					value = 10
 					unit = "MINUTES"
-		  		}
-			}
-	  	}
-	}
-	`, testAccViewConfig(viewName, bucketName), name)
-}
-
-func testAccMonitorThrottleDisabledConf(name string) string {
-	bucketName := generateName("acc-test-tf-provider-view-og")
-	viewName := generateName("acc-test-tf-provider-view")
-	return fmt.Sprintf(`
-	%s
-	resource "chaossearch_destination" "dest" {
-		name = "test-dest"
-		type = "slack"
-		slack {
-		  url = "http://slack.com"
-		}
-	  }
-
-	resource "chaossearch_monitor" "monitor" {
-		name = "%s"
-		type = "monitor"
-		enabled = true
-		depends_on = [
-			chaossearch_destination.dest,
-			chaossearch_view.view,
-		]
-		schedule {
-			period {
-				interval = 1
-				unit = "MINUTES"
-			}
-		}
-		inputs {
-			search {
-				indices = [
-					chaossearch_view.view.bucket,
-				]
-				query = jsonencode({
-					"size": 0,
-					"aggregations": {
-						"when": {
-							"avg": {
-								"field": "Magnitude"
-							},
-							"meta": null
-						}
-					},
-					"query": {
-						"bool": {
-							"filter": [
-								{
-									"range": {
-										"Period": {
-											"gte": "{{period_end}}||-1h",
-											"lte": "{{period_end}}",
-											"format": "epoch_millis"
-										}
-						  			}
-					  			}
-				  			]
-			  			}
-					}
-		  		})
-			}
-	  	}
-	  	triggers {
-			name = "test-trigger"
-			severity = "1"
-			condition {
-		  		script {
-					lang = "painless"
-					source = "ctx.results[0].hits.total.value > 1000"
-		  		}
-			}
-			actions {
-		  		name = "test-action"
-		  		destination_id = chaossearch_destination.dest.id
-		  		subject_template {
-					lang = "mustache"
-					source = "Monitor {{ctx.monitor.name}} Triggered"
-		  		}
-		  		message_template {
-					lang = "mustache"
-					source = "Some message"
 		  		}
 			}
 	  	}

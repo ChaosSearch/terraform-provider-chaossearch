@@ -40,6 +40,7 @@ func TestAccView(t *testing.T) {
 			),
 		},
 	})
+	t.Parallel()
 }
 
 func testViewStep(config func(string, string) string, rsrcName, srcName, objName string) resource.TestStep {

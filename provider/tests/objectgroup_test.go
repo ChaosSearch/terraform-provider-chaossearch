@@ -36,6 +36,7 @@ func TestAccObjectGroup(t *testing.T) {
 			),
 		},
 	})
+	t.Parallel()
 }
 
 func testOGStep(config func(string) string, rsrcName, objName string) resource.TestStep {
