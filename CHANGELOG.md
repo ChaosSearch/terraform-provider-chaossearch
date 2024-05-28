@@ -1,3 +1,17 @@
+## 1.0.19
+
+### Enhancements:
+* provider/resources/objectgroup.go: Decouple `target_active_index`, `index_retention`, `index_parallelism`, and `live_events_parallelism`
+* docs/guides/monitors.md: Update `throttle` to use `MINUTES` instead of `MIN`
+* client/models.go: Adjust `CreateMonitorRequest` to be used more broadly accross reads and writes, renamed to `MonitorBody`. Make `Throttle` nullable, fixing action creation w/o throttle. Create `ReadMonitorResponse`
+* client/monitor.go: Flesh out `ReadMonitor`
+* provider/examples/main.tf: Update `throttle` example to have `MINUTES` unit
+* provider/resources/monitor.go: `resourceMonitorRead` actually performs a read call now. Fix swapped msg and subject on `CreateMonitorRequest`
+* provider/tests/monitors_test.go: Net new `Monitor` acceptance testing
+
+### Bug Fixes:
+* client/models.go: Adjust `Condition` to be composed of interfaces, fixes missing condition types on creating `user_group`
+
 ## 1.0.18
 
 ### Enhancements:

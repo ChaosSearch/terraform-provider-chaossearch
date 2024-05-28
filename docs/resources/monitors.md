@@ -70,7 +70,7 @@ resource "chaossearch_monitor" "monitor" {
       throttle_enabled = true
       throttle {
         value = 10
-        unit = "MIN"
+        unit = "MINUTES"
       }
     }
   }
