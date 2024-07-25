@@ -364,13 +364,27 @@ func ResourceViewRead(ctx context.Context, data *schema.ResourceData, meta inter
 			if predicate.Preds != nil {
 				preds = make([]string, len(predicate.Preds))
 				for index, predItem := range predicate.Preds {
-					predMap := map[string]interface{}{
-						"field": predItem.Field,
-						"_type": predItem.Type,
-						"query": predItem.Query,
-						"state": map[string]interface{}{
+					predMap := map[string]interface{}{}
+					if predItem.Field != "" {
+						predMap["field"] = predItem.Field
+					}
+
+					if predItem.Type != "" {
+						predMap["_type"] = predItem.Type
+					}
+
+					if predItem.Query != "" {
+						predMap["query"] = predItem.Query
+					}
+
+					if predItem.State != nil && predItem.State.Type != "" {
+						predMap["state"] = map[string]interface{}{
 							"_type": predItem.State.Type,
-						},
+						}
+					}
+
+					if len(predItem.Preds) != 0 {
+						predMap["preds"] = predItem.Preds
 					}
 
 					predBytes, err := json.Marshal(predMap)
