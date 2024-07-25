@@ -1,3 +1,8 @@
+## 1.0.20
+
+### Bug Fixes:
+* provider/resources/view.go: Add better nil checking around `predicates`
+
 ## 1.0.19
 
 ### Enhancements:
