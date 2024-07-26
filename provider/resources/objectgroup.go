@@ -751,9 +751,10 @@ func ResourceObjectGroupRead(ctx context.Context, data *schema.ResourceData, met
 		}
 	}
 
-	if resp.Options != nil {
+	optionsList := data.Get("options").(*schema.Set).List()
+	if resp.Options != nil && len(optionsList) > 0 {
 		var options map[string]interface{}
-		optionsList := data.Get("options").(*schema.Set).List()
+
 		optionsMap := optionsList[0].(map[string]interface{})
 		compression := optionsMap["compression"].(string)
 

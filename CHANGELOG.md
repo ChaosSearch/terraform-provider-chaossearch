@@ -1,3 +1,8 @@
+## 1.0.21
+
+### Bug Fixes:
+* provider/resources/objectgroup.go: Check if `options` config is defined before trying to merge it with read object group
+
 ## 1.0.20
 
 ### Bug Fixes:
